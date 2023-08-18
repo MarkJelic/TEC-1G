@@ -28,9 +28,12 @@ The 1G has been developed by Mark Jelic with the input of the original designers
 - Full TEC-1 hardware and software compatability; runs all previous MONitors without modification
 
 - Flexible memory options; 32K RAM, 16k ROM in default configuration.
-Support for multiple configuration options and memory types from 2k to 32k memory devices.
-RAM write protection for improved software development
-Shadow Memory and bank switching capabilities
+
+- Support for multiple configuration options and memory types from 2k to 32k memory devices.
+
+- RAM write protection for improved software development
+
+- Shadow Memory and bank switching capabilities
 
 - 20x4 LCD screen as primary display device
 
@@ -53,6 +56,7 @@ Shadow Memory and bank switching capabilities
 - 'TEC-Deck' expansion connectors for future daughterboards
 
 - 'TEC Expander' port for compatability with existing TEC peripherals
+
 
 ## More Documentation [Coming Soon™](/Documentation/readme.md)
 
