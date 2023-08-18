@@ -21,7 +21,7 @@ The 1G builds on both the TEC-1's base and recent history to modernize the overa
 
 The TEC-1G remains true to the original TE design goals: it is is built using only simple through-hole TTL logic chips so it is easily built and understood by the hobbyist. For the first time, the TEC-1G will also be fully free and open soruce, in both its hardware and software. The TEC-1G may be the ultimate TEC-1!
 
-The 1G has been developed by Mark Jelic with the input of the original designers, John Hardy and Ken Stone, along with contributions from community members Brian Chiha, Ian McLean as well as ex-TE staff member Craig Hart. Finally, the 1G has also been produced with the blessing of Colin Mitchell, Talking Electronics owner.
+The 1G has been developed by Mark Jelic with the input of the original designers, John Hardy and Ken Stone, ex-TE staff member Craig Hart, along with contributions from community members Brian Chiha and Ian McLean. Finally, the 1G has also been produced with the blessing of Colin Mitchell, Talking Electronics owner.
 
 ## Major Features
 
