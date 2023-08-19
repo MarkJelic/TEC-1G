@@ -8,10 +8,20 @@ If your 1G does not work, check each section in the order given below.
 
 ## Power Supply
 
-A classic TEC-1 type linear 7805 based power supply has been provided, however we strongly suggest a heatsink on the 7805 and some monitoring - the 1G has more chips to power so the current consumption will be higher than a classic TEC-1. It is suggested that a drop-in 7805 equivilant switching regulator or USB power be considered instead.
+The TEC-1G is designed to be powered by an external USB +5v source; a USB-B socket for power only, is therefore provided. A classic TEC-1 style linear 7805 based power supply has also been provided, however its use is depreciated.
 
-The TEC-1G can also be powered by USB; a USB-B socket is provided. Power is switched automatically from USB to linear using a switch built into the linear power input socket BJ1 - as long as a plug is inserted into BJ1, linear power mode is selected.
-The power on/off switch and indicator LED complete the power supply.
+Power is switched automatically from USB to linear using a switch built into the linear power input socket BJ1 - as long as a plug is inserted into BJ1, linear power mode is selected. BJ1 is centre positive, in keeping with the most common standard for small DC plugpacks.
+
+**The TEC-1G is also designed for DC power input only.** D0, the 1N4002 power diode, is only designed to protect against reverse polarity, and not to act as an AC rectifier.
+
+The power on/off switch and indicator LED complete the power supply section.
+
+Note that we strongly suggest a heatsink on the 7805 and some monitoring of its temperature. The 1G has more chips to power vs. a classic TEC-1, so the current consumption will be higher. The 1G PCB is also more crammed full of goodness so there is also less space for copper fill heatsinking as well. Reducing the input voltage from 12v to 8v or 9v will lower the 7805 temperature noticably.
+
+It is suggested that a drop-in 7805 equivilant switching regulator be considered if USB power is not viable.
+
+
+
 
 The Probe connector supplies power for a logic probe, and serves as the GND hookup point for an oscilloscope or multimeter. Probe can also be used as a feed-in source of an external +5v supply if the 1G is to be powered by an external source.
 
@@ -50,16 +60,16 @@ U11a and U12 work to decode IO address range F8h to FFh, in support of new onboa
 ### Memory Address Decoders
 
 U3 acts as a memory address decoder, providng select lines for eech 16k memory block.
-.
+
 D1, D2 and R11 form a NOR gate to create a select signal to the MMU indicating the bottom 32k is being accessed.
 
-U4 acts as a 7-input comparitor, detecting if the bottom 2k of memory is being accessed (A11 to A15 must be all low), but only when /SHADOW is active (also low). This signal is used as another input to the MMU.
+U4 acts as a 7-input comparitor, detecting if the bottom 2k of memory is being accessed: A11 to A15 must be all low, but only when /SHADOW is also active (also low). This signal is used as another input to the MMU.
 
-If /SHADOW is low, the comparitor outputs (on pin 19) a low whenever memory in the first 2k 000h to 07ffh is accessed. If /SHADOW is high, the output is always high.
+If /SHADOW is low, U4 outputs (on pin 19) a low whenever memory in the first 2k 000h to 07ffh is accessed. If /SHADOW is high, the output is always high.
 
 ### Memory Management Unit (MMU)
 
-U5A, B and C and U6 A, B and D form a simple MMU controling the Bank 0, 1 and 3 /Chip Select lines for the memory chips.
+U5A, B & C and U6 A, B & D form a simple MMU controlling the Bank 0, 1 and 3 /Chip Select lines for the memory chips U7 and U8.
 
 Note that Bank 2 is not part of the MMU and appears at address 8000h to BFFFh at all times.
 
@@ -67,9 +77,9 @@ Note that Bank 2 is not part of the MMU and appears at address 8000h to BFFFh at
 
 ## Memory Protection
 
-U14 detects memory writes to bank 1 in combination with the PROTECT signal, and either passes or blocks /WR to the RAM chip.
+U14 detects memory writes to bank 1 in combination with the PROTECT signal, and either passes or blocks the /WR signal to the RAM chip.
 
-If PROTECT is high, /WR is held high at all times using bank 1 accesses only. If /PROTECT is low, /WR is passed to the memory chip normally.
+If PROTECT is high, /WR is held high when bank 1 is accessed. If /PROTECT is low, /WR is passed to the memory chip normally.
 
 ## ROM and RAM
 
@@ -81,7 +91,9 @@ If burning your own ROM, place older monitors at the start of the ROM, from 0000
 
 U8 is the primary system ram, mapped to banks 0 and 1, and subject to the above SHADOW and PROTECT controls.
 
-U9 is the expansion memory socket, and is mapped into bank 2. Any memory chip from 8k to 32k can be fitted here; if a 32k chip is fitted then bankswitching using the EXTEND signal selects which half of the memory is mapped into bank 2 (the other half is inaccessible unless the EXTEND signal is flipped, which swaps halves). EXTEND has no affect if a memory devices less than 32k in size is fitted.
+U9 is the expansion memory socket, and is mapped always into bank 2. Any memory chip from 8k to 32k can be fitted here; if a 32k chip is fitted then bankswitching using the EXTEND signal selects which half of the memory is mapped into bank 2 (the other half is inaccessible ; flip EEXTEND to ge tto the other half).
+
+EXTEND has no affect if a memory device of less than 32k in size is fitted at U9, or if U9 is left vacant.
 
 ## HexPad Encoder
 
@@ -89,7 +101,7 @@ This part of the 1G is unchanged from the TEC-1. The 74c923 scans a matrix of 20
 
 Shift key support functions identially to the TEC-1, with bit 5 of port 00 reading a 0 when Shift is pressed, and a 1 if not.
 
-Fulisik LEDs is a new feature of the 1G - if using Gateron keyswitches, LEDs can be fitted to backlight the keys; JP5 controls the backlights on/off. Resistor packs RN4, RN5, RN6 and 330R resistors R5 and R15 complete the LED current limiting. Refer to the assembly guide for suggested LED colours.
+Fulisik LEDs is a new feature of the 1G - if using Gateron keyswitches, LEDs can be fitted to backlight the keys; JP5 controls the backlights on/off. Resistor packs RN4, RN5, RN6 and 330R resistors R5 and R15 complete the LED current limiting. Refer to the assembly guide for suggested LED colours for each switch.
 
 Note that RN4,5,6 & R5 and 15 can be omitted if not using backlighting.
 
@@ -109,7 +121,9 @@ A new 1G featue, is that pin 1 of the latch chips is driven by the buffered RESE
 
 ## LCD Connector
 
-The 1G uses a similar interface idea to the TE DAT board, with support for any HD44780 chipset based LCD screen. However, we have settled on using a 40x4 display instead of the DAT's 16x2. The larger size screen offers more display space and these days is less expensive than the original 16x2's were in the 1990's. Backlight power is also supplied.
+The 1G uses a similar interface idea to the TE DAT board, with support for any HD44780 chipset based LCD screen. However, we have settled on using a 40x4 display instead of the DAT's 16x2. The larger size screen offers more display space and these days is less expensive than the original 16x2's were in the 1990's.
+
+Backlight power is also supplied, but can be disbled by cutting a marked trace on the rear of the 1G PCB. 'solder blob' pads have been provided to restore power if you wish to un-do this decision later - just solder the pads back together with a small blob of solder.
 
 At the design level, the 1G inverts the CPU's /RD signal to generate the R/W signal for the LCD. This results in more favourable timing vs. the DAT board's use of an R-C network and the /WR signal. The LCD is more reliably detected and less prone to corruption using this method. We borrow one spare 4049 inverter gate from U1 for this purpose.
 
