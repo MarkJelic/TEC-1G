@@ -1,3 +1,6 @@
+todo: renumber to suit release PCB.
+
+
 # TEC-1G Connectors
 
 This is a list of TEC-1G expansion port connectors and their respective pin-outs.
@@ -30,7 +33,11 @@ GND - Common Ground
 
 ## J7 - MEMbus
 
-## J8 - IMPUT
+## J8 - GIMPUT
+
+1 - GND
+2 - +5v
+3 - GIMP signal to SIMP-3
 
 ## J11 - JOYSTICK
 
