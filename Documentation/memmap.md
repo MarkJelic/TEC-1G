@@ -18,13 +18,13 @@ The above memory map is fully compatible at power-on with the TEC-1; therefore a
 
 The 'default' assumed configuration for a newly built TEC-1G, is:
 
-- U7: 32k ROM chip fitted
+- U7: 32k MON-3 ROM chip fitted
 - U8: 32k RAM fitted
 - U9: left empty
 
 Note that U7 can also accept a TEC-1 2k or 4k ROM with MON-1B/2 if you wish to run older software.
 
-## Memory Banks special features
+## Memory Banks - Special Features
 
 Each memory bank has certain unique special featutes, which are described below.
 
