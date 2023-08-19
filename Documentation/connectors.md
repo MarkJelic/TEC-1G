@@ -20,7 +20,7 @@ Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.
 ## J4 - MATRIX Keyboard
 
 ## J5 - FTDI
-FTDI offers two options - with the pins left-to-right and right-to-left. This is because there are two common types of FTDI module - fit the connector that suits your type of FDI module. Pin orientations are clearly maked on the PCB silkscreen.
+FTDI offers two options - pins orientated left-to-right, and right-to-left. This is because there are two common types of FTDI module - fit the connector that suits your type of FTDI module. Pin orientations are clearly maked on the PCB silkscreen.
 
 DTR - not used
 RX - Receive data
