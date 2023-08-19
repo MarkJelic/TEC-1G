@@ -4,10 +4,9 @@ The following technical documentation describes the general layout of the TEC-1G
 
 If you are looking for physical pinouts of the TEC-1G port connectors, please refer to other documentation from the index.
 
-## IO ports
+## TEC-1 Compatable IO Ports
 
-Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - hence IO ports 00 to 07 are also available as ports 80h to 87h. This is for JMON/LCD compatability.
-
+** Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - hence I/O ports 00 to 07 are also available as ports 80h to 87h. This is for JMON/LCD compatability.
 
 ### Port 00 - Keyboard data input
  - bits 0-4 - binary keypressed value from the 74c923 chip
@@ -58,13 +57,19 @@ Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - he
  - bits 0-7 - LCD data register
 
 ### Port 05 - 8x8 display latch
+
 ### Port 06 - 8x8 display latch
+
 ### Port 07 - GLCD port
-Reserved for future 128x64 Graphic LCD
+ - Reserved for future 128x64 Graphic LCD
 
 ** Ports 80h to 87h are duplicates of ports 00 to 07.
 
-### Port FEh - Matrix keyboard input
+## TEC-1G New Ports
+
+These are new additions to the 1G, not found in previous TEC models.
+
+### Port FEh - Matrix Keyboard Input
 
 ** This port is used to read the state of the matrix keyboard, to determine if a key is being pressed or not. See the section on the Matrix keyboard for more details on how to use port FEh correctly.
 
@@ -95,10 +100,3 @@ Reserved for future 128x64 Graphic LCD
      - 1 - Caps lock is ON
 
    
-
-
-
-
-
-
- 
