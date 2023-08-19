@@ -4,6 +4,8 @@
 
 [Memory Map](memmap.md)
 
+[Expansion and Device Connectors](connectors.md)
+
 ## Major Features
 
 - Full TEC-1 hardware and software compatability; runs all previous MONitors without modification
