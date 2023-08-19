@@ -5,17 +5,19 @@ todo: renumber to suit release PCB.
 
 This is a list of TEC-1G expansion port connectors and their respective pin-outs.
 
-A note on PCB connector orientation markings. Pin one is identified as the pin that is not within the solid connector outline on the silkscreen, but instead has a small L on one corner, or is individually outlined. Pin 1 also has a square solder pad, the other pins are round.
+A note on PCB connector orientation markings. Pin 1 is identified as the pin that is not within the solid connector outline on the silkscreen, but instead has a small L on one corner, or is individually outlined. Pin 1 also has a square solder pad, the other pins are round. Lastly, the label of the connector (eg. J1) is usually placed as close as possible to Pin 1.
 
 ## J1 - Z80 Bus Vertical Connector
 
-Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.
+Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc. Except for one small difference; Pin 28 is NOT the usual Refresh pin, since that function is largely not used in any modernised Z80 computers. Pin 28 has instead been repurposed for the use of the GLCD as an Inverted Read control line from the Z80. 
 
 ## J2 - Z80 Bus Horizontal Connector
 
-Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.
+Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.  This connector should ideally be a female connector to allow for direct connection of expansion cards, or the X4 Expansion Board, and IDC cables can still be connected if the user desires.
 
 ## J3 - TEC Expander
+
+This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be progged into the left (first 16) pins and work as intended. The extra 4 pins have been added so peripherals like the Speach Board can be re-implemented fully.
 
 ## J4 - MATRIX Keyboard
 
@@ -37,9 +39,11 @@ GND - Common Ground
 
 1 - GND
 2 - +5v
-3 - GIMP signal to SIMP-3
+3 - GIMP signal to SIMP-3 (LOL!)
 
 ## J11 - JOYSTICK
+
+The joystick port adheres to the ATARI joystick standard, supporting two fire buttons.
 
 ## J12 - GPIO
 
