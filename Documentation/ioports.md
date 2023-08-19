@@ -90,10 +90,10 @@ These are new additions to the 1G, not found in previous TEC models.
      - 1 = Bank 1 of RAM memory ($4000 to $7FFF) is write-protected
  - bit 2 - EXPAND
      - controls which half of a 32k memory device installed in Bank 2 is presently selected. Defaults to the lower half at power on
- - bit 3 - FF-D3 - The next 4 bits are most likely going to be used for Paged memory expansion, allowing for up to 512k extra memory.
+ - bit 3 - FF-D3 - The next 4 bits are most likely going to be used for Paged Memory expansion, allowing for up to 512k extra memory.
  - bit 4 - FF-D4 - But they are open to be used as users see fit when designing TEC Decks.
- - bit 5 - FF-D5 - Possible Paged Memeory use.
- - bit 6 - FF-D6 - Possible Paged Memeory use.
+ - bit 5 - FF-D5 - Possible Paged Memory use.
+ - bit 6 - FF-D6 - Possible Paged Memory use.
  - bit 7 - CAPS
      - This bit relates to the Matrix keyboard
      - 0 - Caps lock is OFF
