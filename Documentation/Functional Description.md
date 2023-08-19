@@ -2,7 +2,9 @@
 
 Also known as "how it works".
 
-The TEC-1G can be broken up into several sections, and each considered as to how it plays its role in the overall system
+The TEC-1G can be broken up into several sections or *building blocks*, and each considered individually as to how it plays its role in the overall system. Together, each building block forms the complete TEC-1G. Some building blocks such as the Matrix Keyboard are optional whilst others are essential.
+
+If your 1G does not work, check each section in the order given below.
 
 ## Power Supply
 
@@ -14,23 +16,24 @@ The Probe connector supplies power for a logic probe, and serves as the GND hook
 ## CPU Clock Generation
 
 CPU Clock is generated either by a crystal oscillator module, or the classic TEC-1 variable speed oscillator, built around U1, a 4049 hex inverter.
-
-Clock mode is selectable with slide switch SW2 - SLOW being TEC-1 variable clock, and FAST being the Crystal module.
-
+Clock mode is selectable with slide switch SW2 - SLOW being TEC-1 variable clock, and FAST being the Crystal module. The selected signal is fed to the Z80 on pin 6, and can be checked with a logic probe or oscilloscope.
 MON-3 is written with a 4.0MHz crystal in mind - which is the maximum clock speed of the Z80A CPU. This speed defines the FTDI serial baud rate, 7-seg scanning rate, sound note pitch and duration, etc. The 1G has not been tsted above 4.0MHz but should work OK at up to 8MHz with a Z80H CPU; however FTDI serial, timing etc. will be affected.
 
 ## CPU RESET Signal
 
 The traditional R-C network for CPU RESET is offered as standard, however the option exists for using a dedicated power monitor/reset chip - the Dallas DS1233. Further more, the latch chips that rely on the RESET are now driven by a buffered RESET signal, provided by U5D.
 
+RESET is active low, so the signal should be LOW when the RESET button is pressed, and HIGH at all other times. Reset is fed to pin 26 of the Z80, and via U5D to pin 1 of the 74xx273 latches U13, U16 and U17.
+
 ## Z80 CPU
 
-The Z80 is configured identially to the TEC-1 and is quite conventional.
-An LED - L2 has been added to the HALT signal as an aid to troubleshooting and to provide and easy to monitor output for debugging purposes. The programmer can insert HALT opcodes where possible program trouble exists, and if the LED comes on, you can know that program flow reached a HALT point. Pressing a 74c923 key resumes program flow. This can be handy for quickly troubleshooting conditional JPs, for example.
+The Z80 CPU, U2, is configured identially to the TEC-1 and is quite conventionally set up. Any Z80 rated to at least 4.0MHz will work - NMOS or CMOS types both work, so Z80A, Z80B, Z80H, Z84C00x parts in 40-pin 5v DIP package, are fine.
+An LED - L2 has been added to the HALT signal as an aid to troubleshooting and to provide and easy to monitor output for debugging purposes. the HALT LED should normally NOT light up duing MON-3 opreration.
+The programmer can insert HALT opcodes where possible program trouble exists, and if the LED comes on, you can know that program flow reached a HALT point. Pressing a 74c923 key typically resumes program flow. This can be handy for quickly troubleshooting conditional JPs, for example.
 
 ## IO Decoders
 
-U10 duplicates the TEC-1's traditional 74LS138 IO decoder, decoding IO ports 00 to 07. However the 1G has the addition of a diode OR-gate formed from D#,D4,D5 and D6 +R12. The OR-gate ensures that no unwanted IO address wrap-around occurs. 
+U10 duplicates the TEC-1's traditional 74LS138 IO decoder, decoding IO ports 00 to 07. However the 1G has the addition of a diode OR-gate formed from D3,D4,D5, D6 and R12. The OR-gate ensures that no unwanted IO address wrap-around occurs. 
 U11a and U12 work to decode IO address range F8h to FFh, in support of new onboard peripherals and future expansion.
 
 ## Memory Decoder & Memory Managment Unit
