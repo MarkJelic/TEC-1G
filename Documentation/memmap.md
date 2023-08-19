@@ -95,9 +95,9 @@ Careful consideration was given to the question of whether the TEC-1G should be 
 It was decided NOT to aim for CP/M compatability, for a number of reasons:
 
 - There are many Z80 based CP/M machines on the market. The 1G should not simply become another Z80 'textbook design'
-- CP/M is an advanced OS generally requring disk drives, terminals RAM and a greater user skillset. This is contrary to the design goal of simplicity and ease of understanding
+- CP/M is an advanced OS generally requring disk drives, terminals, a full 64k of RAM + ddiional bankswitched memory, and calls for a greater user skillset. This is contrary to the design goal of simplicity and ease of understanding
 - Any attempt to do CP/M "well" would end up in so many compromises that the design goal of staying true and compatible with the TEC-1 family would be lost
-- CP/M would not be usable on a hex keypad and 4-line LCD
+- CP/M would not be practically usable on a hex keypad and 4-line LCD in any case
 
 Having said all that, there is likely no reason that CP/M could not be adapted for the 1G, and we would certainly welcome any attempt to do so. We leave this as "An exercise left up to the reader" so so many good textbooks like to say.
 
