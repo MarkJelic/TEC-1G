@@ -1,6 +1,6 @@
-# TEC-1G Hardware Description
+# TEC-1G Hardware IO Ports
 
-The following technical documentation describes the general layout of the TEC-1G I/O and Memory spaces, control registers and other miscellanious information related the the overall hardware design
+The following technical documentation describes the general layout of the TEC-1G I/O ports.
 
 ## IO ports
 
@@ -29,7 +29,7 @@ Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - he
  - bit 6 - segment e
  - bit 7 - segment d
 
-### Port 03 - General purpose Input and port
+### Port 03 - General SIMP Input
 
  - bit 0 - config bit 0 - Matrix
      - Matrix keyboard enabled for use in MON-3
@@ -47,11 +47,11 @@ Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - he
  -   - 0 = 74c923 key is pressed
  - bit 7 - FTDI serial input
 
-### Port 04 - LCD Display command port
+### Port 04 - LCD Display command
 
  - bits 0-7 - LCD command register
 
-### Port 84h - LCD Display data port
+### Port 84h - LCD Display data
 
  - bits 0-7 - LCD data register
 
@@ -62,7 +62,7 @@ Reserved for future 128x64 Graphic LCD
 
 ** Ports 80h to 87h are duplicates of ports 00 to 07.
 
-### Port FEh - Matrix keyboard port
+### Port FEh - Matrix keyboard input
 
 ** This port is used to read the state of the matrix keyboard, to determine if a key is being pressed or not. See the section on the Matrix keyboard for more details on how to use port FEh correctly.
 
@@ -71,6 +71,7 @@ Reserved for future 128x64 Graphic LCD
 ### Port FFh - System configuration register
 
 ** This register defaults to 00h at power-on and reset.
+** this is a write-only register, however key status bits can be read from the SIMP input port to determine the current system configuration state.
 
 ** Each bit of this port is also represented on the LED STATUS bar, with bit 0 being rightmost. Note that bit 0, being active low, will be lit at power-on and reset.
 
