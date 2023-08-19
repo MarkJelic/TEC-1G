@@ -6,6 +6,8 @@
 
 [Expansion and Device Connectors](connectors.md)
 
+[Circuit Functional Description](Functional Description.md)
+
 ## Major Features
 
 - Full TEC-1 hardware and software compatability; runs all previous MONitors without modification
