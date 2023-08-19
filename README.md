@@ -37,7 +37,7 @@ The 1G has been developed by Mark Jelic with the input of the original designers
 - Upgraded key options for onboard hex keypad; supports Gateron Low Profile switches with optional backlighting, as well as standard 12mm tactile buttons
 - Improved RESET circuit for reliable start up and system stability
 - USB B or 9-12v AC/DC power sources
-- Serial interface using an optional FT232 adaptor for USB communication with a PC or terminal
+- Serial interface using an optional FTDI/FT232 adaptor for USB communication with a PC or terminal
 - Future support for SD card mass storage interface
 - Native Z-80 expansion bus connectors supporting a full range of peripherals
 - 'TEC-Deck' expansion connectors for future daughterboards
