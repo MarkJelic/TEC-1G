@@ -6,7 +6,7 @@
 
 [Expansion and Device Connectors](connectors.md)
 
-[Circuit Functional Description](Functional Description.md)
+[Circuit Functional Description](Functional%20Description.md)
 
 ## Major Features
 
