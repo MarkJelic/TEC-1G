@@ -24,12 +24,12 @@ This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Com
 ## J5 - FTDI
 FTDI offers two options - pins orientated left-to-right, and right-to-left. This is because there are two common types of FTDI module - fit the connector that suits your type of FTDI module. Pin orientations are clearly maked on the PCB silkscreen.
 
-DTR - not used
-RX - Receive data
-TX - Transmit Data
-+5v - not used
-CTS - not used
-GND - Common Ground
+DTR - not used<br>
+RX - Receive data<br>
+TX - Transmit Data<br>
++5v - not used<br>
+CTS - not used<br>
+GND - Common Ground<br>
 
 ## J6 - IObus
 
@@ -37,13 +37,18 @@ GND - Common Ground
 
 ## J8 - GIMPUT
 
-1 - GND
-2 - +5v
-3 - GIMP signal to SIMP-3 (LOL!)
+1 - GND<br>
+2 - +5v<br>
+3 - GIMP signal to SIMP-3 (LOL!)<br>
 
-## J11 - JOYSTICK
+## J9 - JOYSTICK
 
 The joystick port adheres to the ATARI joystick standard, supporting two fire buttons.
 
-## J12 - GPIO
+## J10 - GPIO
 
+This is where the SD Card, Real Rime Clock, and General Input/Output cards will be stacked
+
+## PROBE
+
+This set of connectors have a 2 pronged purpose; The outer male pins are for connecting Oscilliscope or Multimeter probes to, for measureing and testing purposes. The pair of inner pins, fitted with a 2-pin female header, is used for alternate power delivery, as well as support for the boards connected to the J10 - GPIO connector.

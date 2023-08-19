@@ -42,6 +42,7 @@ The 1G has been developed by Mark Jelic with the input of the original designers
 - Native Z-80 expansion bus connectors supporting a full range of peripherals
 - 'TEC-Deck' expansion connectors for future daughterboards
 - 'TEC Expander' port for compatability with existing TEC peripherals
+- HALT status LED
 
 
 ## More Documentation [Coming Soon™](/Documentation/readme.md)

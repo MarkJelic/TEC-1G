@@ -25,3 +25,4 @@
 - Native Z-80 expansion bus connectors supporting a full range of peripherals
 - 'TEC-Deck' expansion connectors for future daughterboards
 - 'TEC Expander' port for compatability with existing TEC peripherals
+- HALT status LED

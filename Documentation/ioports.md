@@ -6,7 +6,7 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
 
 ## TEC-1 Compatable IO Ports
 
-** Note that the IO port decoder chip for ports 00 to 07 does not check bit D7 - hence I/O ports 00 to 07 are also available as ports 80h to 87h. This is for JMON/LCD compatability.
+** Note that the IO port decoder chip for ports $00 to $07 does not check bit D7 - hence I/O ports $00 to $07 are also available as ports $80 to $87. This is for various 2-port devices like the LCD and GLCD.
 
 ### Port 00 - Keyboard data input
  - bits 0-4 - binary keypressed value from the 74c923 chip
@@ -63,7 +63,7 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
 ### Port 07 - GLCD port
  - Reserved for future 128x64 Graphic LCD
 
-** Ports 80h to 87h are duplicates of ports 00 to 07.
+** Ports $80 to $87 are duplicates of ports $00 to $07.
 
 ## TEC-1G New Ports
 
@@ -77,23 +77,23 @@ These are new additions to the 1G, not found in previous TEC models.
 
 ### Port FFh - System Latch
 
-** This register defaults to 00h at power-on and reset.
+** This register defaults to $00 at power-on and reset.
 ** this is a write-only register, however key status bits can be read from the SIMP input port to determine the current system configuration state.
 
 ** Each bit of this port is also represented on the LED STATUS bar, with bit 0 being rightmost. Note that bit 0, being active low, will be lit at power-on and reset.
 
  - bit 0 - /SHADOW
-     - 0 = Shadow enabled. The first 2k of ROM at C000h is also mapped to 0000h - 07FFh for backwards compatibility with old MONitors.
-     - 1 = Shadow disabled. The full 32k of RAM is avlilable from 0000h to 7FFFh
+     - 0 = Shadow enabled. The first 2k of ROM at $C000 is also mapped to $0000 - $07FF for backwards compatibility with old MONitors.
+     - 1 = Shadow disabled. The full 32k of RAM is avlilable from $0000 to $7FFF
  - bit 1 - PROTECT
      - 0 = RAM memory operates as normal read/write memory
-     - 1 = Bank 1 of RAM memory (4000h to 7FFFFh) is write-protected
+     - 1 = Bank 1 of RAM memory ($4000 to $7FFF) is write-protected
  - bit 2 - EXPAND
      - controls which half of a 32k memory device installed in Bank 2 is presently selected. Defaults to the lower half at power on
- - bit 3 - FF-D3
- - bit 4 - FF-D4
- - bit 5 - FF-D5
- - bit 6 - FF-D6
+ - bit 3 - FF-D3 - The next 4 bits are most likely going to be used for Paged Memory expansion, allowing for up to 512k extra memory.
+ - bit 4 - FF-D4 - But they are open to be used as users see fit when designing TEC Decks.
+ - bit 5 - FF-D5 - Possible Paged Memory use.
+ - bit 6 - FF-D6 - Possible Paged Memory use.
  - bit 7 - CAPS
      - This bit relates to the Matrix keyboard
      - 0 - Caps lock is OFF
