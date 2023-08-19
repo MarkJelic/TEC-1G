@@ -5,8 +5,11 @@ The TEC-1G supports an extremely felixble memory map, which can be broken down i
 ## Memory Banks
 
 Bank 0 - 0000h to 03FFh - 16k RAM with first 2k shadowed to the first 2k of bank 3 at power-up
+
 Bank 1 - 4000h to 7fffh - 16k RAM which can be PROTECT write-protected
+
 Bank 2 - 8000h to Bfffh - 16k Uncommitted. Can be ROM or RAM with EXPAND bankswitching
+
 Bank 3 - C000h to FFFFh - 32k MON-3 ROM or other MONitor ROM
 
 The above memory map is fully compatible at power-on with the TEC-1; therefore all older MONitors that run from a 2K EPROM (e.g. BMON, JMON, MON-2 and MON-1B) will all work immediately.
