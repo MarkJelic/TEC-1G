@@ -4,15 +4,15 @@ The TEC-1G supports an extremely felixble memory map, which can be broken down i
 
 ## Memory Banks
 
-Bank 0 - 0000h to 03FFh - 16k RAM with first 2k shadowed to the first 2k of bank 3 at power-up
+Bank 0 - $0000 to $03FF - 16k RAM with first 2k over-shadowed by the first 2k of bank 3 at power-up
 
-Bank 1 - 4000h to 7FFFh - 16k RAM which can be PROTECT write-protected
+Bank 1 - $4000 to $7FFF - 16k RAM which can be PROTECT write-protected
 
-Bank 2 - 8000h to BFFFh - 16k Uncommitted. Can be ROM or RAM with EXPAND bankswitching. Future Cartridge port space.
+Bank 2 - $8000 to $BFFF - 16k Uncommitted. Can be ROM or RAM with EXPAND bankswitching. Future Cartridge port space.
 
-Bank 3 - C000h to FFFFh - 32k MON-3 ROM or other MONitor ROM
+Bank 3 - $C000 to $FFFF - 16k MON-3 ROM or other MONitor ROM (out of a possible 32k chip, that can be manually switched between hi/lo halves of 32k)
 
-The above memory map is fully compatible at power-on with the TEC-1; therefore all older MONitors that run from a 2K EPROM (e.g. BMON, JMON, MON-2 and MON-1B) will all work immediately.
+The above memory map is fully compatible at power-on with the TEC-1; therefore all older MONitors that run from a 2K EPROM (e.g. BMON, JMON, MON-2 and MON-1B) will all work without modification.
 
 ## Recommended Memory Configuration
 
@@ -22,15 +22,15 @@ The 'default' assumed configuration for a newly built TEC-1G, is:
 - U8: 32k RAM fitted
 - U9: left empty
 
-Note that U7 can also accept a TEC-1 2k or 4k ROM with MON-1B/2 if you wish to run older software.
+Note that U7 can also accept a TEC-1 2k or 4k ROM with any previous MONitor if you wish to run older software.
 
 ## Memory Banks - Special Features
 
-Each memory bank has certain unique special featutes, which are described below.
+Each memory bank has certain unique special features, which are described below.
 
 ### SHADOW Memory - Bank 0
 
-To maintain TEC compatibility, the first 2K of Bank 0 is, at power on or RESET, shadowed to the first 2k of bank 3. Hence, the first 2k of ROM appears at both 0000h and C000h simultaneously.
+To maintain TEC compatibility, the first 2K of Bank 0 is, at power on or RESET, is over-shadowed by the first 2k of bank 3. Hence, the first 2k of ROM appears at both $0000 and $C000 simultaneously.
 
 Shadow can be turned off via the System Latch, giving a continuous 32k of RAM across banks 0 and 1.
 
@@ -48,7 +48,7 @@ PROTECT is designed for programmers while developing code, to work in a 'safe' s
 
 ### EXPAND Bankswitching & Cartridge - Bank 2
 
-Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because bank 3 is only 16k in size, only half of a 32k chip can appear in bank 3 at any time.
+Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because bank 2 is only 16k in size, only half of a 32k chip can appear in bank 2 at any time.
 
 The highest address line of the 32k chip (A14) can be toggled using the System Latch, to select which half of the chip appears in bank 3. Software is free to switch chip halves at any time.
 
@@ -63,23 +63,22 @@ It is planned that a 'game cartridge' type system will be made available for the
 
 The MON-3 MONitor ROM is designed to remain permanently fitted in bank 3. MON-3 provides system control and utility routines that user software can call upon using a standard software interface, or API.
 
-To support a 32k ROM chip (or, a TEC-1 4k MON-1B/2 ROM), a ROM Lo/Hi swich is provided at SW6. This selects the upper or lower half of a 32k or 4K ROM CHIP, just like on the TEC-1.
+To support a 32k ROM chip (or, a TEC-1 4k ROM), a ROM Lo/Hi swich is provided at SW6. This selects the upper or lower half of a 32k or 4K ROM chip, just like on the TEC-1.
 
 ** Note that the ROM SIZE jumpers must be set for the intended type of ROM chip - 24 pin (2k/4k) or 28 pin (8k to 32k).
 
 
 ## MON-3 Variables Memory Space
 
-MON-3 sets aside 100h bytes of RAM from 0800h to 08FFh, for its internal purposes such as display buffering, keyboard state etc.
+MON-3 sets aside $1000 bytes (2K0 of RAM from $0800 to $0FFF, for its internal purposes such as display buffering, keyboard state etc.
 
 The contents of this RAM area are checked at startup, and if found to be corrupt or missing, overwritten with safe defaults. If a checksum test passes, the memory is left intact, meaning user settings and selections can survive a RESET.
 
 ## User Program Memory Space
 
-User Program Memory starts at 0900h and ends at 07FFh - providing 30k of RAM. Stack and MON-3 varibles are located outside this space meaning all bytes are free for use.
+User Program Memory starts at $1000 and ends at $7FFF - providing 30k of RAM. Stack and MON-3 varibles are located outside this space meaning all bytes are free for use.
 
-PROTECT can be used to write-protect the RAM memory space between 4000h and 7FFFh if required.
-
+PROTECT can be used to write-protect the RAM memory space between $4000 and $7FFF, and this is the default location where users entered code will reside, to take advantage of the Memeory Protection. The memory space between $1000 and $3FFF is suggested as user programmed data buffering space or such; something that is regenerated at program execution or can easily be reloaded, and thus does not need the benefit of protected memory.
 
 # Other Memory Map Notes
 
@@ -92,12 +91,12 @@ If a further 32k RAM chip is fitted to U9, the TEC-1 can support a full 64k of R
 
 Careful consideration was given to the question of whether the TEC-1G should be able to run CP/M, or not.
 
-It was decided NOT to aim for CP/M compatability, for a number of reasons:
+It was decided NOT to <b>specifically</b> aim for CP/M compatability, for a number of reasons:
 
 - There are many Z80 based CP/M machines on the market. The 1G should not simply become another Z80 'textbook design'
 - CP/M is an advanced OS generally requring disk drives, terminals, a full 64k of RAM + ddiional bankswitched memory, and calls for a greater user skillset. This is contrary to the design goal of simplicity and ease of understanding
 - Any attempt to do CP/M "well" would end up in so many compromises that the design goal of staying true and compatible with the TEC-1 family would be lost
 - CP/M would not be practically usable on a hex keypad and 4-line LCD in any case
 
-Having said all that, there is likely no reason that CP/M could not be adapted for the 1G, and we would certainly welcome any attempt to do so. We leave this as "An exercise left up to the reader" so so many good textbooks like to say.
+Having said all that, there is likely no reason that CP/M could not be adapted for the 1G, and we would certainly welcome any attempt to do so. We leave this as "An exercise left up to the reader" as so many good textbooks like to say.
 
