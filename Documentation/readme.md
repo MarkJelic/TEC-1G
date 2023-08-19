@@ -1,5 +1,7 @@
 # Full Documentation - Coming Soon™
 
+[IO Ports](portmap.md)
+
 ## Major Features
 
 - Full TEC-1 hardware and software compatability; runs all previous MONitors without modification
