@@ -68,7 +68,7 @@ Reserved for future 128x64 Graphic LCD
 
  - bits 0-7 - key state
 
-### Port FFh - System configuration register
+### Port FFh - System Latch
 
 ** This register defaults to 00h at power-on and reset.
 ** this is a write-only register, however key status bits can be read from the SIMP input port to determine the current system configuration state.
