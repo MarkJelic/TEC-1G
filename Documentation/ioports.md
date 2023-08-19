@@ -1,4 +1,4 @@
-# TEC-1G CPU I/O Ports
+# TEC-1G Z80 I/O Ports
 
 The following technical documentation describes the general layout of the TEC-1G's Z80 CPU I/O ports, as accessed by the IN and OUT instructions.
 
