@@ -1,6 +1,7 @@
 # Full Documentation - Coming Soon™
 
-[IO Ports](portmap.md)
+[IO Ports](ioports.md)
+[Memory Map](memmap.md)
 
 ## Major Features
 
