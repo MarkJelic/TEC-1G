@@ -17,7 +17,7 @@ Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.  This connector s
 
 ## J3 - TEC Expander
 
-This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be progged into the left (first 16) pins and work as intended. The extra 4 pins have been added so peripherals like the Speach Board can be re-implemented fully.
+This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be plugged into the left (first 16) pins and work as intended. The extra 4 pins have been added so peripherals like the Speech Board can be re-implemented fully using only a single connector.
 
 ## J4 - MATRIX Keyboard
 
@@ -51,4 +51,4 @@ This is where the SD Card, Real Rime Clock, and General Input/Output cards will 
 
 ## PROBE
 
-This set of connectors have a 2 pronged purpose; The outer male pins are for connecting Oscilliscope or Multimeter probes to, for measureing and testing purposes. The pair of inner pins, fitted with a 2-pin female header, is used for alternate power delivery, as well as support for the boards connected to the J10 - GPIO connector.
+This set of connectors have a 2 pronged purpose; The outer male pins are for connecting Oscilloscope or Multimeter probes to, for measuring and testing purposes. The pair of inner pins, fitted with a 2-pin female header, is used for alternate power delivery, as well as a power take-off point for the boards connected to the J10 - GPIO connector.
