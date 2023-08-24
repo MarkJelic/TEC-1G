@@ -41,7 +41,7 @@ We think we have achieved these goals and produced a TEC that will offer much mo
 
 [Circuit Functional Description](Functional%20Description.md)
 
-Z80 IO Ports](ioports.md)
+[Z80 IO Ports](ioports.md)
 
 [Memory Map](memmap.md)
 
