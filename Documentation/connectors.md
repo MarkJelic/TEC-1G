@@ -14,7 +14,9 @@ Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.  This connector s
 
 ## J3 - TEC Expander
 
-This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be plugged into the left (first 16) pins and work as intended. The extra 4 pins have been added so peripherals like the Speech Board can be re-implemented fully using only a single connector.
+This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be plugged into the left (first 16) pins and work as intended.
+
+The extra 4 pins have been added so peripherals like the Speech Board can be re-implemented fully, using only a single connector.
 
 ## J4 - MATRIX Keyboard
 
@@ -43,7 +45,7 @@ Schematic Rev 1.6
 9 - GIMP - General Input<br>
 10 - /GLCD-07 - Port 07h select - Reserved for future Graphical LCD<br>
 
-Ports F8h to FDh are free for any use by the user.
+Ports F8h to FDh are free for any use by the user. Note that Ports F8h and F9h are also available on the TEC Expansder Connector.
 
 ## J7 - MEMbus
 
@@ -60,7 +62,7 @@ Schematic Rev 1.6
 9 - /MS6 - Memory Bank 2 Select - does not observe SHADOW<br>
 10 - EXPAND<br>
 11 - FF-D3 - System Latch bit 3<br>
-12 - FF-D4 - System Latch bit4 <br>
+12 - FF-D4 - System Latch bit 4<br>
 13 - FF-D5 - System Latch bit 5<br>
 14 - FF-D6 - System Latch bit 6<br>
 15 - GND<BR>
@@ -69,7 +71,7 @@ Schematic Rev 1.6
 
 1 - GND<br>
 2 - +5v<br>
-3 - G.INPUP signal to SIMP-3 bit 5<br>
+3 - G.INPUT signal - SIMP-3 bit 5<br>
 
 ## J9 - JOYSTICK
 
@@ -82,12 +84,12 @@ The joystick port adheres to the ATARI joystick standard, supporting two fire bu
 5 - <br>
 6 - Button A<br>
 7 - Button B<br>
-8 - Common
+8 - Common<br>
 9 - <br>
 
 ## J10 - GPIO
 
-This is where the SD Card, Real Rime Clock, and General Input/Output cards will be stacked
+This is where the SD Card, Real Rime Clock, and General Input/Output cards will be stacked.
 
 ## PROBE
 
