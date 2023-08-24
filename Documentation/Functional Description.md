@@ -2,9 +2,29 @@
 
 Also known as "how it works".
 
-The TEC-1G can be broken up into several sections or *building blocks*, and each considered individually as to how it plays its role in the overall system. Together, each building block forms the complete TEC-1G. Some building blocks such as the Matrix Keyboard are optional whilst others are essential.
+When designing the TEC-1G, several principals were kept foremost in mind:
+
+1. Must remain compatible with the Talking Electronics TEC family. Older MONitors must run, unchanged, on the new hardware.
+2. Existing peripherals must work, where sensible to do so. Peripherals such as the DAT board, RAM stack & Crystal Oscillator are now part of the base design.
+3. Must address design limitations inherent in older models e.g. memory wrap, lack of IO port selects, elminate 'flying wires', use robust connectors, offer modern interfacing and expansion options.
+4. Must remain simple to understand. This forbade the use of fancy custom chips. Everything is built from simple 74xx series logic, that can be understood at the fundamental level.
+5. Through-hole construction to be retained. Must be buildable by a hobbyist without specialist tools.
+6. Must enable modern software development - adequate RAM, PC serial link, full QWERTY keyboard are must-haves.
+7. Existing TEC software should run with as litte alteration as possible.
+8. The whole machine will be produced under an open source licence, freely distributable. Source code, schematics, gerbers etc. will all be made available and fully documented. This represernts the first time TEC system software has been freely distributed.
+9. The classic, look, feel, operation and overall "vibe" of the TEC heritage must remain obvious. This heritage has informed the PCB layout, for example.
+
+We think we have achieved these goals and produced a TEC that will offer much more value and usability today, compared to the rather limited original machine.
+
+# Hardware Design Building Blocks
+
+The TEC-1G can be broken up into several sections or *building blocks*, and each considered individually as to how it plays its role in the overall system.
+
+Together, each building block forms the complete TEC-1G. Some building blocks such as the Matrix Keyboard are optional whilst others are essential.
 
 If your 1G does not work, check each section in the order given below.
+
+A special diagnostic ROM is being produced to assist wih problem solving if your 1G doesn't work correctly when first built. Much like the Commodore 64 'Dead Test' cartridge, the diagnostics software will produce a useful output even wthout any RAM, keyboard chips or the LCD fitted. This will allow for easier troubleshooting and also gives a degree of insight into the machine's operation.
 
 ## Power Supply
 
