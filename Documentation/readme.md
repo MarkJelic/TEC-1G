@@ -35,13 +35,12 @@ We think we have achieved these goals and produced a TEC that will offer much mo
 - 'TEC Expander' port for compatability with existing TEC peripherals
 - HALT status LED
 
-## documentation Files
+## Documentation Files
 
-[Z80 IO Ports](ioports.md)
+[Circuit Functional Description](Functional%20Description.md)
+
+Z80 IO Ports](ioports.md)
 
 [Memory Map](memmap.md)
 
 [Expansion and Device Connectors](connectors.md)
-
-[Circuit Functional Description](Functional%20Description.md)
-
