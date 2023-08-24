@@ -1,6 +1,3 @@
-todo: renumber to suit release PCB.
-
-
 # TEC-1G Connectors
 
 This is a list of TEC-1G expansion port connectors and their respective pin-outs.
@@ -33,6 +30,8 @@ GND - Common Ground<br>
 
 ## J6 - IObus
 
+Schematic Rev 1.6
+
 1 - GLCD-07 - Inverted Port 07h select - Reserved for future Graphical LCD<br>
 2 - /PORT-F8 - Port F8h select<br>
 3 - /PORT-F9 - Port F9h select<br>
@@ -47,6 +46,8 @@ GND - Common Ground<br>
 Ports F8h to FDh are free for any use by the user.
 
 ## J7 - MEMbus
+
+Schematic Rev 1.6
 
 1 - +5v
 2 - /MS8 - Memory Bank 3 Select - does not observe SHADOW<br>
@@ -64,7 +65,7 @@ Ports F8h to FDh are free for any use by the user.
 14 - FF-D6 - System Latch bit 6<br>
 15 - GND<BR>
 
-## J8 - GIMPUT
+## J8 - G.INPUT
 
 1 - GND<br>
 2 - +5v<br>
@@ -73,6 +74,16 @@ Ports F8h to FDh are free for any use by the user.
 ## J9 - JOYSTICK
 
 The joystick port adheres to the ATARI joystick standard, supporting two fire buttons.
+
+1 - Up<br>
+2 - Down<br>
+3 - Left<br>
+4 - Right<br>
+5 - <br>
+6 - Button A<br>
+7 - Button B<br>
+8 - Common
+9 - <br>
 
 ## J10 - GPIO
 
