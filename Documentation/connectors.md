@@ -25,7 +25,7 @@ This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Com
 FTDI offers two options - pins orientated left-to-right, and right-to-left. This is because there are two common types of FTDI module - fit the connector that suits your type of FTDI module. Pin orientations are clearly maked on the PCB silkscreen.
 
 DTR - not used<br>
-RX - Receive data<br>
+RX - Receive Data<br>
 TX - Transmit Data<br>
 +5v - not used<br>
 CTS - not used<br>
@@ -33,13 +33,42 @@ GND - Common Ground<br>
 
 ## J6 - IObus
 
+1 - GLCD-07 - Inverted Port 07h select - Reserved for future Graphical LCD<br>
+2 - /PORT-F8 - Port F8h select<br>
+3 - /PORT-F9 - Port F9h select<br>
+4 - /PORT-FA - Port FAh select<br>
+5 - /PORT-FB - Port FBh select<br>
+6 - /PORT-FC - Port FCh select<br>
+7 - /PORT-FD - Port FDh select<br>
+8 - CART - CARTridge Detect<br>
+9 - GIMP - General Input<br>
+10 - /GLCD-07 - Port 07h select - Reserved for future Graphical LCD<br>
+
+Ports F8h to FDh are free for any use by the user.
+
 ## J7 - MEMbus
+
+1 - +5v
+2 - /MS8 - Memory Bank 3 Select - does not observe SHADOW<br>
+3 - /ROM_CS - Observes SHADOW - First 2K and Bank 3<br>
+4 - /SHADOW<br>
+5 - /MS2 - Memory Bank 0 Select - does not observe SHADOW<br>
+6 - /MS4 - Memory Bank 1 Select - does not observe SHADOW<br>
+7 - /RAM_CS - Observes SHADOW - Banks 0 and 1 only<br>
+8 - PROTECT<br>
+9 - /MS6 - Memory Bank 2 Select - does not observe SHADOW<br>
+10 - EXPAND<br>
+11 - FF-D3 - System Latch bit 3<br>
+12 - FF-D4 - System Latch bit4 <br>
+13 - FF-D5 - System Latch bit 5<br>
+14 - FF-D6 - System Latch bit 6<br>
+15 - GND<BR>
 
 ## J8 - GIMPUT
 
 1 - GND<br>
 2 - +5v<br>
-3 - GIMP signal to SIMP-3 (LOL!)<br>
+3 - G.INPUP signal to SIMP-3 bit 5<br>
 
 ## J9 - JOYSTICK
 
