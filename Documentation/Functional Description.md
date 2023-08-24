@@ -5,7 +5,7 @@ Also known as "how it works".
 When designing the TEC-1G, several principals were kept foremost in mind:
 
 1. Must remain compatible with the Talking Electronics TEC family. Older MONitors must run, unchanged, on the new hardware.
-2. Existing peripherals must work, where sensible to do so. Peripherals such as the DAT board, RAM stack & Crystal Oscillator are now part of the base design.
+2. Existing peripherals must work, where sensible to do so*. Peripherals such as the DAT board, RAM stack & Crystal Oscillator are now part of the base design, as is the MON select switch. The 8x8 LED display, speech module, relay driver board, and the input output module all work.
 3. Must address design limitations inherent in older models e.g. memory wrap, lack of IO port selects, elminate 'flying wires', use robust connectors, offer modern interfacing and expansion options.
 4. Must remain simple to understand. This forbade the use of fancy custom chips. Everything is built from simple 74xx series logic, that can be understood at the fundamental level.
 5. Through-hole construction to be retained. Must be buildable by a hobbyist without specialist tools.
@@ -15,6 +15,8 @@ When designing the TEC-1G, several principals were kept foremost in mind:
 9. The classic, look, feel, operation and overall "vibe" of the TEC heritage must remain obvious. This heritage has informed the PCB layout, for example.
 
 We think we have achieved these goals and produced a TEC that will offer much more value and usability today, compared to the rather limited original machine.
+
+> We decided not to support the EPROM burner or NVRAM add-ons. EPROMs are now largely replaced with EEPROMS and dedicated programmers like the TL866 are cheap and readily available, and do a much better job. The printer/plotter module no longer has the plotter hardware avilable. NVRAM can be plugged directly into the 1G, however we have not allowed for battery backup at this time. 
 
 # Hardware Design Building Blocks
 
@@ -39,9 +41,6 @@ The power on/off switch and indicator LED complete the power supply section.
 Note that we strongly suggest a heatsink on the 7805 and some monitoring of its temperature. The 1G has more chips to power vs. a classic TEC-1, so the current consumption will be higher. The 1G PCB is also more crammed full of goodness so there is also less space for copper fill heatsinking as well. Reducing the input voltage from 12v to 8v or 9v will lower the 7805 temperature noticably.
 
 It is suggested that a drop-in 7805 equivilant switching regulator be considered if USB power is not viable.
-
-
-
 
 The Probe connector supplies power for a logic probe, and serves as the GND hookup point for an oscilloscope or multimeter. Probe can also be used as a feed-in source of an external +5v supply if the 1G is to be powered by an external source.
 
