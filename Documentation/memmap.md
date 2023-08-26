@@ -8,7 +8,7 @@ Bank 0 - $0000 to $03FF - 16k RAM with first 2k over-shadowed by the first 2k of
 
 Bank 1 - $4000 to $7FFF - 16k RAM which can be PROTECT write-protected
 
-Bank 2 - $8000 to $BFFF - 16k Uncommitted. Can be ROM or RAM with EXPAND bankswitching. Future Cartridge port space.
+Bank 2 - $8000 to $BFFF - 16k Uncommitted. Can be ROM or RAM with EXPAND page switching. Future Cartridge port space.
 
 Bank 3 - $C000 to $FFFF - 16k MON-3 ROM or other MONitor ROM (out of a possible 32k chip, that can be manually switched between hi/lo halves of 32k)
 
@@ -46,18 +46,17 @@ If the Protect dip-switch is set by the user, MON-3 will set PROTECT when user c
 PROTECT is designed for programmers while developing code, to work in a 'safe' space and not loose your work while debugging.
 
 
-### EXPAND Bankswitching & Cartridge - Bank 2
+### EXPAND Page Switching & Cartridge - Bank 2
 
 Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because bank 2 is only 16k in size, only half of a 32k chip can appear in bank 2 at any time.
 
 The highest address line of the 32k chip (A14) can be toggled using the System Latch, to select which half of the chip appears in bank 3. Software is free to switch chip halves at any time.
 
-This software-selectable memory-chip control is also known as *bankswitching*.
+This software-selectable memory-chip control is also known as *page switching*.
 
 It is planned that a 'game cartridge' type system will be made available for the TEC-1G - plugging in a cartridge will place it's onboard ROM in Bank 2, and on power up the cartridge's ROM code will execute instead of MON-3. *This is a future planned additon - more details will be added as this future project is developed further, and are of course subject to change.*
 
 ** If the device in U9 is 16k or less in size, or U9 is empty, EXPAND has no effect.
-
 
 ### ROM Lo/Hi - Bank 3
 
