@@ -1,6 +1,6 @@
 # TEC-1G Memory Map
 
-The TEC-1G supports an extremely felixble memory map, which can be broken down into four major blocks or *Banks*, each 16k in size.
+The TEC-1G supports an extremely fleixble memory map, which can be broken down into four major blocks or *Banks*, each 16k in size.
 
 ## Memory Banks
 
