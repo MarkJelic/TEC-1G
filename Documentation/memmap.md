@@ -14,6 +14,8 @@ Bank 3 - $C000 to $FFFF - 16k MON-3 ROM or other MONitor ROM (out of a possible 
 
 The above memory map is fully compatible at power-on with the TEC-1; therefore all older MONitors that run from a 2K EPROM (e.g. BMON, JMON, MON-2 and MON-1B) will all work without modification.
 
+![TEC-1G Memory Map Diagram](Memory%20Map.png)
+
 ## Recommended Memory Configuration
 
 The 'default' assumed configuration for a newly built TEC-1G, is:
