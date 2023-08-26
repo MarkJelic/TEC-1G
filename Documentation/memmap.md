@@ -20,9 +20,9 @@ The above memory map is fully compatible at power-on with the TEC-1; therefore a
 
 The 'default' assumed configuration for a newly built TEC-1G, is:
 
-- U7: 32k MON-3 ROM chip fitted
-- U8: 32k RAM fitted
-- U9: left empty
+- U7: 32k MON-3 ROM chip fitted. ROM Bank 3
+- U8: 32k RAM fitted RAM Banks 0 and 1
+- U9: left empty. Bank 2 unoccupied
 
 Note that U7 can also accept a TEC-1 2k or 4k ROM with any previous MONitor if you wish to run older software.
 
@@ -50,11 +50,11 @@ PROTECT is designed for programmers while developing code, to work in a 'safe' s
 
 ### EXPAND Page Switching & Cartridge - Bank 2
 
-Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because bank 2 is only 16k in size, only half of a 32k chip can appear in bank 2 at any time.
+Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because Bank 2 is only 16k in size, only half of a 32k chip can appear in Bank 2 at any time.
 
-The highest address line of the 32k chip (A14) can be toggled using the System Latch, to select which half of the chip appears in bank 3. Software is free to switch chip halves at any time.
+The highest address line of the 32k chip (A14) can be toggled using the System Latch, to select which half of the chip appears in bank 3. Software is free to switch between chip halves at any time.
 
-This software-selectable memory-chip control is also known as *page switching*.
+This software-selectable memory-chip control is also known in 1G language, as *page switching*.
 
 It is planned that a 'game cartridge' type system will be made available for the TEC-1G - plugging in a cartridge will place it's onboard ROM in Bank 2, and on power up the cartridge's ROM code will execute instead of MON-3. *This is a future planned additon - more details will be added as this future project is developed further, and are of course subject to change.*
 
