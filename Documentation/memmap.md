@@ -52,7 +52,7 @@ PROTECT is designed for programmers while developing code, to work in a 'safe' s
 
 Bank 2 supports installing a RAM or ROM chip of up to 32k in size in the U9 position. However, because Bank 2 is only 16k in size, only half of a 32k chip can appear in Bank 2 at any time.
 
-The highest address line of the 32k chip (A14) can be toggled using the System Latch, to select which half of the chip appears in bank 3. Software is free to switch between chip halves at any time.
+The highest address line of the 32k chip (A14) can be toggled using the System Latch under software control, to select which half of the chip appears in bank 3. Software is free to switch between chip halves at any time.
 
 This software-selectable memory-chip control is also known in 1G language, as *page switching*.
 
