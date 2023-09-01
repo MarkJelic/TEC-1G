@@ -21,6 +21,8 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
  - bit  7 - speaker output
 
 ### Port 02 - 7-seg segment select output
+<img align="right" src="7-seg.png" alt="7-Seg display segment layout">
+
  - bit 0 - segment a
  - bit 1 - segment f
  - bit 2 - segment g
@@ -29,8 +31,6 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
  - bit 5 - segment c
  - bit 6 - segment e
  - bit 7 - segment d
-
-![7-Seg display segment layout](7-seg.png)
 
 ### Port 03 - General SIMP Input
 
