@@ -73,7 +73,7 @@ The contents of this RAM area are checked at startup, and if found to be corrupt
 
 ## ROM Memory space
 
-All of Bank 3 is set aside as ROM space, and is occupied by MON-3 and associated software included in the ROM image (demos, games, etc)
+All of Bank 3 between $C000 and $FFFF is set aside as ROM space, and is occupied by MON-3 and associated software included in the ROM image (demos, games, etc)
 
 ## User Memory Space
 
