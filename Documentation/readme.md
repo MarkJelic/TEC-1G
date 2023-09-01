@@ -1,12 +1,20 @@
 # Full Documentation - Coming Soon™
 
-[Z80 IO Ports](ioports.md)
+When designing the TEC-1G, several principals were kept foremost in mind:
 
-[Memory Map](memmap.md)
+1. Must remain compatible with the Talking Electronics TEC family. Older MONitors must run, unchanged, on the new hardware.
+2. Existing peripherals must work, where sensible to do so*. Peripherals such as the DAT board, RAM stack & Crystal Oscillator are now part of the base design, as is the MON select switch. The 8x8 LED display, speech module, relay driver board, and the input output module all work.
+3. Must address design limitations inherent in older models e.g. memory wrap, lack of IO port selects, elminate 'flying wires', use robust connectors, offer modern interfacing and expansion options.
+4. Must remain simple to understand. This forbade the use of fancy custom chips. Everything is built from simple 74xx series logic, that can be understood at the fundamental level.
+5. Through-hole construction to be retained. Must be buildable by a hobbyist without specialist tools.
+6. Must enable modern software development - adequate RAM, PC serial link, full QWERTY keyboard are must-haves.
+7. Existing TEC software should run with as litte alteration as possible.
+8. The whole machine will be produced under an open source licence, freely distributable. Source code, schematics, gerbers etc. will all be made available and fully documented. This represernts the first time TEC system software has been freely distributed.
+9. The classic, look, feel, operation and overall "vibe" of the TEC heritage must remain obvious. This heritage has informed the PCB layout, for example.
 
-[Expansion and Device Connectors](connectors.md)
+We think we have achieved these goals and produced a TEC that will offer much more value and usability today, compared to the rather limited original machine.
 
-[Circuit Functional Description](Functional%20Description.md)
+> We decided not to support the EPROM burner or NVRAM add-ons. EPROMs are now largely replaced with EEPROMS and dedicated programmers like the TL866 are cheap and readily available, and do a much better job. The printer/plotter module no longer has the plotter hardware avilable. NVRAM can be plugged directly into the 1G, however we have not allowed for battery backup at this time. 
 
 ## Major Features
 
@@ -28,3 +36,13 @@
 - 'TEC-Deck' expansion connectors for future daughterboards
 - 'TEC Expander' port for compatability with existing TEC peripherals
 - HALT status LED
+
+## Documentation Files
+
+[Circuit Functional Description](Functional%20Description.md)
+
+[Z80 IO Ports](ioports.md)
+
+[Memory Map](memmap.md)
+
+[Expansion and Device Connectors](connectors.md)

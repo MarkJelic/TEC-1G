@@ -2,9 +2,31 @@
 
 Also known as "how it works".
 
-The TEC-1G can be broken up into several sections or *building blocks*, and each considered individually as to how it plays its role in the overall system. Together, each building block forms the complete TEC-1G. Some building blocks such as the Matrix Keyboard are optional whilst others are essential.
+When designing the TEC-1G, several principals were kept foremost in mind:
+
+1. Must remain compatible with the Talking Electronics TEC family. Older MONitors must run, unchanged, on the new hardware.
+2. Existing peripherals must work, where sensible to do so*. Peripherals such as the DAT board, RAM stack & Crystal Oscillator are now part of the base design, as is the MON select switch. The 8x8 LED display, speech module, relay driver board, and the input output module all work.
+3. Must address design limitations inherent in older models e.g. memory wrap, lack of IO port selects, elminate 'flying wires', use robust connectors, offer modern interfacing and expansion options.
+4. Must remain simple to understand. This forbade the use of fancy custom chips. Everything is built from simple 74xx series logic, that can be understood at the fundamental level.
+5. Through-hole construction to be retained. Must be buildable by a hobbyist without specialist tools.
+6. Must enable modern software development - adequate RAM, PC serial link, full QWERTY keyboard are must-haves.
+7. Existing TEC software should run with as litte alteration as possible.
+8. The whole machine will be produced under an open source licence, freely distributable. Source code, schematics, gerbers etc. will all be made available and fully documented. This represernts the first time TEC system software has been freely distributed.
+9. The classic, look, feel, operation and overall "vibe" of the TEC heritage must remain obvious. This heritage has informed the PCB layout, for example.
+
+We think we have achieved these goals and produced a TEC that will offer much more value and usability today, compared to the rather limited original machine.
+
+> We decided not to support the EPROM burner or NVRAM add-ons. EPROMs are now largely replaced with EEPROMS and dedicated programmers like the TL866 are cheap and readily available, and do a much better job. The printer/plotter module no longer has the plotter hardware avilable. NVRAM can be plugged directly into the 1G, however we have not allowed for battery backup at this time. 
+
+# Hardware Design Building Blocks
+
+The TEC-1G can be broken up into several sections or *building blocks*, and each considered individually as to how it plays its role in the overall system.
+
+Together, each building block forms the complete TEC-1G. Some building blocks such as the Matrix Keyboard are optional whilst others are essential.
 
 If your 1G does not work, check each section in the order given below.
+
+A special diagnostic ROM is being produced to assist wih problem solving if your 1G doesn't work correctly when first built. Much like the Commodore 64 'Dead Test' cartridge, the diagnostics software will produce a useful output even wthout any RAM, keyboard chips or the LCD fitted. This will allow for easier troubleshooting and also gives a degree of insight into the machine's operation.
 
 ## Power Supply
 
@@ -19,9 +41,6 @@ The power on/off switch and indicator LED complete the power supply section.
 Note that we strongly suggest a heatsink on the 7805 and some monitoring of its temperature. The 1G has more chips to power vs. a classic TEC-1, so the current consumption will be higher. The 1G PCB is also more crammed full of goodness so there is also less space for copper fill heatsinking as well. Reducing the input voltage from 12v to 8v or 9v will lower the 7805 temperature noticably.
 
 It is suggested that a drop-in 7805 equivilant switching regulator be considered if USB power is not viable.
-
-
-
 
 The Probe connector supplies power for a logic probe, and serves as the GND hookup point for an oscilloscope or multimeter. Probe can also be used as a feed-in source of an external +5v supply if the 1G is to be powered by an external source.
 
@@ -131,7 +150,7 @@ MON-3 will work with ANY size LCD e.g. 16x1, 16x2, 20x2 etc. but we strongly sug
 
 JMON will work with a 16x2 or 40x4 connected, with no issues. The HD44780 chipset is designed such that it's memory layout is identical regardless of the physical screen size.
 
-## System Latch
+## System Latch Port
 
 A new 1G feature, is the system latch. It is an 8-bit write-only port that supplies 8 individual control signals to various parts of the 1G mainboard. The system latch is reset to 00h on power up or RESET.
 
@@ -141,13 +160,13 @@ The System latch controls /SHADOW,  PROTECT and EXPAND signls, as well as Caps L
 
 MON-3 routines manage the latch for you, however you can write to port FFh direclty if so desired.
 
-## System Input
+## System Input Port
 
-Another enhanced 1G feature, is the System Input port. Like the System Latch, it is an 8 bit port, but this port is read-only.
+Another enhanced 1G feature, is the System Input port. Like the System Latch, it is an 8 bit port, however this port is read-only.
 
-U18 - 74xx373 provides the Input port functionality and is readable from IO port 03
+U18 - 74xx373 provides the Input port functionality and is readable from IO port $03
 
-The Sytem Input port is used to read the status of the critical bits of the System Latch, as well as read the config dipswitch, GIMPUT and FTDI Serial Receive bits, and to detect the presence of a Cartridge (future feature).
+The Sytem Input port is used to read the status of the critical bits of the System Latch, as well as read the config dipswitch, G.INPUT and FTDI Serial Receive bits, and to detect the presence of a Cartridge (future feature).
 
 ## FTDI Port
 
