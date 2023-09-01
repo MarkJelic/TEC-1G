@@ -44,8 +44,8 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
      - Indicates which half of a 32k memory device installed in Bank 2 is presently selected
  - bit 4 - CART
      - 0 = a ROM/RAM cartridge is installed. Read from IOBUS connector
- - bit 5 - INPUT
-     - General purpose input-bit, connected to INPUT pin
+ - bit 5 - GIMP
+     - General purpose input-bit, connected to G.INPUT pin
  - bit 6 - KDA
  -   - 0 = 74c923 key is pressed
  - bit 7 - FTDI serial input
