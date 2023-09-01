@@ -90,8 +90,8 @@ The balance of Bank 0 is user RAM memory space, located between $1000 and $3FFF.
 | Bank 3 | $C000 | 16k |MON-3 ROM |
 | Bank 2 | $8000 | 16k | EXPAND space - unoccupied |
 | Bank 1 | $4000 | 16k | Protected User RAM - program code, constants |
-| Bank 0 | $1000 | 13k | Unprotected User RAM - variables & data |
-| Bank 0 | $0800 | 1k | MON-3 Variables & Stack |
+| Bank 0 | $1000 | 12k | Unprotected User RAM - variables & data |
+| Bank 0 | $0800 | 2k | MON-3 Variables & Stack |
 | Bank 0 | $0000 | 2k | MON-3 Shadow ROM |
 
 The TEC-1G ofers a more mature programmer's model, with Code and Data separated into their own distinct memory areas. PROTECT further assists programmers by ensuring your hard-entered code is not destroyed by an errant software bug. PROTECT works automatically and does not normally need any user program code to function.
