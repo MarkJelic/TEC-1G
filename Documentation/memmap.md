@@ -81,7 +81,7 @@ User Program Memory occupies Bank 1, starting at $4000 and ending at $7FFF - pro
 
 MON-3 variables and Stack are located in Bank 0 between $0800 and $0FFF. This area should not be accessed by user programs, however if corrupted, MON-3 will reload default values upon reset, to ensure that MON-3 can always restart to a usable condition. Earlier monitors placed the stack at undocumented locations. With MON-3, you always know where your stack is.
 
-The Z80 'zero page' interupt vectors and MON-3 core startup code are located between $0000 and $07FF. This memory space can be configired as RAM and altered by software to support advanced features such as Z80 INT interrupt support, however newcomers to the TEC-1G should consider this meory area 'off limits'.
+The Z80 'zero page' interupt vectors and MON-3 core startup code are located between $0000 and $07FF. This memory space can be configired as RAM and altered by software to support advanced features such as Z80 INT interrupt support, however newcomers to the TEC-1G should consider this memory area 'off limits'.
 
 The balance of Bank 0 is user RAM memory space, located between $1000 and $3FFF. This space is suggested for use as user variables, data buffers and the like.
 
