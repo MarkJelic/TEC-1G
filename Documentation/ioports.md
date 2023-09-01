@@ -30,6 +30,8 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
  - bit 6 - segment e
  - bit 7 - segment d
 
+![7-Seg display segment layout](7-seg.png)
+
 ### Port 03 - General SIMP Input
 
  - bit 0 - config bit 0 - Matrix
