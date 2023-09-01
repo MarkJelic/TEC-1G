@@ -150,7 +150,7 @@ MON-3 will work with ANY size LCD e.g. 16x1, 16x2, 20x2 etc. but we strongly sug
 
 JMON will work with a 16x2 or 40x4 connected, with no issues. The HD44780 chipset is designed such that it's memory layout is identical regardless of the physical screen size.
 
-## System Latch
+## System Latch Port
 
 A new 1G feature, is the system latch. It is an 8-bit write-only port that supplies 8 individual control signals to various parts of the 1G mainboard. The system latch is reset to 00h on power up or RESET.
 
@@ -160,13 +160,13 @@ The System latch controls /SHADOW,  PROTECT and EXPAND signls, as well as Caps L
 
 MON-3 routines manage the latch for you, however you can write to port FFh direclty if so desired.
 
-## System Input
+## System Input Port
 
-Another enhanced 1G feature, is the System Input port. Like the System Latch, it is an 8 bit port, but this port is read-only.
+Another enhanced 1G feature, is the System Input port. Like the System Latch, it is an 8 bit port, however this port is read-only.
 
-U18 - 74xx373 provides the Input port functionality and is readable from IO port 03
+U18 - 74xx373 provides the Input port functionality and is readable from IO port $03
 
-The Sytem Input port is used to read the status of the critical bits of the System Latch, as well as read the config dipswitch, GIMPUT and FTDI Serial Receive bits, and to detect the presence of a Cartridge (future feature).
+The Sytem Input port is used to read the status of the critical bits of the System Latch, as well as read the config dipswitch, G.INPUT and FTDI Serial Receive bits, and to detect the presence of a Cartridge (future feature).
 
 ## FTDI Port
 
