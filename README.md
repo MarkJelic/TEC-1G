@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Schematic](TEC-1G_Schematic_v1-8.pdf) | See what makes the TEC-1G tick | 1.7 |
+| [Schematic](TEC-1G_Schematic_v1-8.pdf) | See what makes the TEC-1G tick | 1.8 |
 | [Build Order BOM](/files/TEC-1G_BOM-Build_Order_v1-1.pdf) | What parts are required and what order to build your TEC-1G | 1.1 |
 | [Parts Sourcing](/files/TEC-1G_BOM_Sourcing_v1-1.xlsx) | Full list of parts and where to buy them | 1.1 |
 
@@ -9,7 +9,7 @@
 
 TEC-1G - A Z80 based single board computer.
 
-The TEC-1G is a direct descendent of the Talking Electronics Computer, known as the TEC-1, which was first published by the Australian electronics hobbyist magazine "Talking Electronics" (or simply TE), between 1981 and 1991.
+The TEC-1G is a direct descendent of the Talking Electronics Computer, known as the TEC-1, which was first published by the Australian electronics hobbyist magazine ["Talking Electronics"](https://www.talkingelectronics.com/te_interactive_index.html) (or simply TE), between 1981 and 1991.
 
 The TEC-1 was developed as a learning computer, designed to teach the basics of how a microprocessor works at the fundamental hardware and software level, and offered the ability to create and run simple programs in Z80 machine code. TE magazine covered the TEC-1 in six installments, known as "Issue 10" to "Issue 15". These magazines can be downloaded freely from the TEC-1 GitHub, located at [tec1group/TE-Magazines](https://github.com/tec1group/TE-Magazines)
 
