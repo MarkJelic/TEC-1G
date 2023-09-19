@@ -15,7 +15,7 @@ The TEC-1 was developed as a learning computer, designed to teach the basics of 
 
 Interest in the TEC-1 declined following the winding down of TE through the 1990's, which reflected a general decline in electronics as a hobby in Australia. This, coupled with interest in more advanced 'single chip' microcontrollers saw TEC-1's put aside and the world moved on.
 
-The TEC-1 was revived around 2018 with a release of a reproduction PCB and related peripherals on the Internet. Retro computing has become quite popular of late, and so a an active TEC community has (re)formed through Facebook with new hardware designs, enhanced versions and various expansion options being offered by various contributors within the community.
+The TEC-1 was revived around 2018 with a release of a reproduction PCB and related peripherals on the Internet. Retro computing has become quite popular of late, and so a an active TEC community has (re)formed through [Facebook](https://www.facebook.com/groups/tec1z80) with new hardware designs, enhanced versions and various expansion options being offered by various contributors within the community.
 
 The 1G builds on both the TEC-1's base and recent history to modernize the overall design, address various design limitations and integrate many of the excellent add-ons into to a single PCB for the first time.
 
