@@ -6,10 +6,10 @@ With the release of the Z80Bus Standard, including the KiCAD footprints and Gerb
 
 Boards designed with the innovative <b>IDC<sup>2</sup></b> connector footprint allow the user to choose to go hippie and continue to use ugly IDC cables with a Vertical IDC Box Header, or with a Right Angled Box Header, they have the ultimate in freedom to connect using IDC cables, <b>Quick-Connect<sup>®</sup></b> direct to the TEC-1, or using the <b>X4 System</b> and have multiple expansions boards all working in unison.
 
-![Render](Z80Bus_X4_Kit_Render.jpg)
+![Render](X4/Z80Bus_X4_Kit_Render.jpg)
 
 And here is a picture of the PCB that can be sourced from PCBWay or buy the entire kit off eBay.
-![PCB](Z80Bus_X4_PCB.jpg)
+![PCB](X4/Z80Bus_X4_PCB.jpg)
 
 Not there is much to gain from the schematic, but [here it is](Z80Bus_X4_Board_Schematic.pdf).
 
