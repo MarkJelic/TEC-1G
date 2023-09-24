@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Schematic](TEC-1G_Schematic_v1-9.pdf) | See what makes the TEC-1G tick | 1.9 |
+| [Schematic](TEC-1G_Schematic_v1-10.pdf) | See what makes the TEC-1G tick | 1.10 |
 | [Build Order BOM](/files/TEC-1G_BOM-Build_Order_v1-1.pdf) | What parts are required and what order to build your TEC-1G | 1.1 |
 | [Parts Sourcing](/files/TEC-1G_BOM_Sourcing_v1-1.xlsx) | Full list of parts and where to buy them | 1.1 |
 
