@@ -7,7 +7,7 @@ Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on
 
 ## changelog
 
-### 2023.bE
+### 2023.bF
 - Reorder menu into logical blocks; burnin follows same order
 - disco leds; LCD names the colour being lit
 - cleanup disco interactive code
