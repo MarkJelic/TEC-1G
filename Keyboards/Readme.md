@@ -3,6 +3,8 @@
 ## History
 The TEC-1 came out in 1983 and I eagerly built it, and coded many of the samples and even made my own maze game all entered by hand on, lets face it, the crappy hex keyboard with the terrible layout. I didn't stand for it for too long before I made my own keyboard out of full sized keys. Still only in hex, but man it made a difference!
 
+![](./pictures/TEC-1_Mechanical_Hex.jpg)
+
 Fast forward 40 years and the TEC-1G was NOT going to have crappy keys any longer! I created the Tactile version of the Matrix Keyboard that accepted 6mm and 12mm little tactile keys which aren't terrible and relatively cheap. You can get more details of how it was developed, here.
 
 ## Matrix Interface
