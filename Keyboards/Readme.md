@@ -15,6 +15,6 @@ The tactile keyboard details and assembly instructions can be found [here](./Tac
 [A full mechanical keyboard](./Mechanical/) is in development and will use the Gateron Low Profile key switches with Fullisik LED lighting!
 
 ## Where to Buy
-The Tactile Matrix Keyboard Kit can be found on eBay:  https://www.ebay.com.au/itm/13936577689312
+The Tactile Matrix Keyboard Kit can be found on eBay:  https://www.ebay.com.au/itm/175756969668
 
 Likewise the Mechanical Kit will also be available on eBay, soon.
