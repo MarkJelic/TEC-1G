@@ -1,4 +1,4 @@
-# Full QWERTY Matrix Keyboard for the Z80Bus
+# Full QWERTY Matrix Keyboard for the TEC-1
 
 ## History
 The TEC-1 came out in 1983 and I eagerly built it, and coded many of the samples and even made my own maze game all entered by hand on, lets face it, the crappy hex keyboard with the terrible layout. I didn't stand for it for too long before I made my own keyboard out of full sized keys. Still only in hex, but man it made a difference!
