@@ -11,14 +11,17 @@ Fast forward 40 years and the TEC-1G was NOT going to have crappy keys any longe
 
 You can purchase the Gateron LP Switches [direct from the Gateron site](https://www.gateron.com/products/gateron-ks-33-low-profile-switch-set?VariantsId=10265).
 
+# QWERTY Keyboards
+The TEC-1 never had a full qwerty keyboard option so with the TEC-1G development in mind, I set about finding a suitable interface and keyboard schematic that could be easily integrated into the TEC-1 and fit onto the base motherboard.
+
 ## Matrix Interface
-The Matrix Interface made for the TEC-1 was essentially incorproated into the design of the TEC-1G. More details and code samples can be found with [this Link.](https://github.com/MarkJelic/TEC-1_Hardware/tree/master/Z80Bus/Keyboard)
+The [Matrix Interface](https://github.com/MarkJelic/TEC-1_Hardware/tree/master/Z80Bus/Keyboard) made for the TEC-1 was essentially incorproated into the design of the TEC-1G. More details and code samples can be found on that page.
 
 ## The Tactile Keyboard
-I created the Tactile version of the Matrix Keyboard that accepted 6mm and 12mm little tactile keys which aren't terrible and relatively cheap. You can get more details of how it was developed, [here](./Tactile/)
+I created the Tactile version of the Matrix Keyboard that accepted 6mm and 12mm little tactile keys which aren't terrible and relatively cheap. You can get more details of how it was developed, and how to assemble it, [here](./Tactile/)
 
 ## The Mechanical Keyboard (in development)
-[A full mechanical keyboard](./Mechanical/) is in development and will use the Gateron Low Profile key switches with Fullisik LED lighting!
+[A full mechanical keyboard](./Mechanical/) is in development and will use the Gateron Low Profile key switches with optional Fullisik LED lighting!
 
 ## Where to Buy
 The Tactile Matrix Keyboard Kit can be found on eBay:  https://www.ebay.com.au/itm/175756969668
