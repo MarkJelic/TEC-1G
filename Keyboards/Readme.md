@@ -1,7 +1,11 @@
 # Keyboards for the TEC-1G
 
 ## History
-The TEC-1 came out in 1983 and I eagerly built it, and coded many of the samples and even made my own maze game all entered by hand on, lets face it, the crappy mushy keyboard with the terrible layout. I didn't stand for it for too long before I made my own keyboard out of full sized keys. Still only in hex, but man it made a difference!
+The TEC-1 came out in 1983 and I eagerly built it, and coded many of the samples and even made my own maze game all entered by hand on, lets face it, the crappy mushy keyboard with the terrible layout. 
+
+![](./pictures/TEC-1_Original.jpg)
+
+I didn't stand for it for too long before I made my own keyboard out of full sized keys, and hacked in a connector on the motherboard. Still only in hex, but man it made a difference!
 
 ![](./pictures/TEC-1_Mechanical_Hex.jpg)
 
