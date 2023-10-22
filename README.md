@@ -48,4 +48,4 @@ The 1G has been developed by Mark Jelic with the input of the original designers
 
 ## More Documentation [Coming Soon™](/Documentation/readme.md)
 
-![TEC-1G Render - Gateron Keys](/pictures/TEC-1G_Render_Gateron_Keys.jpg)
+![TEC-1G Render - Gateron Keys](/pictures/TEC-1G_Render-Green+Components.jpg)
