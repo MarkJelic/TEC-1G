@@ -1,112 +1,7 @@
-# Diags - Diagnostic and Test ROM for the TEC-1G
+# Diags - Diagnostic, Test and Demo ROM for the TEC-1G
 
 ## Release 1.0
 Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on. Requires a 16k ROM for correct results.
-
-## changelog
-
-### 1.0
-- Release with fix for matix keyboard keybounce issue
-
-### 2023.bF
-- Fix disco leds not turned off at end of their tests in Burn-in mode
-
-### 2023.bE
-- Reorder menu into logical blocks; burnin follows same order
-- disco leds; LCD names the colour being lit
-- cleanup disco interactive code
-- 7 seg lamp tests now disply test phase on LCD
-- added simple LCD tests; uses custom characters
-- added LCD message to LED BAR test
-
-### 2023.bD
-- FTDI test sends only one sharacter per HexPad press
-- Disco LEDs test optimized
-- Fixed version number
-- Disco Interactive test added
-- fix Disco LEDs and FTDI/7-seg don't light (or light incorrectly) when not supposed to. Disco is Blue when FTDI is active
-- fix dumb bug in LCD init
-
-### 2023.bC
-- 'pip' sound pressing matrix keys
-- 2x20 scrolling edit window for testing matrix keypad - supports wordwrap, tab, scroll, del, enter, shift/caps. Ctrl, Fn and arrows not yet supported. \ prints as 'yen' as the lcd does'nt have a \ symbol
-- Pi output now uses 2x20 scrolling window also; calculates Pi to 100 decimals
-- 8x8 scrolltext font updated
-- adjusted ram tests a bit more to ensure proper memory allocation and result processing. ram test in bA/bB can be incorrect
-- added further fixes to bank 1 write protect to ensure RAM default contents are first cleared, to avoid false readings
-- disco LEDs test added
-- FTDI serial Tx and Rx - Tx 0..F from hexpad to serial, Rx any byte from serial and display on LCD. Tx and Rx work together at the same time, but will corrupt if used simultaneously.
-
-### 2023.bB
- - Fix issue with LCD cursor not resetting if ADDR pressed to exit matrix test
- - turn off 8x8 at power up
- - added 8x8 tests - row and column scan, fan out, fan tail, blink, scan with scrolltext
- - fixed bank 1 wrprot test bug introduced in beta bA
-
-### 2023.bA
- - press hexpad ADDR to exit matrix or joystick tests (In addition to matrix ESC)
- - MSX wiring type fire 2 button support ( bit D6, joystick pin 7) and "other" type (bit D5, joystick pin 9)
- - rewrote expand test to be more logical and to display results more clearly
- - rewerote ram tester, now checks >1 byte per block (32 bytes by default). Needs work to ensure it doesn't test(overwrite) its own buffers
- - all memory checks use new RAM tester routines
- - fixed bug in bank 1 protect code - forgot to test if WP actually worked (Duh!!)
- - serial/FTDI loopback jumper test - jumper Rx to Tx
- - Pi Test
- - Burn in now includes FTDI and Pi tests
- 
-### 2023.b9
- - added matrix keyboard test version 1. Press ESC on matrix to exit
-   - controls caps lock light
-   - does not properly control screen wrap/display or handle special characters: tab, enter, backspace, arrows etc.
- - added joystick test version 1. Press ESC on matrix to exit. only left joystick tested.
-   - right joystick to come
-   - second trigger button to come
- - centered diags version display
- - bugfixes, subroutine cleanups, general code cleanups
- - more camelCase fixups
- - Menu table size auto-calculated at assembly time
- - Menu elements can be rearranged 
- - TEC-1G font updated to match MON-3
- - removed need for menu items to be stored with leading space
-
-### 2023.b8
- - hexpad keys made to work more like MON3 - beep on keypress, 7seg not blanked
- - hexpad test has how to exit test help message displayed
- - proper 16 bit adds when calculating offsets; allows high byte to change mid-table
- - Shift renamed Fn
- - LED Bar cycles all 8 segments
- - Shadow test now fully checks that there really is RAM and not ROM or empty space present
- - possible bug calling High ROM code before JP high is performed, fixed
- - more utility routines preserve registers
- - camelCase used correclty on most labels, equates etc.
-
-### 2023.b7
-- replaced beep sound speaker test with MON-1 tune
-- split into more individual source files for ease of management, editor tolerance and modularised workflow
-- added diags version info to menu. diasplays diags version strings
-- hexpad test now displays the key name and also if shift is pressed, on LCD line 4
-- rewrote menu and burnin to work better and be more generic/reusable
-- G.INPUT status - high or low. Can test with a jumper as the pinout puts the input bit and +5v next to each other; default is pulled down to logic 0
-- 7-seg burn in, indicate scanned vs. hard-on lamp tests (should be differences in brightness and current consumption)
-
-### 2023.b6
-- return matrix test to the menu
-- led bar scrolls both ways, faster, 3 times over. Overrides whatever mode things are in temporarily (EXPAND, PROTECT not honoured. SHADOW is honoured)
-- consistent use of delay throughout. custom delay were needed. calls dly
-- fix nnnn bytesss (ram test) when a following block is smaller than a prior block (lcd refresh issue)
-- tests for EXPAND to verify page switching actually works (write differnet data to each page and read it back)
-
-### todo
-- GLCD also test/demo
-- redo matrix code for proper debounce
-- The LCD does not have a " \ " character. Produces the Yen symbol instead. Possible remap/custom char ?
-- display CART signature string (risky?) [BFFFh must be 0]
-- RAM test detects and does not overwtite it's own buffers
-- 2 joysticks to be tested
-- ram test to include EXPAND to check for full 64k (i.e. block wrapping checks; 8k RAM chip detect)
-- add debugger stuff on a hotkey
-
-- bitDump & hexSeg routines exist but not presently used. Saving for possible future need.
 
 # General Notes
 Diags_Shadow.asm is the portion of code running at 0000h - this source code is rather special in that it tricks the assembler into building it in a way that will produce a single binary file for burning into a ROM, yet run from shadow space. If I didn't do it this way, the assembler would turn out a 48k+ file (code at 0000h + code at C000h) which of course wouldn't be easily usable to burn into a ROM.
@@ -297,3 +192,15 @@ I have used TASM as my assembler; I used the -80 -b -fFF commandline parameters 
 Code should assemble with most Z80 assemblers with little to no modification.
 
 Burn the resulting binary into a ROM and plug into the ROM socket of the 1G, power up and enjoy.
+
+### todo
+- GLCD also test/demo
+- redo matrix code for proper debounce
+- The LCD does not have a " \ " character. Produces the Yen symbol instead. Possible remap/custom char ?
+- display CART signature string (risky?) [BFFFh must be 0]
+- RAM test detects and does not overwtite it's own buffers
+- 2 joysticks to be tested
+- ram test to include EXPAND to check for full 64k (i.e. block wrapping checks; 8k RAM chip detect)
+- add debugger stuff on a hotkey
+
+- bitDump & hexSeg routines exist but not presently used. Saving for possible future need.
