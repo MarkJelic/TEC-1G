@@ -1,13 +1,17 @@
-# Diag - diagnostic and test code for the TEC-1G
+# Diags - Diagnostic and Test ROM for the TEC-1G
 
-### new releases 2023.bn where n is the build number. build A is one newer than build 9, etc.
-### old releases - Diags_Main_xxx.bin
-
-Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on
+## Release 1.0
+Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on. Requires a 16k ROM for correct results.
 
 ## changelog
 
+### 1.0
+- Release with fix for matix keyboard keybounce issue
+
 ### 2023.bF
+- Fix disco leds not turned off at end of their tests in Burn-in mode
+
+### 2023.bE
 - Reorder menu into logical blocks; burnin follows same order
 - disco leds; LCD names the colour being lit
 - cleanup disco interactive code
@@ -104,7 +108,7 @@ Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on
 
 - bitDump & hexSeg routines exist but not presently used. Saving for possible future need.
 
-### general notes
+# General Notes
 Diags_Shadow.asm is the portion of code running at 0000h - this source code is rather special in that it tricks the assembler into building it in a way that will produce a single binary file for burning into a ROM, yet run from shadow space. If I didn't do it this way, the assembler would turn out a 48k+ file (code at 0000h + code at C000h) which of course wouldn't be easily usable to burn into a ROM.
 
 There is some duplication of code and also some strange conventions such as jp (hl) instead of call. This is beacuse the code must run even without RAM fitted - so no stack operations or memory variables are permitted.
@@ -154,10 +158,10 @@ Checkpint D is displayed only if the CARTridge line is detected as active.
 
 After checkpoint 9, all further info is conveyed via the LCD, as the system is considered healthy enough to run normal code.
 
-The checks are somewhat self-evident ; e.g. displaying the Program counter confirms the JP to C300h worked.
+The checks are somewhat self-evident ; e.g. displaying the Program counter confirms the JP to C300h worked and we are running from native ROM memory, not shadow.
 
 ### RAM Check
-Quickly verifies there is R/W memory at the first and last byte of the expected RAM memory space (0800h and 7FFFh) by writing a test pattern and reading it back.
+Quickly verifies there is R/W memory at the first and last byte of the expected RAM memory space (0800h and 7FFFh) by writing a test pattern and reading it back. This is only a quick check to verify that RAM memory is present as expected, but is not a full memory test.
 
 ### Stack test
 Pushes the memory location of the start of the next block of code onto the stack, then does a RET which pops it off the stack. If code worked, the stack must work. Stack location is previously set at 3FFFh - the top of memory that can't be PROTECTed.
@@ -204,12 +208,14 @@ Common causes of random burn-in failures include insufficient or bad power from 
 Press hexpad keys to adjust the R, G and B intensity of the Disco LEDs. Press ADDR to exit test.
 
 R - 4 increase, 0 decrease
-
 G - 5 increase, 1 decrease
-
 B - 6 increase, 2 decrease
 
 ## RAM Tests
+This is a more extensive memory test, which checks memory loations by writing various bit-patterns then reading them back. The test is non-destructive and leaves memory contents in its original state afterwards.
+
+This test does not check all RAM thoroughly, as e.g. it can't test itself without corrupting its own program code, nor does it test every single memory byte. The aim here is to demonstrate simple checks of e.g. address and data bus basic functions. It is not designed to verify the memory chip itself; we assume that SRAM chips are reliable. However, the tests could be enhanced to offer this ability with some additional work.
+
 The RAM Test respects the SHADOW, PROTECT and EXPAND states.
 
 Try the following:
@@ -229,11 +235,14 @@ For those with a second RAM chip fitted to the 1G, the same tests can be re-run.
  - Note that with PROTECT enabled, two separate 16k RAM blocks are observed - Bank 0 and Bank 2; with SHADOW and PROTECT enabled, the first block is reproted as 14k in size.
  - Note that EXPAND makes no difference - The RAM test simply works with whatever memory it sees mapped into the Z80's address space and does no care which page is selected.
 
+## Geral input bit test
+Should normally read as Low. Connecting the G.Inp bit pin high or low should read accordingly. This bit will be used in a future project add-on for the 1G.
+
 ## 7-seg Lamp Test
 This test lights every possible segment of the 7-seg displays.
 
 The first test 'scanning' mode uses display scanning (normal operation mode) where each of the 6 digits is lit 1/6th of the time.
-The second test 'Latched' mode locls all the segments of all 6 disaplys simultaneously hard on.
+The second test 'Latched' mode locks all the segments of all 6 disaplys simultaneously hard on (no scanning)
 
 Visually, there may be little observable difference tetween the two tests; however the current drawn by the machine from the power supply should noticably increase when the segments are Latched, as there are six times as many LEDs lit vs. scanned mode.
 
@@ -251,17 +260,34 @@ This routine shows the Z80's computational skills. It uses the Spigot method to 
 
 This code was taken from https://github.com/GmEsoft/Z80-MBC2_PiSpigot/tree/master and is used with thanks under the terms of the GPL v3 License.
 
+## FTDI Tx Rx tests
+Receives characters from the serial to the LCD. Acys as a simple serial typewriter
+Transmits hexpad keys to the serial port
+Press ADDR to exit
+
+**Note** that because this test is pseudo "full duplex" it can not handle full speed serial IO - the characters will corrupt if sent at faster than 'human typing' speed due to the delays needed when updating the LCD.
+
+The bitbang serial is really only half duplex and has very few clock cycles to spare, so this test relies on working at 'human speed' only.
+
+## FTDI Loopback Test
+**Remove FTDI Module** and connect TX and RX pins with a Jumper. Test passes if signals sent on TX are received on RX
+If is normal for this test to fail with an FTDI module fitted!!
+
+## Joystick port test
+Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input
+Fire changes the icon character on the LCD
+Fire 2 or ADDR exits test
+
 ## assumptions and notes
 - TEC-1G hardware only; may also work on older hardware if enough RAM is fitted.
-- Assumes 32k RAM fitted at U8; will work with 16k but not less due stack location. 8k not supported anyhow!!!
-- Will run at least partly without any working RAM at all
-- LCD must be fitted to progress beyond first couple of tests; LCD is considered essential. 20x4 LCD assumed; works with 16x2 but a lot of info is missing
-- Will work at any clock speed
-- does not need matrix latch chips (74xx245), 74c923 keyboard chip, System Input 74xx373 or the display latches (2x 74xx273) fitted to run at least something useful
-- FTDI test requires a loopback jumper connected between the Tx and Rx pins. The FTDI module must be removed
-- 8x8 tests require the TEC-1G 8x8 LED display module, connected at ports 05h and 06h via the TEC Expander port. If the 88x is not fitted there will be a 10 second pause while the tests run
-- matrix keyboard and joystic port tests can be exited with Fn-ADDDR at any time
-- any Hexpad key exits burn-in mode; Diags will reboot when pressed
+- Assumes 32k RAM fitted at U8; will work with 16k but not less due stack location.
+- Will run at least partly without any working RAM at all. This allows for some very basic troubleshooting even with a very sick machine.
+- LCD must be fitted to progress beyond first couple of tests; LCD is considered essential. 20x4 LCD assumed; works with 16x2 but a lot of info is missing.
+- Will work at any clock speed, but 4.0MHz is recommended - some tests wil lbe very slow at lower clock speeds and FTI will be affected also.
+- Does not need matrix latch chips (74xx245), 74c923 keyboard chip, System Input 74xx373 or the display latches (2x 74xx273) fitted to run at least something useful.
+- 8x8 tests require the TEC-1G 8x8 LED display module, connected at ports 05h and 06h via the TEC Expander port. If the 8x8 is not fitted there will be a 10 second pause while the tests run.
+- any test can generally be be exited with the ADDR key at any time. Hexpad test press Fn-ADDR to exit.
+- any Hexpad key exits burn-in mode; Diags will reboot when pressed. This is done by patching the keyboard Interrupt Routine whilst in burn-in mode.
 
 ## build process
 Assemble Diags_Main.asm - it pulls in everything else needed.
