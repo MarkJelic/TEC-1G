@@ -146,8 +146,8 @@ rst10:  ;API Call Entry
         jp APICall-BASE_ADDR ;API Call routine
 
         .org BASE_ADDR+18H
-rst18:
-        jp restartHandle-BASE_ADDR
+rst18:  ;API Call 2 Entry
+        jp APICall2-BASE_ADDR ;API Call 2 routine
 
         .org BASE_ADDR+20H
 rst20:  ;Scan Segments and Keyboard.  Must be called constantly
@@ -180,7 +180,34 @@ rst38:
         ex (sp),hl          ;restore HL and put INT routine on stack
         ret
 
-       .org BASE_ADDR+66H
+        .org BASE_ADDR+40H
+;API Call Routine
+; Input:   A = Function index
+;          BC, DE, HL = Parameters if needed
+; Corrupt: IX
+APICall2:
+        cp API_COUNT2/2 ;Adjust for real count
+        jr c,APIGood2
+        jp displayError     ;exit with Error Message
+APIGood2:
+        push bc             ;save BC
+        push hl             ;save HL
+        ld hl,APITable2  ;API Funciton Table
+        add a,a             ;double it
+        ld c,a              ;store index in
+        ld b,0              ;bc
+        add hl,bc           ;index table
+        ld a,(hl)           ;store jump
+        inc hl              ;address
+        ld h,(hl)           ;back into
+        ld l,a              ;HL
+        push hl             ;IX = HL
+        pop ix
+        pop hl              ;restore HL
+        pop bc              ;restore BC
+        jp (ix)             ;Jump to API Routine
+
+        .org BASE_ADDR+66H
 NMI:
         push hl             ;save HL
         ld hl,(USER_NMI)    ;get address at USER_NMI
@@ -229,6 +256,7 @@ INTHandler:
 ;NMI Handler Stub (just return)
 NMIHandler:
         retn                ;Exit cleanly
+
 
 ; ----------------------------------------------------------------------------------------------------------------
 ; CODE running in ROM proper, at C000H upwards
@@ -2692,10 +2720,36 @@ APITable:
         .dw toggleExpand
 API_COUNT:  .equ    $-APITable  ;Total number of API functions
 
+        .org BASE_ADDR+1500H
+APITable2:
+        .dw initLCD            ;Initalise the LCD
+        .dw clearGBUF          ;Clear the Graphics Buffer
+        .dw clearGrLCD         ;Clear the Graphics LCD Screen
+        .dw clearTxtLCD        ;Clear the Text LCD Screen
+        .dw setGrMode          ;Set Graphics Mode
+        .dw setTxtMode         ;Set Text Mode
+        .dw drawBox            ;Draw a rectangle between two points
+        .dw drawLine           ;Draw a line between two points
+        .dw drawCircle         ;Draw a circle from Mid X,Y to Radius
+        .dw drawPixel          ;Draw one pixel at X,Y
+        .dw fillBox            ;Draw a filled rectangle between two points
+        .dw fillCircle         ;Draw a filled circle from Mid X,Y to Radius
+        .dw plotToLCD          ;Display the Graphics Buffer to the LCD Screen
+        .dw printString        ;Print Text on the screen in a given row
+        .dw printChars         ;Print Characters on the screen in a given row and column
+        .dw delayUS            ;Microsecond delay for LCD updates
+        .dw delayMS            ;Millisecond delay for LCD updates
+        .dw setBufClear        ;Clear the Graphics buffer on after Plotting to the screen
+        .dw setBufNoClear      ;Retain the Graphics buffer on after Plotting to the screen
+        .dw clearPixel         ;Remove a Pixel at X,Y
+        .dw flipPixel          ;Flip a Pixel On/Off at X,Y
+
+API_COUNT2:  .equ    $-APITable2  ;Total number of GLCD API functions
+
 ; END OF CORE MONITOR
 
 ; Monitor Packages
-        .org BASE_ADDR+1500H
+        .org BASE_ADDR+1600H
         .include "packages.z80"
 
 APINames:
@@ -2748,14 +2802,37 @@ _toggleCaps       .equ 45
 _toggleShadow     .equ 46
 _toggleProtect    .equ 47
 _toggleExpand     .equ 48
-       
+
+APINames2:
+_initLCD          .equ 0  ;Initalise the LCD
+_clearGBUF        .equ 1  ;Clear the Graphics Buffer
+_clearGrLCD       .equ 2  ;Clear the Graphics LCD Screen
+_clearTxtLCD      .equ 3  ;Clear the Text LCD Screen
+_setGrMode        .equ 4  ;Set Graphics Mode
+_setTxtMode       .equ 5  ;Set Text Mode
+_drawBox          .equ 6  ;Draw a rectangle between two points
+_drawLine         .equ 7  ;Draw a line between two points
+_drawCircle       .equ 8  ;Draw a circle from Mid X,Y to Radius
+_drawPixel        .equ 9  ;Draw one pixel at X,Y
+_fillBox          .equ 10 ;Draw a filled rectangle between two points
+_fillCircle       .equ 11 ;Draw a filled circle from Mid X,Y to Radius
+_plotToLCD        .equ 12 ;Display the Graphics Buffer to the LCD Screen
+_printString      .equ 13 ;Print Text on the screen in a given row
+_printChars       .equ 14 ;Print Characters on the screen in a given row and column
+_delayUS          .equ 15 ;Microsecond delay for LCD updates
+_delayMS          .equ 16 ;Millisecond delay for LCD updates
+_setBufClear      .equ 17 ;Clear the Graphics buffer on after Plotting to the screen
+_setBufNoClear    .equ 18 ;Retain the Graphics buffer on after Plotting to the screen
+_clearPixel       .equ 19 ;Remove a Pixel at X,Y
+_flipPixel        .equ 20 ;Flip a Pixel On/Off at X,Y
+
         .org BASE_ADDR+3FECH    ; 16k
 
 RELMAJOR:   .dw 07E7h	; 2023 - for the API
-RELMINOR:   .dw 000Ah
+RELMINOR:   .dw 000Bh
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "2023.0A"
+REL_TXT:    .equ "2023.0B"
 
         .end
 

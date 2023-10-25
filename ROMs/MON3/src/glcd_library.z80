@@ -6,8 +6,7 @@
 ;
 ; There are a few variants of these LCD screens, but they must all must use the ST7920
 ; LCD Controller.  The LCD Screen that I used is the QC12864B.  This screen has two
-; ST7921 Panels (128 x 32) stacked one above the other.  Other LCD boards might not do
-; this.  If so the PLOT_TO_LCD function will need to be modified. (future work)
+; ST7921 Panels (128 x 32) stacked one above the other.
 ;
 ; These screens have DDRAM (Graphics) and CGRAM (Text) areas.  Both RAM areas can 
 ; be displayed at the same time.
@@ -49,48 +48,24 @@
 V_DELAY_US: EQU 000AH   ;Delay for 76us on your system
 
 ; Dont need to modify anything else below.
-
-; Jump Table
-;-----------
-        JP INIT_LCD             ;Initalise the LCD
-        JP CLEAR_GBUF           ;Clear the Graphics Buffer
-        JP CLEAR_GR_LCD         ;Clear the Graphics LCD Screen
-        JP CLEAR_TXT_LCD        ;Clear the Text LCD Screen
-        JP SET_GR_MODE          ;Set Graphics Mode
-        JP SET_TXT_MODE         ;Set Text Mode
-        JP DRAW_BOX             ;Draw a rectangle between two points
-        JP DRAW_LINE            ;Draw a line between two points
-        JP DRAW_CIRCLE          ;Draw a circle from Mid X,Y to Radius
-        JP DRAW_PIXEL           ;Draw one pixel at X,Y
-        JP FILL_BOX             ;Draw a filled rectangle between two points
-        JP FILL_CIRCLE          ;Draw a filled circle from Mid X,Y to Radius
-        JP PLOT_TO_LCD          ;Display the Graphics Buffer to the LCD Screen
-        JP PRINT_STRING         ;Print Text on the screen in a given row
-        JP PRINT_CHARS          ;Print Characters on the screen in a given row and column
-        JP DELAY_US             ;Microsecond delay for LCD updates
-        JP DELAY_MS             ;Millisecond delay for LCD updates
-        JP SET_BUF_CLEAR        ;Clear the Graphics buffer on after Plotting to the screen
-        JP SET_BUF_NO_CLEAR     ;Retain the Graphics buffer on after Plotting to the screen
-        JP CLEAR_PIXEL          ;Remove a Pixel at X,Y
-        JP FLIP_PIXEL           ;Flip a Pixel On/Off at X,Y
         
 ; Initialise LCD
-INIT_LCD:
+initLCD:
         LD HL, INIT_BASIC       ;POINT HL TO LCD INITIALIZE TABLE
         LD B, 04H               ;B=4 BYTES
 NEXT_CMD:
         LD A, (HL)
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         INC HL
         DJNZ NEXT_CMD
         LD DE, 0140H            ;1.6 ms
-        CALL DELAY_MS
+        CALL delayMS
         
-        CALL CLEAR_GR_LCD
+        CALL clearGrLCD
         
 ; Clears the Graphics Memory Buffer
-CLEAR_GBUF:
+clearGBUF:
         LD HL, GBUF
         LD DE, GBUF + 1
         XOR A
@@ -100,24 +75,24 @@ CLEAR_GBUF:
         RET
         
 ; Clears the Graphics LCD Buffer
-CLEAR_GR_LCD:
-        CALL SET_GR_MODE
+clearGrLCD:
+        CALL setGrMode
         LD C, 00H
 CLR_X:
         LD A, 80H
         OR C
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         LD A, 80H
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         XOR A                   ;Clear Byte
         LD B, 10H
 CLR_Y:
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         DJNZ CLR_Y
         INC C
         LD A, C
@@ -126,42 +101,42 @@ CLR_Y:
         RET
 
 ; Clears the ASCII Text LCD
-CLEAR_TXT_LCD:
-        CALL SET_TXT_MODE
+clearTxtLCD:
+        CALL setTxtMode
         LD A, 80H
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         LD B, 40H
 CLR_ROWS:
         LD A,  " "
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         DJNZ CLR_ROWS
         RET
         
 ; Set Graphics Mode
-SET_GR_MODE:
+setGrMode:
         LD A, 34H
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         LD A, 36H
         OUT (GLCD_INST), A
-        JP DELAY_US
+        JP delayUS
 
 ; Set Text Mode
-SET_TXT_MODE:
+setTxtMode:
         LD A, 30H
         OUT (GLCD_INST), A
-        JP DELAY_US
+        JP delayUS
         
 ;Draw Box
 ;Inputs: BC = X0,Y0
 ;        DE = X1,Y1
 ;Destroys: HL
-DRAW_BOX:
+drawBox:
         PUSH BC
 TOP:
-        CALL DRAW_PIXEL
+        CALL drawPixel
         LD A, D
         INC B
         CP B
@@ -171,7 +146,7 @@ TOP:
         PUSH BC
         LD C, E
 BOTTOM:
-        CALL DRAW_PIXEL
+        CALL drawPixel
         LD A, D
         INC B
         CP B
@@ -180,7 +155,7 @@ BOTTOM:
         
         PUSH BC
 LEFT:
-        CALL DRAW_PIXEL
+        CALL drawPixel
         LD A, E
         INC C
         CP C
@@ -190,7 +165,7 @@ LEFT:
         PUSH BC
         LD B, D
 RIGHT:
-        CALL DRAW_PIXEL
+        CALL drawPixel
         LD A, E
         INC C
         CP C
@@ -203,10 +178,10 @@ RIGHT:
 ;Inputs: BC = X0,Y0
 ;        DE = X1,Y1
 ;Destroys: HL
-FILL_BOX:
+fillBox:
         PUSH BC
 NEXT_PIXEL:
-        CALL DRAW_PIXEL
+        CALL drawPixel
         LD A, E
         INC C
         CP C
@@ -215,7 +190,7 @@ NEXT_PIXEL:
         LD A, D
         INC B
         CP B
-        JR NC, FILL_BOX
+        JR NC, fillBox
         RET
         
 ;Draw a line between two points using Bresenham Line Algorithm
@@ -235,7 +210,7 @@ NEXT_PIXEL:
 ; }
 ;Inputs: BC = X0,Y0
 ;        DE = X1,Y1
-DRAW_LINE:
+drawLine:
 ;check that points are in range
         LD A, C
         CP 40H
@@ -306,7 +281,7 @@ DRAW_LINE:
         
 LINE_LOOP:
 ;setPixel(x0,y0)
-        CALL DRAW_PIXEL
+        CALL drawPixel
         
 ;if (x0==x1 && y0==y1) break;
         LD A, (ENDPT + 1)
@@ -383,7 +358,7 @@ ABSHL:
 ; }
 ;Inputs BC = xm,ym (Midpoint)
 ;       E = radius
-DRAW_CIRCLE:
+drawCircle:
 ;   int x = -r, err = 2-2*r; /* II. Quadrant */
         XOR A
         SUB E
@@ -414,7 +389,7 @@ CIRCLE_LOOP:
         LD A, (SY)
         ADD A, C
         LD C, A
-        CALL DRAW_PIXEL
+        CALL drawPixel
         POP BC
 ;       setPixel(xm+x, ym-y); /* III. Quadrant */
         PUSH BC
@@ -425,7 +400,7 @@ CIRCLE_LOOP:
         NEG
         ADD A, C
         LD C, A
-        CALL DRAW_PIXEL
+        CALL drawPixel
         POP BC
 ;       setPixel(xm-y, ym-x); /*  II. Quadrant */
         PUSH BC
@@ -437,7 +412,7 @@ CIRCLE_LOOP:
         NEG
         ADD A, C
         LD C, A
-        CALL DRAW_PIXEL
+        CALL drawPixel
         POP BC
 ;       setPixel(xm+y, ym+x); /*  IV. Quadrant */
         PUSH BC
@@ -447,7 +422,7 @@ CIRCLE_LOOP:
         LD A, (SX)
         ADD A, C
         LD C, A
-        CALL DRAW_PIXEL
+        CALL drawPixel
         POP BC
 ;       r = err;
         LD HL, (ERR)
@@ -513,12 +488,12 @@ DS3:
 ;Fills a circle by increasing radius until Radius = Original Radius E
 ;Inputs BC = xm,ym (Midpoint)
 ;       E = radius
-FILL_CIRCLE:
+fillCircle:
         LD D, 01H               ;Start radius
 NEXT_CIRCLE:
         PUSH DE                 ;Save end Radius
         LD E, D
-        CALL DRAW_CIRCLE
+        CALL drawCircle
         POP DE                  ;Restore Radius
         LD A, E
         INC D
@@ -529,7 +504,7 @@ NEXT_CIRCLE:
 ;Draw Pixel in position X Y
 ;Input B = column/X (0-127), C = row/Y (0-63)
 ;destroys HL
-DRAW_PIXEL:
+drawPixel:
         LD A, C
         CP 40H
         RET NC
@@ -549,7 +524,7 @@ DRAW_PIXEL:
 ;Clear Pixel in position X Y
 ;Input B = column/X (0-127), C = row/Y (0-63)
 ;destroys HL
-CLEAR_PIXEL:
+clearPixel:
         LD A, C
         CP 40H
         RET NC
@@ -570,7 +545,7 @@ CLEAR_PIXEL:
 ;Flip Pixel in position X Y
 ;Input B = column/X (0-127), C = row/Y (0-63)
 ;destroys HL
-FLIP_PIXEL:
+flipPixel:
         LD A, C
         CP 40H
         RET NC
@@ -620,25 +595,25 @@ SHIFT_BIT:
 
 ;Main draw routine.  Moves GBUF to LCD and clears buffer
 ;Destroys all
-PLOT_TO_LCD:
+plotToLCD:
         LD HL, GBUF
         LD C, 80H
 PLOT_ROW:
         LD A, C
         AND 9FH
         OUT (GLCD_INST), A      ;Vertical
-        CALL DELAY_US        
+        CALL delayUS        
         LD A, 80H
         BIT 5, C
         JR Z, $ + 4
         OR 08H
         OUT (GLCD_INST), A      ;Horizontal
-        CALL DELAY_US        
+        CALL delayUS        
         LD B, 10H               ;send eight double bytes (16 bytes)
 PLOT_COLUMN:
         LD A, (HL)
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         LD A, (CLRBUF)
         OR A
         JR Z, $ + 4
@@ -651,16 +626,16 @@ PLOT_COLUMN:
         RET
         
 ; Print ASCII text on a given row
-; Inputs: A = 0 to 3 Row Number
+; Inputs: C = 0 to 3 Row Number
 ;         DB "String" on next line, terminate with 0
 ; EG:
-;   LD A,2
-;   CALL PRINT_STRING
+;   LD C,2
+;   CALL printString
 ;   DB "This Text",0
 ;
-PRINT_STRING:
-        LD B, A
-        CALL SET_TXT_MODE
+printString:
+        LD B, C
+        CALL setTxtMode
         LD HL, ROWS
         LD A, B
         ADD A, L
@@ -669,7 +644,7 @@ PRINT_STRING:
         LD L, A
         LD A, (HL)
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
         POP HL
 DS_LOOP:
         LD A, (HL)
@@ -677,7 +652,7 @@ DS_LOOP:
         OR A
         JR Z, DS_EXIT
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         JR DS_LOOP
 DS_EXIT:
         JP (HL)
@@ -689,8 +664,8 @@ DS_EXIT:
 ;a space before the chracter.
 ;Input B = column/X (0-7), C = row/Y (0-3)
 ;      HL = Start address of text to display, terminate with 0
-PRINT_CHARS:
-        CALL SET_TXT_MODE
+printChars:
+        CALL setTxtMode
         LD DE, ROWS
         LD A, C
         ADD A, E
@@ -700,34 +675,34 @@ PRINT_CHARS:
         LD A, (DE)
         ADD A, B
         OUT (GLCD_INST), A
-        CALL DELAY_US
+        CALL delayUS
 PC_LOOP:
         LD A, (HL)
         INC HL
         OR A
         RET Z
         OUT (GLCD_DATA), A
-        CALL DELAY_US
+        CALL delayUS
         JR PC_LOOP
         
 ; Delay for LCD write
-DELAY_US:
+delayUS:
         LD DE, V_DELAY_US       ;DELAY BETWEEN, was 0010H
-DELAY_MS:
+delayMS:
         DEC DE                  ;EACH BYTE
         LD A, D                 ;AS PER
         OR E                    ;LCD MANUFACTER'S
-        JR NZ, DELAY_MS         ;INSTRUCTIONS
+        JR NZ, delayMS         ;INSTRUCTIONS
         RET
         
 ; Set Buffer Clearing after outputting to LCD
 ; Input: A = 0 Buffer to be cleared, A <> 0 Buffer kept
-SET_BUF_CLEAR:
+setBufClear:
         LD A, 0FFH
         LD (CLRBUF), A
-        JP CLEAR_GBUF
+        JP clearGBUF
         
-SET_BUF_NO_CLEAR:
+setBufNoClear:
         XOR A
         LD (CLRBUF), A
         RET
