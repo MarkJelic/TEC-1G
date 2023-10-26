@@ -34,7 +34,7 @@ Note: if a register is maked as destroyed - that means the value of the register
 ## API Calls list - MON-3 1.0 (BC23-10 ROM Image)
 
 | Routine | Call Number | Hex Number | MON-3 Version Supported |
-| ---------------- | -- | :--: | :-------: |
+| ---------------- | :--: | :--: | :-------: |
 | [_softwareID](#_softwareid)    | 0 | 00H | BC23-10 |
 | [_versionID](#_versionid)      | 1 | 01H | BC23-10 |
 | [_preInit](#_preinit)          | 2 | 02H | BC23-10 |
