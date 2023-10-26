@@ -366,7 +366,6 @@ Destroys: HL, BC, A
 Play a series of notes.  To play a note use a reference between 01H and 18H.  Where 01H is the lowest and 18h is the highest.  Use 00H to make a pause and any value greater then 18H to exit.
 
 Note reference table is as follows:
-+-----------+
 |Note |Value|
 |-----|-----|
 |  G  | 01H |
