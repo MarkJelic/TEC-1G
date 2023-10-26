@@ -1,12 +1,11 @@
 # MON-3 API guide
 
 ## General Conventions
-
 C register - holds API Call number.
 
 Any other parameters are passed in the A, DE and/or HL registers depending on the requirements of each individual call.
 
-Executing a RST 10H opcode calls the API
+Executing an RST 10H opcode calls the API
 
 ```
         ld c,[API Call Number]
@@ -473,3 +472,28 @@ Destroys: A
 ```
 
 ---
+## Breakpoints and Debugger
+
+Executing an RST 30H opcode calls the built-in Debugger.
+
+As this is a single-byte opcode F7H, it becomes very simple to insert this opcode into your program wherever a breakpoint is needed.
+
+The debugger shows the state of the primary Z80 registers and the flags. If the flag letter is a capital, the flag is set; if lower case, flag is clear. x and y represent the two undefined bits of the flags register. Flages are showin in register bit-order, bit 7 (sign) down to bit 0 (Carry).
+
+| Letter | Flag |
+| - | ---- |
+| s | Sign |
+| z | Zero |
+| y | (undefined) |
+| h | Half Carry |
+| x | (undefined) |
+| p | Parity/Overflow |
+| n | Add/Subtract |
+| c | Carry |
+
+### Debugger navigation keys
+
+GO key exits the debugger and returns to the next instruction.
+
+ADDR key exits the debugger and returns to MON-3.
+
