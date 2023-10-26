@@ -3,14 +3,16 @@
 ## General Conventions
 C register - holds API Call number.
 
-Any other parameters are passed in the A, DE and/or HL registers depending on the requirements of each individual call.
-
-Executing an RST 10H opcode calls the API
-
+Executing an RST 10H opcode calls the API.
 ```
         ld c,[API Call Number]
         rst 10H
 ```
+- Any parameters are passed in the A, B, DE and/or HL registers, depending on the requirements of each call.
+
+- Results are returned in various registers and/or by altering memory as shown within each call.
+
+Note: if a register is maked as destroyed - that means the value of the register is altered in an undefined manner by the API call, and thus should not be relied upon to contain any specific value after the API call runs.
 ```
     Some Examples:
 
@@ -29,9 +31,9 @@ Executing an RST 10H opcode calls the API
         rst 10H
 ```
 ---
-## API Calls list - as at MON3 1.0
+## API Calls list - MON-3 1.0 (BC23-10 ROM Image)
 
-| Routine | Call Number | Hex Number | MON3 Version Supported |
+| Routine | Call Number | Hex Number | MON-3 Version Supported |
 | ---------------- | -- | :--: | :-------: |
 | [_softwareID](#_softwareid)    | 0 | 00H | BC23-10 |
 | [_versionID](#_versionid)      | 1 | 01H | BC23-10 |
@@ -83,7 +85,7 @@ Executing an RST 10H opcode calls the API
 | [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
 | [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
 
-Future MON3 versions may introduce additinal API calls - therefore code using calls not present in version BC23-10 (MON3 1.0) should first call _versionID to determine that the MON3 version supports the calls being made.
+Future MON-3 versions may introduce additinal API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
 
 ----
 ### _softwareID 
@@ -103,7 +105,7 @@ Return: HL = Pointer to Release ASCIIZ String
 Destroys: none
 ```
 ### _preInit
-Performs a hard boot, as if the TEC-1G had just been powered on. Returns to MON3 in default state.
+Performs a hard boot, as if the TEC-1G had just been powered on. Returns to MON-3 in default state.
 
 ### _beep
 Makes a short beep tone
@@ -478,9 +480,9 @@ Executing an RST 30H opcode calls the built-in Debugger.
 
 ![Debugger Screenshot](images/debugger.png)
 
-As this is a single-byte opcode F7H, it becomes very simple to insert this opcode into your program wherever a breakpoint is needed.
+As this is a single-byte (opcode F7H), it becomes very simple to insert this opcode into your program wherever a breakpoint is needed. Later on the opcode can be removed or simply replaced with NOP (opcode 00H) when no longer required.
 
-The debugger shows the state of the primary Z80 registers and the flags. If the flag letter is a capital, the flag is set; if lower case, flag is clear. x and y represent the two undefined bits of the flags register. Flages are showin in register bit-order, bit 7 (sign) down to bit 0 (Carry).
+The debugger shows the state of the primary Z80 registers and the flags. If the flag letter is a capital, the flag is set; if lower case, flag is clear. x and y represent the two undefined bits of the flags register. Flags are shown in register-bit-order, bit 7 (sign) down to bit 0 (Carry).
 
 | Letter | Flag |
 | - | ---- |
@@ -492,6 +494,8 @@ The debugger shows the state of the primary Z80 registers and the flags. If the 
 | p | Parity/Overflow |
 | n | Add/Subtract |
 | c | Carry |
+
+At this time the Z80 alternate registers (AF', BC' etc.) are not shown, this feature may be added in a future MON-3 release.
 
 ### Debugger navigation keys
 
