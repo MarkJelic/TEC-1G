@@ -4,6 +4,7 @@
 | [Schematic](TEC-1G_Schematic_v1-12.pdf) | See what makes the TEC-1G tick | 1.12 |
 | [Build Order BOM](/files/TEC-1G_BOM-Build_Order_v1-1.pdf) | What parts are required and what order to build your TEC-1G | 1.1 |
 | [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Full list of parts  | 1.5 |
+| [Parts List](/files/TEC-1G_BOM_v1-4.pdf) | Full list of parts  | 1.4 |
 | [PCB Gerbers](/TEC-1G_Gerbers_OS_1-01.zip) | Gerbers of the PCB so you can print your own! | 1.01 |
 
 # TEC-1G Introduction
