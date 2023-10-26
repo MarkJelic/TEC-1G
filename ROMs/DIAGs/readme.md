@@ -171,10 +171,12 @@ Press **ADDR** to exit
 
 The bitbang serial is really only half duplex and has very few clock cycles to spare, so this test relies on working at 'human speed' only.
 
-## FTDI Loopback test
+## FTDI loopback test
 **Remove FTDI Module** and connect TX and RX pins with a Jumper. Test passes if signals sent on TX are received on RX.
 
-It is _normal_ for this test to fail with an FTDI module fitted, or the FTDI socket empoty!!
+It is _normal_ for this test to fail with an FTDI module fitted, or the FTDI socket empty!!
+
+This test is primarily available for those who want to test the TEC stand-alone, those without an FTDI module, or simply no computer to run the FTDI Tx Rx tests with.
 
 ## Joystick port test
 Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input.
