@@ -174,12 +174,14 @@ The bitbang serial is really only half duplex and has very few clock cycles to s
 ## FTDI Loopback test
 **Remove FTDI Module** and connect TX and RX pins with a Jumper. Test passes if signals sent on TX are received on RX.
 
-It is _normal_ for this test to fail with an FTDI module fitted!!
+It is _normal_ for this test to fail with an FTDI module fitted, or the FTDI socket empoty!!
 
 ## Joystick port test
-Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input
-Fire changes the icon character on the LCD
-**Fire 2** or **ADDR** exits test
+Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input.
+
+Fire changes the icon character on the LCD.
+
+**Fire 2** or **ADDR** exits test.
 
 ## Assumptions and notes
 - TEC-1G hardware only; may also partially work on older TEC hardware if enough RAM is fitted.
