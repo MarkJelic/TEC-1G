@@ -403,48 +403,48 @@ Play tune routine above but address of notes is set via a parameter menu.
 Get Caps lock state
 ```
 Input: none
-Output: A = caps lock state; 0 = off, CAPSLOCK = on
+Output: A = caps lock state; 0 = off, 80H = on
 ```
 ### _getShadow
 Get SHADOW state
 ```
 Input: none
-Output: A = shadow state; 0 = off, SHADOW = on
+Output: A = shadow state; 0 = off, 01H = on
 ```
 ### _getProtect
 Get PROTECT state
 ```
 Input: none
-Output: A = protect state; 0 = off
+Output: A = protect state; 0 = off, 02H = on
 ```
 ### _getExpand
 Get EXPAND state
 ```
 Input: none
-Output: A = expand state; 0 = off
+Output: A = expand state; 0 = off, 04H = on
 ```
 ### _setCaps
 Set Caps lock state
 ```
-Input: A = Desired caps lock state; 0 = off, 1 = on
+Input: A = Desired caps lock state; 0 = off, 80H = on
 Destroys: A
 ```
 ### _setShadow
 Set Shadow state
 ```
-Input: A = Desired shadow state; 0 = off, 1 = on
+Input: A = Desired shadow state; 0 = off, 01H = on
 Destroys: A
 ```
 ### _setProtect
 Set Protect state
 ```
-Input: A = Desired protect state; 0 = off, 1 = on
+Input: A = Desired protect state; 0 = off, 02H = on
 Destroys: A
 ```
 ### _setExpand
 Set Expand state
 ```
-Input: A = Desired expand state; 0 = off, 1 = on
+Input: A = Desired expand state; 0 = off, 04H = on
 Destroys: A
 ```
 ### _toggleCaps
