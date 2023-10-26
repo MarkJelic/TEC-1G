@@ -1,17 +1,18 @@
 # MON-3 API guide
 
-## General conventions
+## General Conventions
 
-C register - holds API Call.
+C register - holds API Call number.
 
-Any other parameters are passed in the A, DE and/or HL registers
+Any other parameters are passed in the A, DE and/or HL registers depending on the requirements of each individual call.
 
 Executing a RST 10H opcode calls the API
 
 ```
         ld c,[API Call Number]
         rst 10H
-
+```
+```
     Some Examples:
 
         ;Produce a short Beep from the speaker
@@ -29,59 +30,61 @@ Executing a RST 10H opcode calls the API
         rst 10H
 ```
 ---
-## API Calls list
+## API Calls list - as at MON3 1.0
 
-| Routine | Call Number | Hex Number |
-| ------- | ----------- | ---------- |
-| [_softwareID](#_softwareid)    | 0 | 00H |
-| [_versionID](#_versionid)      | 1 | 01H |
-| [_preInit](#_preinit)          | 2 | 02H |
-| [_beep](#_beep)                | 3 | 03H |
-| [_convAToSeg](#_convatoseg)    | 4 | 04H |
-| [_regAToASCII](#_regatoascii)      | 5 | 05H |
-| [_ASCIItoSegment](#_asciitosegment)   | 6 | 06H |
-| [_stringCompare](#_stringcompare)    | 7 | 07H |
-| [_HLToString](#_hltostring)       | 8 | 08H |
-| [_AToString](#_atostring)        | 9 | 09H |
-| [_scanSegments](#_scansegements)     | 10 | 0AH |
-| [_displayError](#_displayerror)     | 11 | 0BH |
-| [_LCDBusy](#_lcdbusy)          | 12 | 0CH |
-| [_stringToLCD](#_stringtolcd)      | 13 | 0DH |
-| [_charToLCD](#_chartolcd)        | 14 | 0EH |
-| [_commandToLCD](#_commandtolcd)     | 15 | 0FH |
-| [_scanKeys](#_scankeys)         | 16 | 10H |
-| [_scanKeysWait](#_scankeyswait)     | 17 | 11H |
-| [_matrixScan](#_matrixscan)       | 18 | 12H |
-| [_joystickScan](#_joystickscan)     | 19 | 13H |
-| [_serialEnable](#_serialenable)     | 20 | 14H |
-| [_serialDisable](#_serialdisable)    | 21 | 15H |
-| [_txByte](#_txbyte)           | 22 | 16H |
-| [_rxByte](#_rxbyte)           | 23 | 17H |
-| [_intelHexLoad](#_intelhexload)     | 24 | 18H |
-| [_sendToSerial](#_sendtoserial)     | 25 | 19H |
-| [_receiveFromSerial](#_receivefromserial) | 26 | 1AH |
-| [_sendAssembly](#_sendassembly)     | 27 | 1BH |
-| [_sendHex](#_sendhex)          | 28 | 1CH |
-| [_genDataDump](#_gendatadump)      | 29 | 1DH |
-| [_checkStartEnd](#_checkstartend)    | 30 | 1EH |
-| [_menuDriver](#_menudriver)       | 31 | 1FH |
-| [_paramDriver](#_paramdriver)      | 32 | 20H |
-| [_timeDelay](#_timedelay)        | 33 | 21H |
-| [_playNote](#_playnote)         | 34 | 22H |
-| [_playTune](#_playtune)         | 35 | 23H |
-| [_playTuneMenu](#_playtunemenu)     | 36 | 24H |
-| [_getCaps](#_getcaps)          | 37 | 25H |
-| [_getShadow](#_getshadow)        | 38 | 26H |
-| [_getProtect](#_getprotect)       | 39 | 27H |
-| [_getExpand](#_getexpand)        | 40 | 28H |
-| [_setCaps](#_setcaps)          | 41 | 29H |
-| [_setShadow](#_setshadow)        | 42 | 2AH |
-| [_setProtect](#_setprotect)       | 43 | 2BH |
-| [_setExpand](#_setexpand)        | 44 | 2CH |
-| [_toggleCaps](#_togglecaps)       | 45 | 2DH |
-| [_toggleShadow](#_toggleshadow)     | 46 | 2EH |
-| [_toggleProtect](#_toggleprotect)    | 47 | 2FH |
-| [_toggleExpand](#_toggleexpand)     | 48 | 30H |
+| Routine | Call Number | Hex Number | MON3 Version Supported |
+| ---------------- | -- | :--: | :-------: |
+| [_softwareID](#_softwareid)    | 0 | 00H | BC23-10 |
+| [_versionID](#_versionid)      | 1 | 01H | BC23-10 |
+| [_preInit](#_preinit)          | 2 | 02H | BC23-10 |
+| [_beep](#_beep)                | 3 | 03H | BC23-10 |
+| [_convAToSeg](#_convatoseg)    | 4 | 04H | BC23-10 |
+| [_regAToASCII](#_regatoascii)      | 5 | 05H | BC23-10 |
+| [_ASCIItoSegment](#_asciitosegment)   | 6 | 06H | BC23-10 |
+| [_stringCompare](#_stringcompare)    | 7 | 07H | BC23-10 |
+| [_HLToString](#_hltostring)       | 8 | 08H | BC23-10 |
+| [_AToString](#_atostring)        | 9 | 09H | BC23-10 |
+| [_scanSegments](#_scansegements)     | 10 | 0AH | BC23-10 |
+| [_displayError](#_displayerror)     | 11 | 0BH | BC23-10 |
+| [_LCDBusy](#_lcdbusy)          | 12 | 0CH | BC23-10 |
+| [_stringToLCD](#_stringtolcd)      | 13 | 0DH | BC23-10 |
+| [_charToLCD](#_chartolcd)        | 14 | 0EH | BC23-10 |
+| [_commandToLCD](#_commandtolcd)     | 15 | 0FH | BC23-10 |
+| [_scanKeys](#_scankeys)         | 16 | 10H | BC23-10 |
+| [_scanKeysWait](#_scankeyswait)     | 17 | 11H | BC23-10 |
+| [_matrixScan](#_matrixscan)       | 18 | 12H | BC23-10 |
+| [_joystickScan](#_joystickscan)     | 19 | 13H | BC23-10 |
+| [_serialEnable](#_serialenable)     | 20 | 14H | BC23-10 |
+| [_serialDisable](#_serialdisable)    | 21 | 15H | BC23-10 |
+| [_txByte](#_txbyte)           | 22 | 16H | BC23-10 |
+| [_rxByte](#_rxbyte)           | 23 | 17H | BC23-10 |
+| [_intelHexLoad](#_intelhexload)     | 24 | 18H | BC23-10 |
+| [_sendToSerial](#_sendtoserial)     | 25 | 19H | BC23-10 |
+| [_receiveFromSerial](#_receivefromserial) | 26 | 1AH | BC23-10 |
+| [_sendAssembly](#_sendassembly)     | 27 | 1BH | BC23-10 |
+| [_sendHex](#_sendhex)          | 28 | 1CH | BC23-10 |
+| [_genDataDump](#_gendatadump)      | 29 | 1DH | BC23-10 |
+| [_checkStartEnd](#_checkstartend)    | 30 | 1EH | BC23-10 |
+| [_menuDriver](#_menudriver)       | 31 | 1FH | BC23-10 |
+| [_paramDriver](#_paramdriver)      | 32 | 20H | BC23-10 |
+| [_timeDelay](#_timedelay)        | 33 | 21H | BC23-10 |
+| [_playNote](#_playnote)         | 34 | 22H | BC23-10 |
+| [_playTune](#_playtune)         | 35 | 23H | BC23-10 |
+| [_playTuneMenu](#_playtunemenu)     | 36 | 24H | BC23-10 |
+| [_getCaps](#_getcaps)          | 37 | 25H | BC23-10 |
+| [_getShadow](#_getshadow)        | 38 | 26H | BC23-10 |
+| [_getProtect](#_getprotect)       | 39 | 27H | BC23-10 |
+| [_getExpand](#_getexpand)        | 40 | 28H | BC23-10 |
+| [_setCaps](#_setcaps)          | 41 | 29H | BC23-10 |
+| [_setShadow](#_setshadow)        | 42 | 2AH | BC23-10 |
+| [_setProtect](#_setprotect)       | 43 | 2BH | BC23-10 |
+| [_setExpand](#_setexpand)        | 44 | 2CH | BC23-10 |
+| [_toggleCaps](#_togglecaps)       | 45 | 2DH | BC23-10 |
+| [_toggleShadow](#_toggleshadow)     | 46 | 2EH | BC23-10 |
+| [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
+| [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
+
+Future MON3 versions may introduce additinal API calls - therefore code using calls not present in version BC23-10 (MON3 1.0) should first call _versionID to determine that the MON3 version supports the calls being made.
 
 ----
 ### _softwareID 
@@ -255,10 +258,14 @@ Destroy: none
 ```
 ### _intelHexLoad
 Load an Intel Hex file via the FTDI USB serial connection.  Displays file progress on the segments and PASS or FAIL at the end of the load.  Intel Hex file format is a string of ASCII with the following parts:
-
-MARK | LENGTH | ADDRESS | RECORD TYPE | DATA | CHECKSUM
+```
 :10200000210621CD7D20CD98203A00213C320021AF <- EXAMPLE LINE
-MARK is a colon character, LENGTH is the number of bytes per line, ADDRESS  is the 2 byte address of where the data is to be stored.  RECORD TYPE is 00 for Data and 01 for EOF.  DATA is the bytes to be stored.  CHECKSUM is the addition of all bytes in the one line.
+```
+| MARK | LENGTH | ADDRESS | RECORD TYPE | DATA | CHECKSUM |
+| :-: | :--: | :----: | :--: | :---------------: | :--: |
+|:|10|2000|00|210621CD7D20CD98203A00213C320021|AF|
+
+MARK is a colon character, LENGTH is the number of DATA bytes per line,  ADDRESS is the 2 byte address of where the data is to be stored.  RECORD TYPE is 00 for Data and 01 for EOF.  DATA is the bytes to be stored.  CHECKSUM is the addition of all bytes in the one line modulo 256, and taking the two's compliment.
 ```
 Input: nothing
 Output: nothing
@@ -360,6 +367,8 @@ Play a series of notes.  To play a note use a reference between 01H and 18H.  Wh
 
 Note reference table is as follows:
 +-----------+
+|Note |Value|
+|-----|-----|
 |  G  | 01H |
 |  G# | 02H |
 |  A  | 03H |
@@ -384,7 +393,7 @@ Note reference table is as follows:
 |  E  | 16H |
 |  F  | 17H |
 |  F# | 18H |
-+-----------+
+
 ```
 Input: DE = Address of first note
 Destroy: A,B,DE,HL
