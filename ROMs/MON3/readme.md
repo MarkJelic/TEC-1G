@@ -2,9 +2,9 @@
 
 - Two modes, Menu and Data entry.  Press 'AD' to exit Menu and change to data entry mode and 'Fn-0' to get back to the main menu.
 - Hard reset by either power on or Holding FN down when Reset is pressed and released.
-- Matrix Keyboard support.  Key emulate HexPad, 0-F, Plus=Right arrow, Minus=Left Arrow, GO=Down Arrow or Enter, AD=Up Arrow or ESC.
+- Matrix Keyboard support.  Key emulate HexPad, 0-F, Plus=Right arrow, Minus=Left Arrow, GO= Enter, AD= ESC.
 - Monitor Reserved RAM is between 0000H-0FFFH.  Do not try to manually update this area.  If something gets buggered, a HARD Reset will fix most issues.
-- If DIP is set to PROTECT on, when the GO button is press, all code between address 4000H and 7FFFH will be READ ONLY and protected from altering code.  This feature will protect your code if an accidental update occurs.  If your code needs updatable RAM, then use memory between 1000H-3FFFH.
+- If DIP is set to PROTECT on, when the GO button is pressed, all code between address 4000H and 7FFFH will be READ ONLY and protected from altering code.  This feature will protect your code if an accidental update occurs.  If your code needs updatable RAM, then use memory between 1000H-3FFFH.
 - If DIP is set to EXPAND on, monitor will honour this option on Hard Reset.  Expand sets A14 to HIGH on the Expansion Socket.  Allowing to Page Swap a 32K ROM/RAM in 16K chunks.
 - Menu mode
   - press +/- to move to option.  GO to execute option and AD to quit into Data entry mode.
