@@ -476,7 +476,7 @@ Destroys: A
 ---
 ## Breakpoints and Debugger
 
-Executing an RST 30H opcode calls the built-in Debugger. The message CPU bP is also displayed on the 7-seg displays to indicate that a Breakpoint is active.
+Executing an RST 30H opcode calls the built-in Debugger. The message ![CPU bP](images/CPU_bP.png) is also displayed on the 7-seg displays to indicate that a Breakpoint is active.
 
 ![Debugger Screenshot](images/debugger.png)
 
