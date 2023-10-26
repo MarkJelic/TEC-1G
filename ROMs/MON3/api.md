@@ -476,6 +476,8 @@ Destroys: A
 
 Executing an RST 30H opcode calls the built-in Debugger.
 
+![Debugger Screenshot](images/debugger.png)
+
 As this is a single-byte opcode F7H, it becomes very simple to insert this opcode into your program wherever a breakpoint is needed.
 
 The debugger shows the state of the primary Z80 registers and the flags. If the flag letter is a capital, the flag is set; if lower case, flag is clear. x and y represent the two undefined bits of the flags register. Flages are showin in register bit-order, bit 7 (sign) down to bit 0 (Carry).
@@ -493,7 +495,7 @@ The debugger shows the state of the primary Z80 registers and the flags. If the 
 
 ### Debugger navigation keys
 
-GO key exits the debugger and returns to the next instruction.
+**GO** key exits the debugger and returns to the next instruction.
 
-ADDR key exits the debugger and returns to MON-3.
+**ADDR** key exits the debugger and returns to MON-3.
 
