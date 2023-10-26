@@ -92,7 +92,7 @@ Get Software ID String
 ```
 Input: nothing
 Return: HL = Pointer to SOFTWARE ASCIIZ String
-Destroy: none
+Destroys: none
 ```
 ### _versionID
 Get Version Number and Version Straing
@@ -174,25 +174,25 @@ Destroys: all
 LCD busy check.  Checks the LCD busy flag and loops until LCD isn't busy
 ```
 Input: nothing
-Destorys: none
+Destroys: none
 ```
 ### _stringToLCD
 ASCII string to LCD.  Writes a string to the current cursor location on the LCD
 ```
 Input: HL = ASCII string terminated with zero byte
-Destroy: A, HL (moves to end of list)
+Destroys: A, HL (moves to end of list)
 ```
 ### _charToLCD
 ASCII character to LCD.  Writes one character to the LCD at the current cursor location
 ```
 Input: A = ASCII character
-Destroy: none
+Destroys: none
 ```
 ### _commandToLCD
 Command to LCD.  Sends an LCD instruction to the LCD
 ```
 Input: B = Instruction byte
-Destroy: none
+Destroys: none
 ```
 ### _scanKeys
 Universal Key input detection routine. Supports HexPad and Matrix. Does not wait for a key press - returns immediately.
@@ -228,33 +228,33 @@ Output: A = Joystick return value between 00H-5FH (0-95)
       04H = Left      40H = Fire 1
       08H = Right     80H = Fire 3
         zero flag set if no joystick value returned
-Destroy: none
+Destroys: none
 ```
 ### _serialEnable
 Activates the BitBang serial port for serial transfer.  Disco LED's glow blue to indicate ready status.
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _serialDisable
 Deactivates the BitBang serial port for serial transfer.  Disco LEDs turn off.
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _txByte
 Bit Bang FTDI USB transmit routine.  Transmit one byte via the FTDI USB serial connection.  It assumes a UART connection of 4800-8-N-2.
 ```
 Input: A = byte to transmit
 Output: nothing
-Destroy: none
+Destroys: none
 ```
 ### _rxByte
 Bit Bang FTDI USB receive routine.  Receive one byte via the FTDI USB serial connection.  It assumes a UART connection of 4800-8-N-2.  Note routine will wait until a bit is detected.
 ```
 Input: nothing
 Return: A = byte received
-Destroy: none
+Destroys: none
 ```
 ### _intelHexLoad
 Load an Intel Hex file via the FTDI USB serial connection.  Displays file progress on the segments and PASS or FAIL at the end of the load.  Intel Hex file format is a string of ASCII with the following parts:
@@ -269,7 +269,7 @@ MARK is a colon character, LENGTH is the number of DATA bytes per line,  ADDRESS
 ```
 Input: nothing
 Output: nothing
-Destroy: HL,DE,BC,A
+Destroys: HL,DE,BC,A
 ```
 ### _sendToSerial
 SIO Binary Dump.  Transfer data on the TEC to a serial terminal.  From and To address data is needed and input.
@@ -396,7 +396,7 @@ Note reference table is as follows:
 
 ```
 Input: DE = Address of first note
-Destroy: A,B,DE,HL
+Destroys: A,B,DE,HL
 ```
 ### _playTuneMenu
 Play tune routine above but address of notes is set via a parameter menu.
@@ -428,49 +428,49 @@ Output: A = expand state; 0 = off
 Set Caps lock state
 ```
 Input: A = Desired caps lock state; 0 = off, 1 = on
-Destroy: A
+Destroys: A
 ```
 ### _setShadow
 Set Shadow state
 ```
 Input: A = Desired shadow state; 0 = off, 1 = on
-Destroy: A
+Destroys: A
 ```
 ### _setProtect
 Set Protect state
 ```
 Input: A = Desired protect state; 0 = off, 1 = on
-Destroy: A
+Destroys: A
 ```
 ### _setExpand
 Set Expand state
 ```
 Input: A = Desired expand state; 0 = off, 1 = on
-Destroy: A
+Destroys: A
 ```
 ### _toggleCaps
 Toggle Caps Lock state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleShadow
 Toggle Shadow state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleProtect
 Toggle Protect state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleExpand
 Toggle Expand state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 
 ---
