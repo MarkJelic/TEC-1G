@@ -96,7 +96,7 @@ Return: HL = Pointer to SOFTWARE ASCIIZ String
 Destroys: none
 ```
 ### _versionID
-Get Version Number and Version Straing
+Get Version Number and Version String
 ```
 Input: nothing
 Return: HL = Pointer to Release ASCIIZ String
