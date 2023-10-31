@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Schematic](TEC-1G_Schematic_v1-12.pdf) | See what makes the TEC-1G tick | 1.12 |
+| [Schematic](TEC-1G_Schematic_v1-13.pdf) | See what makes the TEC-1G tick | 1.13 |
 | [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Full list of parts  | 1.5 |
 | [BOM Sourcing](/files/TEC-1G_BOM_v1.4.xlsx) | Bill of Materials with Sources  | 1.4 |
 | [PCB Gerbers](/TEC-1G_Gerbers_OS_1-10.zip) | Gerbers of the PCB so you can print your own! | 1.10 |
