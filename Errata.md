@@ -18,4 +18,4 @@ It would have been a relatively easy fix... But the +5v flood fill on the front 
 5. Assemble TEC-1G as normal
 6. After socket is in U6 and header is in LCD, solder a longer wire (shown in BLUE) between Pin 8 of U6 NAND and Pin 6 of the LCD connector.
 
-![TEC-1G Errata 1 - LCD Enable](/pictures/Production-1_Bodge-1_L.jpg)
+![TEC-1G Errata 1 - LCD Enable](/pictures/Bodge_Wire.jpg)
