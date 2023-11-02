@@ -104,6 +104,9 @@ Return: HL = Pointer to Release ASCIIZ String
         DE = Release minor version number
 Destroys: none
 ```
+BC contains the binary value for the design year. MON-3 1.0 returns 07E7H for the year 2023. Future versions should carry the year of release.
+DE contains the binary value for the design revision. MON-3 1.0 returns 0003H for design revison 3. Future versions should increment this value.
+The ASCIIZ string is a concatenation of the above values. MON-3 1.0 returns "2023.03",0
 ### _preInit
 Performs a hard boot, as if the TEC-1G had just been powered on. Returns to MON-3 in default state.
 
