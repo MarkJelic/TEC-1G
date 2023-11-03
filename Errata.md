@@ -1,6 +1,6 @@
 # Errata
 
-## 1/Nov/23: Anniversary Edition (Blue and Purple and Black)
+## 1/Nov/23: Anniversary Edition (Blue, Purple and Black)
 
 Unfortunately a mistaken connection in the schematic (from v1.09 to v1.12) has made its way through to the PCBs which will stop the LCD from being operable. This was found by Tony Leff which I appreciate him finding it so quickly.
 
@@ -19,3 +19,14 @@ It would have been a relatively easy fix... But the +5v flood fill on the front 
 6. After socket is in U6 and header is in LCD, solder a longer wire (shown in BLUE) between Pin 8 of U6 NAND and Pin 6 of the LCD connector.
 
 ![TEC-1G Errata 1 - LCD Enable](/pictures/Bodge_Wire.jpg)
+<br>
+<br>
+<br>
+## 2/Nov/23: Anniversary Edition (Blue, Purple and Black)
+
+The silkscreen at the top left identifying the Probe location has the polarity of the voltages reversed.
+GND should be to the right, and +5V is to the left, closer to the USB connector.
+Please use a marker to correct this potentially component damaging error.
+
+
+![TEC-1G Errata 2 - Probe Polarity](/pictures/Probe_Silkscreen.jpg)
