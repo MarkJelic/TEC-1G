@@ -1,3 +1,5 @@
+[Assembly Instructions](./Assembly/Readme.md)
+
 # Full Documentation - Coming Soon™
 
 When designing the TEC-1G, several principals were kept foremost in mind:
