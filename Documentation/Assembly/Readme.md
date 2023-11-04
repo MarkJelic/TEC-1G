@@ -21,5 +21,4 @@ But protecting the surface of your bench is a good idea, so I use one of those g
 
 We're all human and as such make mistakes, so it's good to have a solder sucker, or better, a desoldering station handy.
 
-![Solder Sucker](./pictures/solder_sucker.jpg)
-![De-Soldering Station](./pictures/desoldering_station.jpg)
+![Solder Sucker](./pictures/solder_sucker.jpg);![De-Soldering Station](./pictures/desoldering_station.jpg)
