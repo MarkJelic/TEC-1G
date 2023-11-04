@@ -1,23 +1,17 @@
 # Assembly Instructions
+The following is a compiled set of instructions for assembling the TEC-1G, along with tests you should do along the way to ensure you have a successful build.
 
-## 1. Required and Suggested Tools and Materials
-Essential to making the TEC-1G is a good, fine-tipped soldering iron, preferably one you can control the temperature of. Try to keep the temperature under 350°C.
-Make sure you have a damp sponge or a brass tip cleaning ball to keep your soldering iron clean and shiny.
+Building the 1G is not complex, but it should not be rushed and there is an ideal order of assembly. Allow yourself at least 6 hours to go through all the soldering and tests.
 
-![Soldering Station](./pictures/soldering_station.jpg)
+The parts are all readily available through many suppliers as detailed in the Bill of Materials, but there will also be a Kit available for purchase on eBay, **Coming Soon®**
 
-Fine solder, between .5 to .75mm with a resin flux core is ideal. Many health conscious would like to use lead-free solder but I find this doesn't flow as well as leaded.
+## 1. [Required and Suggested Tools and Materials](./Tools.md)
+This part is obvious and you probably have everything you need if you have an interest in this kind of hobby.
 
-Whether you're young or old, a magnifiying light make the precise soldering required a little easier.
+## 2. [The Fullisik Keyboard](./Fullisik.md)
+If you have opted to have the most luxurious typing experince ever designed for a Z80 SBC, and want to have the maximum amount of envy from all the other hobbyist plebs, then you will have opted for the Fullisik Mechanical Keyboard, bro!  The very pretty but fiddly little LEDs need to be installed and tested first.
 
-![Magnifying Light](./pictures/magnifying_light.jpg)
+If you have opted for the pedestrian-level keyboard using the 12mm Tactiles, then this step can be skipped, with the keys (both Tactile and Mechanical) soldered on last.
 
-Some people swear by proper silicone soldering mats with an anti-static strap, but I've never had one and never fried anything. 
-
-![Soldering_Pad](./pictures/soldering_pad.png) ![Cutting Mat](./pictures/cutting_mat.jpg)
-
-But protecting the surface of your bench is a good idea, so I use one of those green cutting mats that every YouTuber seems to have to have.
-
-We're all human and as such make mistakes, so it's good to have a solder sucker, or better, a desoldering station handy.
-
-![Solder Sucker](./pictures/solder_sucker.jpg) ![De-Soldering Station](./pictures/desoldering_station.jpg)
+## 3. [The Power Circuit](./Power.md)
+The most critcal part of any circuit is stable power, so this is the next part we fopcus on so that all the subsequesnt soldering you do can be tested for shorts and the like.
