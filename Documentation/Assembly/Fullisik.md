@@ -15,7 +15,7 @@ When designing the TEC-1G, there was no way I would go backwards from what I had
 
 ![TEC-1G is Fullisik](./pictures/Fullisik.jpg)
 
-OK, enough history, onto the assembly...
+OK, enough history... Onto the assembly...
 
 ---
 
