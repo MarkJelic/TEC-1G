@@ -111,3 +111,7 @@ switch on. You should get a warm sensation in your stomach, and a cheesy grin on
 you have made the world a better place, by making it Fullisik, Bro!
 
 ![Aligning](./pictures/FS_testall.jpg)
+
+---
+
+OK, looking great! Now let's get onto [The Power Circuit](./Power.md)
