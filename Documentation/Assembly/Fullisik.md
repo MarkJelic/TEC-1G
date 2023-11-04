@@ -13,6 +13,8 @@ It took me about 13.2 seconds to decide that this would not do and set about mak
 
 When designing the TEC-1G, there was no way I would go backwards from what I had back in 1983, so of course I had to add under-body LEDs to make it Fully Sick, bro!
 
+![TEC-1G is Fullisik](./pictures/Fullisik.jpg)
+
 OK, enough history, onto the assembly...
 
 ---
@@ -30,7 +32,7 @@ See the Errata page for things you need to do to the board **BEFORE** starting a
 **Step 2.** There are two 330 ohm Resistors that are connected to the tiny 1.8mm LEDs, one (R5) above the Reset switch
 and the other (R14) to the right of the Shift (Function) key.  These need to be soldered in first.
 
-![330ohm Rersistors](./pictures/Fullisik_resistors.jpg)
+![Resistor Locations](./pictures/Fullisik_resistors.jpg) ![330ohm Resistors](./pictures/resistor_330r.jpg)
 
 Once you have the resistors soldered in place, you can solder in the tiny LEDs, of which the orientation of them is critical!
 On the PCB there is a small K and the solder pad is square. This indicates where the Cathode of the diode should go.
@@ -70,4 +72,13 @@ to get it right. Practice makes perfect.
 Once you have it perfect (and feel free to do a trial fit on an actual key over the LED)
 then you can solder the other pin(s) of the components to get a perfect, OCD-free finish.
 ```
+I use a RED coloured LED for the Reset button, and a WHITE coloured one for the Function key.
+
+**Step 3.** Testing!
+Do a quick test by connecting your bench power supply, to ensure you have the correct resistors selected,
+and the polarity of the LEDs correct. If they light up, NICE! If not, check your power first, then check the 
+soldering on those four components, and lastly, you might still have flipped the LED around. Desolder carefully
+flip them around and One Pin solder them again. Test it again. Keep checking everything until you get this result:
+
+![Test #1](./pictures/FS_test.jpg)
 
