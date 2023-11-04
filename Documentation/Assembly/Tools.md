@@ -25,3 +25,7 @@ We're all human and as such make mistakes, so it's good to have a solder sucker,
 And finally for testing, you will need an inexpensive multimeter.
 
 ![Multimeter](./pictures/multimeter.jpg)
+
+---
+
+With all those tools in hand, let's assemble [The Fullisik Keyboard](./Fullisik.md)
