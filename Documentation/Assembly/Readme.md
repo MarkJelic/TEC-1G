@@ -8,7 +8,7 @@ Make sure you have a damp sponge or a brass tip cleaning ball to keep your solde
 
 Fine solder, between .5 to .75mm with a resin flux core is ideal. Many health conscious would like to use lead-free solder but I find this doesn't flow as well as leaded.
 
-Whether you're young or old, a magnifiying light make the precice soldering required a little easier.
+Whether you're young or old, a magnifiying light make the precise soldering required a little easier.
 
 ![Magnifying Light](./pictures/magnifying_light.jpg)
 
