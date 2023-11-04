@@ -34,8 +34,8 @@ and the other (R14) to the right of the Shift (Function) key.  These need to be 
 
 Once you have the resistors soldered in place, you can solder in the tiny LEDs, of which the orientation of them is critical!
 On the PCB there is a small K and the solder pad is square. This indicates where the Cathode of the diode should go.
-Which is the Cathode on those tiny LEDS? The short leg is the Cathode and the other way you can tell is
-the large metal part inside the plastic lens is usually larger than the anode.
+Which is the Cathode on those tiny LEDs? The short leg is the Cathode and the other way you can tell is
+the larger metal part inside the plastic lens is usually the Cathode.
 
 ![1.8mm LEDs](./pictures/LED_1-8mm.jpg)
 
@@ -43,6 +43,9 @@ These little things can be tricky to get plumb and square to the PCB, which is a
 keys have to slip over the LEDs to sit flat. So this is the best time for me to give you my technique for
 soldering all components. I call it my One Pin Method.
 
+![One Pin Method](./pictures/FS_onepin.jpg)
+
+### One Pin Method of Soldering (for the OCD in all of us)
 ```
 When you insert a through-hole component, I always bend the legs out a little
 to keep the item in place while I flip the board over. Once flipped though,
@@ -50,5 +53,21 @@ if you have followed the Golden Rule of "lowest components first" then
 the component should be pressed down to the PCB fairly well, so you can straighten
 one of the legs that you will solder first. Go ahead and do so.
 
-**BUT**... Do not solder the other leg, just yet.
+**BUT**... Do not solder the other leg, just yet. Now you have to do some gymnastics
+with the board. (And I'll try to make a video of this at some point.)
+
+Flip the board over and you will likely see the component you just soldered
+the single leg of is often NOT sitting flush with the PCB, or in the case of these
+micro LEDs, it may be leaning over in the X or Y axis.
+
+What you need to do is then turn the PCB on its edge, so that you can push
+(with your finger of your non-soldering hand) on the component that is askew,
+WHILE you touch on the one soldered pin/pad, just enough to melt it and allow you
+to move the component in place; either making it flat to the PCB
+or lining up the micro LED to be upright and square. You may need to repeat this a few times
+to get it right. Practice makes perfect.
+
+Once you have it perfect (and feel free to do a trial fit on an actual key over the LED)
+then you can solder the other pin(s) of the components to get a perfect, OCD-free finish.
 ```
+
