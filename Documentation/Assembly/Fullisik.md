@@ -19,7 +19,8 @@ OK, enough history, onto the assembly...
 
 ---
 
-**Step 1.**  You might as well crack out the bench power supply early as you will be needing it very shortly.
+### Step 1. Power Supply
+You might as well crack out the bench power supply early as you will be needing it very shortly.
 Set it to 5.0 volts and connect it to the Probe connector at the top left of the board. You might want to do as I did
 and solder in two temporary pins to allow easy connection with alligator clips. Power up your Power Supply and make sure
 there are no shorts and that you do indeed have the correct polarity coming out of the supply.
@@ -29,7 +30,8 @@ there are no shorts and that you do indeed have the correct polarity coming out 
 (Note that on the Anniversary Editions of the board, the silkscreen is incorrect as well as other issues.
 See the Errata page for things you need to do to the board **BEFORE** starting assembly.)
 
-**Step 2.** There are two 330 ohm Resistors that are connected to the tiny 1.8mm LEDs, one (R5) above the Reset switch
+### Step 2. Soldering
+There are two 330 ohm Resistors that are connected to the tiny 1.8mm LEDs, one (R5) above the Reset switch
 and the other (R14) to the right of the Shift (Function) key.  These need to be soldered in first.
 
 ![Resistor Locations](./pictures/Fullisik_resistors.jpg) ![330ohm Resistors](./pictures/resistor_330r.jpg)
@@ -74,11 +76,38 @@ then you can solder the other pin(s) of the components to get a perfect, OCD-fre
 ```
 I use a RED coloured LED for the Reset button, and a WHITE coloured one for the Function key.
 
-**Step 3.** Testing!
+The final thing to install before testing is the micro slide switch. Once again, use the One Pin Method to 
+make sure the switch is straight and perpendicular. (Unfortunately this breaks the Golden Rule of soldering
+because it is taller than the components you will be installing, soon. Oh well, rules are made to be broken, right?)
+
+![Micro Switch](./pictures/micro_slide_switch.jpg)
+
+### Step 3. Testing!
 Do a quick test by connecting your bench power supply, to ensure you have the correct resistors selected,
-and the polarity of the LEDs correct. If they light up, NICE! If not, check your power first, then check the 
-soldering on those four components, and lastly, you might still have flipped the LED around. Desolder carefully
-flip them around and One Pin solder them again. Test it again. Keep checking everything until you get this result:
+and the polarity of the LEDs correct. Flick the Fullisik switch and if they light up, NICE!
+If not, check your power first, then check the soldering on those four components, and lastly, 
+you might still have flipped the LED around. Desolder it carefully, flip them around and solder them again.
+Test it again. Keep checking everything until you get the result below.
 
 ![Test #1](./pictures/FS_test.jpg)
 
+### Step 4. More Soldering
+All the rest of the LEDs can now be soldered in, again, being careful with the orientation of the Cathode 
+and fussy about the alignment of positioning of the LEDs and ensuring the keys can slip over them.
+
+![Aligning](./pictures/FS_align1.jpg) ![Aligning](./pictures/FS_align2.jpg)
+
+I suggest doing them one column at a time, for sanity's sake.  White LEDs for the alphanumeric keys,
+Yellow for the Plus (right) and Minus (left) keys. Green for GO (Enter) and Blue for AD (ESC).
+
+With all those done, the Resistor Networks need to go in last, and using the One Pin Method, tacking in one
+pin of the network, lining it up (they like to flop around) and then soldering the rest of the pins.
+
+![Aligning](./pictures/FS_resnets.jpg)
+
+### Step 5. More Testing
+With all the soldering for this section complete, connect up your bench power supply again, and flick the Fullisik
+switch on. You should get a warm sensation in your stomach, and a cheesy grin on your face, knowing
+you have made the world a better place, by making it Fullisik, Bro!
+
+![Aligning](./pictures/FS_testall.jpg)
