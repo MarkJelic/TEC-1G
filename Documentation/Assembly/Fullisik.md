@@ -100,8 +100,13 @@ and fussy about the alignment of positioning of the LEDs and ensuring the keys c
 I suggest doing them one column at a time, for sanity's sake.  White LEDs for the alphanumeric keys,
 Yellow for the Plus (right) and Minus (left) keys. Green for GO (Enter) and Blue for AD (ESC).
 
-With all those done, the Resistor Networks need to go in last, and using the One Pin Method, tacking in one
-pin of the network, lining it up (they like to flop around) and then soldering the rest of the pins.
+With all those done, the Resistor Networks need to go in last. Use the ones printed with 331 (330 ohms) on them.
+The end that has the dot on it is the end that is Pin 1, marked on the PCB silkscreen with a square around the pin.
+
+![330ohm Resistor Network](./pictures/resistor-n_331.jpg)
+
+Use the One Pin Method, tacking in one pin of the network, lining it up
+(they like to flop around) and then soldering the rest of the pins.
 
 ![Aligning](./pictures/FS_resnets.jpg)
 
