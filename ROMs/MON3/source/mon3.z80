@@ -2832,7 +2832,11 @@ RELMAJOR:   .dw 07E7h	; 2023 - for the API
 RELMINOR:   .dw 000Bh
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
+<<<<<<< HEAD:ROMs/MON3/src/mon3.z80
 REL_TXT:    .equ "2023.0B"
+=======
+REL_TXT:    .equ "BC23.10"
+>>>>>>> af03c933342f1e45ca96978d6fbb5cd4cf9046b7:ROMs/MON3/source/mon3.z80
 
         .end
 

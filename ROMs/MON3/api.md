@@ -1,17 +1,19 @@
 # MON-3 API guide
 
-## General conventions
+## General Conventions
+C register - holds API Call number.
 
-C register - holds API Call.
-
-Any other parameters are passed in the A, DE and/or HL registers
-
-Executing a RST 10H opcode calls the API
-
+Executing an RST 10H opcode calls the API.
 ```
         ld c,[API Call Number]
         rst 10H
+```
+- Any parameters are passed in the A, B, DE and/or HL registers, depending on the requirements of each call.
 
+- Results are returned in various registers and/or by altering memory as shown within each call.
+
+Note: if a register is maked as destroyed - that means the value of the register is altered in an undefined manner by the API call, and thus should not be relied upon to contain any specific value after the API call runs.
+```
     Some Examples:
 
         ;Produce a short Beep from the speaker
@@ -29,59 +31,61 @@ Executing a RST 10H opcode calls the API
         rst 10H
 ```
 ---
-## API Calls list
+## API Calls list - MON-3 1.0 (BC23-10 ROM Image)
 
-| Routine | Call Number | Hex Number |
-| ------- | ----------- | ---------- |
-| [_softwareID](#_softwareid)    | 0 | 00H |
-| [_versionID](#_versionid)      | 1 | 01H |
-| [_preInit](#_preinit)          | 2 | 02H |
-| [_beep](#_beep)                | 3 | 03H |
-| [_convAToSeg](#_convatoseg)    | 4 | 04H |
-| [_regAToASCII](#_regatoascii)      | 5 | 05H |
-| [_ASCIItoSegment](#_asciitosegment)   | 6 | 06H |
-| [_stringCompare](#_stringcompare)    | 7 | 07H |
-| [_HLToString](#_hltostring)       | 8 | 08H |
-| [_AToString](#_atostring)        | 9 | 09H |
-| [_scanSegments](#_scansegements)     | 10 | 0AH |
-| [_displayError](#_displayerror)     | 11 | 0BH |
-| [_LCDBusy](#_lcdbusy)          | 12 | 0CH |
-| [_stringToLCD](#_stringtolcd)      | 13 | 0DH |
-| [_charToLCD](#_chartolcd)        | 14 | 0EH |
-| [_commandToLCD](#_commandtolcd)     | 15 | 0FH |
-| [_scanKeys](#_scankeys)         | 16 | 10H |
-| [_scanKeysWait](#_scankeyswait)     | 17 | 11H |
-| [_matrixScan](#_matrixscan)       | 18 | 12H |
-| [_joystickScan](#_joystickscan)     | 19 | 13H |
-| [_serialEnable](#_serialenable)     | 20 | 14H |
-| [_serialDisable](#_serialdisable)    | 21 | 15H |
-| [_txByte](#_txbyte)           | 22 | 16H |
-| [_rxByte](#_rxbyte)           | 23 | 17H |
-| [_intelHexLoad](#_intelhexload)     | 24 | 18H |
-| [_sendToSerial](#_sendtoserial)     | 25 | 19H |
-| [_receiveFromSerial](#_receivefromserial) | 26 | 1AH |
-| [_sendAssembly](#_sendassembly)     | 27 | 1BH |
-| [_sendHex](#_sendhex)          | 28 | 1CH |
-| [_genDataDump](#_gendatadump)      | 29 | 1DH |
-| [_checkStartEnd](#_checkstartend)    | 30 | 1EH |
-| [_menuDriver](#_menudriver)       | 31 | 1FH |
-| [_paramDriver](#_paramdriver)      | 32 | 20H |
-| [_timeDelay](#_timedelay)        | 33 | 21H |
-| [_playNote](#_playnote)         | 34 | 22H |
-| [_playTune](#_playtune)         | 35 | 23H |
-| [_playTuneMenu](#_playtunemenu)     | 36 | 24H |
-| [_getCaps](#_getcaps)          | 37 | 25H |
-| [_getShadow](#_getshadow)        | 38 | 26H |
-| [_getProtect](#_getprotect)       | 39 | 27H |
-| [_getExpand](#_getexpand)        | 40 | 28H |
-| [_setCaps](#_setcaps)          | 41 | 29H |
-| [_setShadow](#_setshadow)        | 42 | 2AH |
-| [_setProtect](#_setprotect)       | 43 | 2BH |
-| [_setExpand](#_setexpand)        | 44 | 2CH |
-| [_toggleCaps](#_togglecaps)       | 45 | 2DH |
-| [_toggleShadow](#_toggleshadow)     | 46 | 2EH |
-| [_toggleProtect](#_toggleprotect)    | 47 | 2FH |
-| [_toggleExpand](#_toggleexpand)     | 48 | 30H |
+| Routine | Call Number | Hex Number | MON-3 Version Supported |
+| ---------------------- | :--: | :--: | :-------: |
+| [_softwareID](#_softwareid)    | 0 | 00H | BC23-10 |
+| [_versionID](#_versionid)      | 1 | 01H | BC23-10 |
+| [_preInit](#_preinit)          | 2 | 02H | BC23-10 |
+| [_beep](#_beep)                | 3 | 03H | BC23-10 |
+| [_convAToSeg](#_convatoseg)    | 4 | 04H | BC23-10 |
+| [_regAToASCII](#_regatoascii)  | 5 | 05H | BC23-10 |
+| [_ASCIItoSegment](#_asciitosegment)   | 6 | 06H | BC23-10 |
+| [_stringCompare](#_stringcompare)    | 7 | 07H | BC23-10 |
+| [_HLToString](#_hltostring)       | 8 | 08H | BC23-10 |
+| [_AToString](#_atostring)        | 9 | 09H | BC23-10 |
+| [_scanSegments](#_scansegements)     | 10 | 0AH | BC23-10 |
+| [_displayError](#_displayerror)     | 11 | 0BH | BC23-10 |
+| [_LCDBusy](#_lcdbusy)          | 12 | 0CH | BC23-10 |
+| [_stringToLCD](#_stringtolcd)      | 13 | 0DH | BC23-10 |
+| [_charToLCD](#_chartolcd)        | 14 | 0EH | BC23-10 |
+| [_commandToLCD](#_commandtolcd)     | 15 | 0FH | BC23-10 |
+| [_scanKeys](#_scankeys)         | 16 | 10H | BC23-10 |
+| [_scanKeysWait](#_scankeyswait)     | 17 | 11H | BC23-10 |
+| [_matrixScan](#_matrixscan)       | 18 | 12H | BC23-10 |
+| [_joystickScan](#_joystickscan)     | 19 | 13H | BC23-10 |
+| [_serialEnable](#_serialenable)     | 20 | 14H | BC23-10 |
+| [_serialDisable](#_serialdisable)    | 21 | 15H | BC23-10 |
+| [_txByte](#_txbyte)           | 22 | 16H | BC23-10 |
+| [_rxByte](#_rxbyte)           | 23 | 17H | BC23-10 |
+| [_intelHexLoad](#_intelhexload)     | 24 | 18H | BC23-10 |
+| [_sendToSerial](#_sendtoserial)     | 25 | 19H | BC23-10 |
+| [_receiveFromSerial](#_receivefromserial) | 26 | 1AH | BC23-10 |
+| [_sendAssembly](#_sendassembly)     | 27 | 1BH | BC23-10 |
+| [_sendHex](#_sendhex)          | 28 | 1CH | BC23-10 |
+| [_genDataDump](#_gendatadump)      | 29 | 1DH | BC23-10 |
+| [_checkStartEnd](#_checkstartend)    | 30 | 1EH | BC23-10 |
+| [_menuDriver](#_menudriver)       | 31 | 1FH | BC23-10 |
+| [_paramDriver](#_paramdriver)      | 32 | 20H | BC23-10 |
+| [_timeDelay](#_timedelay)        | 33 | 21H | BC23-10 |
+| [_playNote](#_playnote)         | 34 | 22H | BC23-10 |
+| [_playTune](#_playtune)         | 35 | 23H | BC23-10 |
+| [_playTuneMenu](#_playtunemenu)     | 36 | 24H | BC23-10 |
+| [_getCaps](#_getcaps)          | 37 | 25H | BC23-10 |
+| [_getShadow](#_getshadow)        | 38 | 26H | BC23-10 |
+| [_getProtect](#_getprotect)       | 39 | 27H | BC23-10 |
+| [_getExpand](#_getexpand)        | 40 | 28H | BC23-10 |
+| [_setCaps](#_setcaps)          | 41 | 29H | BC23-10 |
+| [_setShadow](#_setshadow)        | 42 | 2AH | BC23-10 |
+| [_setProtect](#_setprotect)       | 43 | 2BH | BC23-10 |
+| [_setExpand](#_setexpand)        | 44 | 2CH | BC23-10 |
+| [_toggleCaps](#_togglecaps)       | 45 | 2DH | BC23-10 |
+| [_toggleShadow](#_toggleshadow)     | 46 | 2EH | BC23-10 |
+| [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
+| [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
+
+Future MON-3 versions may introduce additinal API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
 
 ----
 ### _softwareID 
@@ -89,10 +93,10 @@ Get Software ID String
 ```
 Input: nothing
 Return: HL = Pointer to SOFTWARE ASCIIZ String
-Destroy: none
+Destroys: none
 ```
 ### _versionID
-Get Version Number and Version Straing
+Get Version Number and Version String
 ```
 Input: nothing
 Return: HL = Pointer to Release ASCIIZ String
@@ -100,8 +104,11 @@ Return: HL = Pointer to Release ASCIIZ String
         DE = Release minor version number
 Destroys: none
 ```
+BC contains the binary value for the design year. MON-3 1.0 returns 07E7H for the year 2023. Future versions should carry the year of release.
+DE contains the binary value for the design revision. MON-3 1.0 returns 0003H for design revison 3. Future versions should increment this value.
+The ASCIIZ string is a concatenation of the above values. MON-3 1.0 returns "2023.03",0
 ### _preInit
-Performs a hard boot, as if the TEC-1G had just been powered on. Returns to MON3 in default state.
+Performs a hard boot, as if the TEC-1G had just been powered on. Returns to MON-3 in default state.
 
 ### _beep
 Makes a short beep tone
@@ -171,25 +178,25 @@ Destroys: all
 LCD busy check.  Checks the LCD busy flag and loops until LCD isn't busy
 ```
 Input: nothing
-Destorys: none
+Destroys: none
 ```
 ### _stringToLCD
 ASCII string to LCD.  Writes a string to the current cursor location on the LCD
 ```
 Input: HL = ASCII string terminated with zero byte
-Destroy: A, HL (moves to end of list)
+Destroys: A, HL (moves to end of list)
 ```
 ### _charToLCD
 ASCII character to LCD.  Writes one character to the LCD at the current cursor location
 ```
 Input: A = ASCII character
-Destroy: none
+Destroys: none
 ```
 ### _commandToLCD
 Command to LCD.  Sends an LCD instruction to the LCD
 ```
 Input: B = Instruction byte
-Destroy: none
+Destroys: none
 ```
 ### _scanKeys
 Universal Key input detection routine. Supports HexPad and Matrix. Does not wait for a key press - returns immediately.
@@ -225,44 +232,48 @@ Output: A = Joystick return value between 00H-5FH (0-95)
       04H = Left      40H = Fire 1
       08H = Right     80H = Fire 3
         zero flag set if no joystick value returned
-Destroy: none
+Destroys: none
 ```
 ### _serialEnable
 Activates the BitBang serial port for serial transfer.  Disco LED's glow blue to indicate ready status.
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _serialDisable
 Deactivates the BitBang serial port for serial transfer.  Disco LEDs turn off.
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _txByte
 Bit Bang FTDI USB transmit routine.  Transmit one byte via the FTDI USB serial connection.  It assumes a UART connection of 4800-8-N-2.
 ```
 Input: A = byte to transmit
 Output: nothing
-Destroy: none
+Destroys: none
 ```
 ### _rxByte
 Bit Bang FTDI USB receive routine.  Receive one byte via the FTDI USB serial connection.  It assumes a UART connection of 4800-8-N-2.  Note routine will wait until a bit is detected.
 ```
 Input: nothing
 Return: A = byte received
-Destroy: none
+Destroys: none
 ```
 ### _intelHexLoad
 Load an Intel Hex file via the FTDI USB serial connection.  Displays file progress on the segments and PASS or FAIL at the end of the load.  Intel Hex file format is a string of ASCII with the following parts:
-
-MARK | LENGTH | ADDRESS | RECORD TYPE | DATA | CHECKSUM
+```
 :10200000210621CD7D20CD98203A00213C320021AF <- EXAMPLE LINE
-MARK is a colon character, LENGTH is the number of bytes per line, ADDRESS  is the 2 byte address of where the data is to be stored.  RECORD TYPE is 00 for Data and 01 for EOF.  DATA is the bytes to be stored.  CHECKSUM is the addition of all bytes in the one line.
+```
+| MARK | LENGTH | ADDRESS | RECORD TYPE | DATA | CHECKSUM |
+| :-: | :--: | :----: | :--: | :---------------: | :--: |
+|:|10|2000|00|210621CD7D20CD98203A00213C320021|AF|
+
+MARK is a colon character, LENGTH is the number of DATA bytes per line,  ADDRESS is the 2 byte address of where the data is to be stored.  RECORD TYPE is 00 for Data and 01 for EOF.  DATA is the bytes to be stored.  CHECKSUM is the addition of all bytes in the one line modulo 256, and taking the two's compliment.
 ```
 Input: nothing
 Output: nothing
-Destroy: HL,DE,BC,A
+Destroys: HL,DE,BC,A
 ```
 ### _sendToSerial
 SIO Binary Dump.  Transfer data on the TEC to a serial terminal.  From and To address data is needed and input.
@@ -359,7 +370,8 @@ Destroys: HL, BC, A
 Play a series of notes.  To play a note use a reference between 01H and 18H.  Where 01H is the lowest and 18h is the highest.  Use 00H to make a pause and any value greater then 18H to exit.
 
 Note reference table is as follows:
-+-----------+
+|Note |Value|
+|-----|-----|
 |  G  | 01H |
 |  G# | 02H |
 |  A  | 03H |
@@ -384,10 +396,10 @@ Note reference table is as follows:
 |  E  | 16H |
 |  F  | 17H |
 |  F# | 18H |
-+-----------+
+
 ```
 Input: DE = Address of first note
-Destroy: A,B,DE,HL
+Destroys: A,B,DE,HL
 ```
 ### _playTuneMenu
 Play tune routine above but address of notes is set via a parameter menu.
@@ -395,73 +407,102 @@ Play tune routine above but address of notes is set via a parameter menu.
 Get Caps lock state
 ```
 Input: none
-Output: A = caps lock state; 0 = off, CAPSLOCK = on
+Output: A = caps lock state; 0 = off, 80H = on
 ```
 ### _getShadow
 Get SHADOW state
 ```
 Input: none
-Output: A = shadow state; 0 = off, SHADOW = on
+Output: A = shadow state; 0 = off, 01H = on
 ```
 ### _getProtect
 Get PROTECT state
 ```
 Input: none
-Output: A = protect state; 0 = off
+Output: A = protect state; 0 = off, 02H = on
 ```
 ### _getExpand
 Get EXPAND state
 ```
 Input: none
-Output: A = expand state; 0 = off
+Output: A = expand state; 0 = off, 04H = on
 ```
 ### _setCaps
 Set Caps lock state
 ```
-Input: A = Desired caps lock state; 0 = off, 1 = on
-Destroy: A
+Input: A = Desired caps lock state; 0 = off, 80H = on
+Destroys: A
 ```
 ### _setShadow
 Set Shadow state
 ```
-Input: A = Desired shadow state; 0 = off, 1 = on
-Destroy: A
+Input: A = Desired shadow state; 0 = off, 01H = on
+Destroys: A
 ```
 ### _setProtect
 Set Protect state
 ```
-Input: A = Desired protect state; 0 = off, 1 = on
-Destroy: A
+Input: A = Desired protect state; 0 = off, 02H = on
+Destroys: A
 ```
 ### _setExpand
 Set Expand state
 ```
-Input: A = Desired expand state; 0 = off, 1 = on
-Destroy: A
+Input: A = Desired expand state; 0 = off, 04H = on
+Destroys: A
 ```
 ### _toggleCaps
 Toggle Caps Lock state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleShadow
 Toggle Shadow state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleProtect
 Toggle Protect state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 ### _toggleExpand
 Toggle Expand state
 ```
 Input: none
-Destroy: A
+Destroys: A
 ```
 
 ---
+## Breakpoints and Debugger
+
+Executing an RST 30H opcode calls the built-in Debugger. The message ![CPU bP](images/CPU_bP.png) is also displayed on the 7-seg displays to indicate that a Breakpoint is active.
+
+![Debugger Screenshot](images/debugger.png)
+
+As this is a single-byte (opcode F7H), it becomes very simple to insert this opcode into your program wherever a breakpoint is needed. Later on the opcode can be removed or simply replaced with NOP (opcode 00H) when no longer required.
+
+The debugger shows the state of the primary Z80 registers and the flags. If the flag letter is a capital, the flag is set; if lower case, flag is clear. x and y represent the two undefined bits of the flags register. Flags are shown in register-bit-order, bit 7 (sign) down to bit 0 (Carry).
+
+| Letter | Flag |
+| - | ---- |
+| s | Sign |
+| z | Zero |
+| y | (undefined) |
+| h | Half Carry |
+| x | (undefined) |
+| p | Parity/Overflow |
+| n | Add/Subtract |
+| c | Carry |
+
+At this time the Z80 alternate registers (AF', BC' etc.) are not shown, this feature may be added in a future MON-3 release.
+
+### Debugger navigation keys
+
+**GO** key exits the debugger and returns to the next instruction.
+
+**ADDR** key exits the debugger and returns to MON-3.
+
