@@ -1,3 +1,9 @@
+## File Links
+| File | Description | Version |
+|---|---|---|
+| [MON3 for TEC-1G](MON3-1G_BC23-10.bin) | Download and burn to a 16k ROM | 1.0 |
+| [MON3 User Guide](TEC-1G-MON3-User-Guide.pdf) | MON3 User Guide in PDF format | 1.0 |
+
 ## MON 3 Usage
 
 - Two modes, Menu and Data entry.  Press 'AD' to exit Menu and change to data entry mode and 'Fn-0' to get back to the main menu.
