@@ -1,4 +1,9 @@
-## MON 3 Usage
+## Mon 3 User Guide
+
+MON3 is the monitor for the TEC-1G.  
+A comprehensive User Guide has been provided that details how to use MON3.  Please see the [Mon3 User Guide](./MON3_User_Guide_v1.pdf) in this folder.
+
+## MON 3 Usage (Brief)
 
 - Two modes, Menu and Data entry.  Press 'AD' to exit Menu and change to data entry mode and 'Fn-0' to get back to the main menu.
 - Hard reset by either power on or Holding FN down when Reset is pressed and released.
@@ -68,22 +73,7 @@
 |  |  |  F# | 18H |
 
 
-- Graphical LCD library.  If using the TEC-DECK Graphical LCD (GLCD) add-on, a suite of routines to interface with the GLCD has been provide.  The Routines can be called from the following addresses.  IE: to initalise the GLCD, do a "`CALL 0D500H`".
-| Address | Routine | Address | Routine
-  |------|----|-----|----|
-  | D500 | INIT_LCD | D503 | CLEAR_GBUF |
-  | D546 | CLEAR_GR_LCD | D509 | CLEAR_TXT_LCD |
-  | D50C | SET_GR_MODE | D50F | SET_TXT_MODE |
-  | D512 | DRAW_BOX | D515 | DRAW_LINE |
-  | D518 | DRAW_CIRCLE | D51B | DRAW_PIXEL |
-  | D51E | FILL_BOX | D521 | FILL_CIRCLE |
-  | D524 | PLOT_TO_LCD | D527 | PRINT_STRING |
-  | D52A | PRINT_CHARS | D52D | DELAY_US |
-  | D530 | DELAY_MS | D533 | SET_BUF_CLEAR |
-  | D536 | SET_BUF_NO_CLEAR | D539 | CLEAR_PIXEL |
-  | D53C | FLIP_PIXEL | | |
-  
-  For information on using these routines see the [Z80 GLCD Library Reference](https://github.com/bchiha/Z80_LCD_128x64_Graphics_Library)
+- Graphical LCD library.  If using the TEC-DECK Graphical LCD (GLCD) add-on, a suite of routines to interface with the GLCD has been provide.  The Routines can be called from the GLCD API `RST 18H`.   For information on using these routines see the [Mon3 User Guide](./MON3_User_Guide_v1.pdf).
 
 
    

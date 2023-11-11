@@ -84,6 +84,7 @@ Note: if a register is maked as destroyed - that means the value of the register
 | [_toggleShadow](#_toggleshadow)     | 46 | 2EH | BC23-10 |
 | [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
 | [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
+| [_random](#_random)     | 49 | 31H | BC23-11 |
 
 Future MON-3 versions may introduce additinal API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
 
@@ -475,7 +476,13 @@ Toggle Expand state
 Input: none
 Destroys: A
 ```
-
+### _random
+Generate a Pseudo Random number between 00-fF
+```
+Input: none
+Output: A = random byte
+Destroys: B
+```
 ---
 ## Breakpoints and Debugger
 
