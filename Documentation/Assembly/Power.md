@@ -4,7 +4,7 @@
 ![Overlay](./pictures/power_overlay.jpg)
 
 With only nine (9) components to install in this section, this may seem too short to write up separately, but this is one of the most crucial parts of the build.
-Here is the list of parts you need:
+Here is the list of parts you need:![Power Delivery](./pictures/power_delivery_schemtic.JPG)
 
 | Ref# | Part | Value |
 |---|---|---|
@@ -19,7 +19,7 @@ Here is the list of parts you need:
 |L1 | Power LED | Blue 5mm|
 |USB1 | USB-B Socket | (Optional - See Notes Below)|
 
-![Power Delivery](./pictures/power_delivery.jpg)
+
 
 As with any building (the real ones we live in), you must have a solid foundation that you can rely on and be 100% certain is the bedrock of your build; so it is the same with a proper power circuit that is tested to work and delivers power correctly to where it needs to go and not where it shouldn't.
 
@@ -42,5 +42,23 @@ When the full build is complete, keep an eye (finger) on the heat coming off the
 Now there is a new kid on the block that might be of interest and if you find the heat coming off the 7805 and heatsink is too great (you should be able to keep your finger comfortably on the regulator for at least 3 seconds) then you may want to try a "Buck Regulator". These operate at much higher efficiency (something you may want to keep in mind if you ever run the TEC-1G off batteries) of around 95%, generate next to no heat at all and are available in 1A to 3A in small form factors that are no bigger than the 7805. Worth the $5 or so you will pay for one.
 
 ![Buck Regulator](./pictures/buck_reg.jpg)
+
+### Build Order
+
+As with Any PCB assembly, start with the components with the least height, so that when you flip the board over to actually solder, gravity is helping keep the component pressed against the board. Don't forget to use the "One Pin Method" if you have OCD like me. (Don't judge me!)
+1. Solder in the 330 ohm resistor
+   
+![330ohm Resistor](./pictures/resistor_330r.jpg)
+
+3. Next comes the Rectifying Diode. Make sure you orient this the right way, lining up the band on the diode to the band indicated on the board. Get this wrong and the diode will block rathere than pass through
+
+![4001_Diode](./pictures/diode_4001.jpg)
+
+
+
+
+
+### Testing
+Time to crack out the multimeter!
 
 ![Power Delivery](./pictures/power_delivery_complete.jpg)
