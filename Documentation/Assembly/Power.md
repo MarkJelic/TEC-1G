@@ -50,11 +50,21 @@ As with Any PCB assembly, start with the components with the least height, so th
    
 ![330ohm Resistor](./pictures/resistor_330r.jpg)
 
-3. Next comes the Rectifying Diode. Make sure you orient this the right way, lining up the band on the diode to the band indicated on the board. Get this wrong and the diode will block rathere than pass through
+2. Next comes the Rectifying Diode. Make sure you orient this the right way, lining up the band on the diode to the band indicated on the board. Get this wrong and the diode will block rather than pass through any power. (This diode also protects the TEC-1G from accidental reverse polarity plugs.)
 
 ![4001_Diode](./pictures/diode_4001.jpg)
 
+3. The L7805 regulator is next. You need to bend the pins 90 degress (just where the pins get skinny) so that the hole in the upper metal tab lines up with the hole in the PCB. After it is soldered in place, add a small dab of heatsink compound and bolt it down the PCB. If you have the heatsink, add that in later in the build, as one of the last things due to the height it adds to the board. Don't forget to add heatsink compound to both the heatsink surfaces then bolt it all together. Clean up any excess compound with a tissue.
 
+4. Solder in the two little 100n (104) smoothing capacitors.
+
+![Smoothing Capacitor4001_Diode](./pictures/capacitor_104.jpg)
+
+5. The Power Switch can be next. Make sure you press it in firmly before begenning to solder.
+
+6. The Blue LED can go next, keeping in mind the orientation of the Cathode.
+
+![Blue LED](./pictures/LED_5mm.jpg)
 
 
 
