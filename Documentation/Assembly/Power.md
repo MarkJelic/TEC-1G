@@ -66,6 +66,8 @@ As with Any PCB assembly, start with the components with the least height, so th
 
 7. Next on the height line is the large 1000uf electrolytic capacitor. Keep in mind there is a polarity which has to be followed, and in this case, the capacitor has to be laid over horizontally, to keep it low enough to allow GPIO boards to be installed over the top of that section of the PCB.
 
+![1000uf](./pictures/capacitor_1000uf.jpg)
+
 8. Then the Barrel Jack socket can go in next. Don't skimp on the solder at this item, as it has to sustain power jacks being pushed and pulled out of it.
 
 9. Last of all, the optional USB-B connector which is not supplied in the TEC-1G Kit. Read on...
