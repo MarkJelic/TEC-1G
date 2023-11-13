@@ -1,10 +1,10 @@
 # Assembly Instructions
 
 ## 3. The Power Delivery Circuit
-![Overlay](./pictures/power_overlay.jpg)
+![Overlay](./pictures/power_overlay.jpg) ![Schematic](./pictures/power_delivery_schematic.jpg)
 
 With only nine (9) components to install in this section, this may seem too short to write up separately, but this is one of the most crucial parts of the build.
-Here is the list of parts you need:![Power Delivery](./pictures/power_delivery_schemtic.JPG)
+Here is the list of parts you need:
 
 | Ref# | Part | Value |
 |---|---|---|
@@ -18,8 +18,6 @@ Here is the list of parts you need:![Power Delivery](./pictures/power_delivery_s
 |R1 | Resistor | 330R|
 |L1 | Power LED | Blue 5mm|
 |USB1 | USB-B Socket | (Optional - See Notes Below)|
-
-
 
 As with any building (the real ones we live in), you must have a solid foundation that you can rely on and be 100% certain is the bedrock of your build; so it is the same with a proper power circuit that is tested to work and delivers power correctly to where it needs to go and not where it shouldn't.
 
@@ -66,9 +64,59 @@ As with Any PCB assembly, start with the components with the least height, so th
 
 ![Blue LED](./pictures/LED_5mm.jpg)
 
+7. Next on the height line is the large 1000uf electrolytic capacitor. Keep in mind there is a polarity which has to be followed, and in this case, the capacitor has to be laid over horizontally, to keep it low enough to allow GPIO boards to be installed over the top of that section of the PCB.
 
+8. Then the Barrel Jack socket can go in next. Don't skimp on the solder at this item, as it has to sustain power jacks being pushed and pulled out of it.
+
+9. Last of all, the optional USB-B connector which is not supplied in the TEC-1G Kit. Read on...
 
 ### Testing
 Time to crack out the multimeter!
 
+If you have a Bench Power Supply, it would be good to use that as your power source so you can monitor how much power usage is being drawn through the 7805. If you don't, that's fine, you can still do all the tests with just a multimeter.
+
+First up, switch her on and see if the Blue Power LED comes on. If it doesn't, check your power supply for orientation on the barrel jack. The Tip needs to be positive and the voltage really needs to be 7.5v minimum.
+
+Leaving the power on, do some spot checking of the voltage at various ICs around the board (you will need to look up which pin is GND and which is +5v) as well as brushing the probe along non-power pins to see if there are any spurious connections to pins that should not have power.
+
+This sort of "Testing the Power" needs to be done at the end of any big soldering session, to ensure you have not inadvertently made any shorts and the power is still stable.
+
+The last test is to leave the board powerted up for 30 minutes or so and see if the 7805 gets warm. With just one little LED running, the 7805 should remain totally cool. Once you have all the chips installed and running, monitoring the heat of the 7805 is wise.
+
 ![Power Delivery](./pictures/power_delivery_complete.jpg)
+
+### The USB-B Connector
+
+Who doesn't have a USB port within 1m of them at any given moment in 2023? Not many in this day and age and thus it simply makes sense that rather than wasting time in soldering the parts listed above, you just use a pretty ubiquitous USB cable to plug directly into the TEC-1G and away you go, right?
+
+During testing of the BETA boards, it was found that the current draw the 1G pulls exceeds what most USB ports are designed or willing to give, which caused very erratic behaviour on the 1G. In fact, the USB-B socket was very close to being removed.
+
+If you are to use the USB-B socket as a power delivery, remember there is NO SUPPORT for this method AND if you accidentally get the polarity of voltage wrong, there is NO PROTECTION for your components at all. You best know what you are doing!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
