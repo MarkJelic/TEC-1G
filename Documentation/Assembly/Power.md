@@ -6,23 +6,25 @@
 With only nine (9) components to install in this section, this may seem too short to write up separately, but this is one of the most crucial parts of the build.
 Here is the list of parts you need:
 
-BJ1  Barrel Jack  Socket 2.1mm
-SW1  Power Switch  DPDT Slide
-D0  Rectifying Diode  1N4001-7
-C1  Electrolytic Capacitor  1000uf
-C2  Smoothing Capacitor  100n
-C3  Smoothing Capacitor  100m
-REG1  5V Regulator  L7805
-R1  Resistor  330R
-L1  Power LED  Blue 5mm
-USB1  USB-B Socket  (Optional - See Notes Below)
+| Ref# | Part | Value |
+|---|---|---|
+| BJ1 | Barrel Jack | Socket 2.1mm|
+|SW1 | Power Switch | DPDT Slide|
+|D0 | Rectifying Diode | 1N4001-7|
+|C1 | Electrolytic Capacitor | 1000uf|
+|C2 | Smoothing Capacitor | 100n|
+|C3 | Smoothing Capacitor | 100n|
+|REG1 | 5V Regulator | L7805|
+|R1 | Resistor | 330R|
+|L1 | Power LED | Blue 5mm|
+|USB1 | USB-B Socket | (Optional - See Notes Below)|
 
 ![Power Delivery](./pictures/power_delivery.jpg)
 
-As with any building (the real ones we live in), you must have a solid foundation that you can rely on and be 100% certain is the bedrock of your build; so it is the same with a proper power circult that is tested to work and deliveres power correctly to where it needs to go and not where it shouldn't.
+As with any building (the real ones we live in), you must have a solid foundation that you can rely on and be 100% certain is the bedrock of your build; so it is the same with a proper power circuit that is tested to work and delivers power correctly to where it needs to go and not where it shouldn't.
 
 ### The 7805 Regulator
-The TEC-1G, as with most other Z80 machines of the time works on a single 5v power supply. We could get a power pack and feed 5v directly into system, but those are not always easy to come by and you might find you have a 9v pack instead. Accidentally plug one of those in and you can kiss goodbye any number of chips. Hence, since the first days of the TEC-1, they have had a 5v regulator by means of the 7805:
+The TEC-1G, as with most other Z80 machines of the time, works on a single 5v power supply. We could get a power pack and feed 5v directly into system, but those are not always easy to come by and you might find you have a 9v pack instead. Accidentally plug one of those in and you can kiss goodbye any number of chips. Hence, since the first days of the TEC-1, they have had a 5v regulator by means of the 7805.
 
 ![7805 5v Regulator](./pictures/7805.jpg)
 
