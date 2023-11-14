@@ -85,7 +85,7 @@ KEY_AUTO:   .equ    STACK_TOP+11    ;Key Auto Increment Flag
 KEY_REPEAT: .equ    STACK_TOP+12    ;Key Auto Repeat timer
 KEY_BEEP:   .equ    STACK_TOP+13    ;Keypress Beep flag
 KEY_SECOND: .equ    STACK_TOP+14    ;Matrix Keyboard second key Buffer
-SPARE:      .equ    STACK_TOP+15    ;Spare Byte
+RNG_SEED:   .equ    STACK_TOP+15    ;Random Number Seed
 DIS_ADDR:   .equ    STACK_TOP+16    ;Base Disassembler/Editing address
 USER_INT:   .equ    STACK_TOP+18    ;User defined INT routine
 USER_NMI:   .equ    STACK_TOP+20    ;User defined NMI routine
@@ -355,7 +355,9 @@ hardInit:
         ;wait a bit
         ld hl,0FEEEH        ;delay
         call timeDelay
-
+        ;random number seed
+        ld a,r              ;get R value
+        ld (RNG_SEED),a     ;save it
         ;TODO add more here...
 
 ;Soft Reset call and fallthrough for Hard Reset and GO return address
@@ -2487,6 +2489,23 @@ displaySettings:
         ld hl,settingsCFG
         call menuDriver
 
+; Random Number generator.
+; Input: note
+; Output: A = pseudo random number
+; Destroy: B
+random:
+        ld a,(RNG_SEED)     ;Random RAM seed
+        ld b,a
+        sla b
+        sbc a,a
+        and 5FH
+        xor b
+        ld (RNG_SEED),a
+        ld b,a
+        ld a,r
+        add a,b
+        ret
+
 ; ----------------------------------------------------------------------------------------------------------------
 ; Strings, Constants, JP tables etc.
 ; ----------------------------------------------------------------------------------------------------------------
@@ -2718,6 +2737,7 @@ APITable:
         .dw toggleShadow
         .dw toggleProtect
         .dw toggleExpand
+        .dw random
 API_COUNT:  .equ    $-APITable  ;Total number of API functions
 
         .org BASE_ADDR+1500H
@@ -2802,6 +2822,7 @@ _toggleCaps       .equ 45
 _toggleShadow     .equ 46
 _toggleProtect    .equ 47
 _toggleExpand     .equ 48
+_random           .equ 49
 
 APINames2:
 _initLCD          .equ 0  ;Initalise the LCD
@@ -2829,10 +2850,10 @@ _flipPixel        .equ 20 ;Flip a Pixel On/Off at X,Y
         .org BASE_ADDR+3FECH    ; 16k
 
 RELMAJOR:   .dw 07E7h	; 2023 - for the API
-RELMINOR:   .dw 000Bh
+RELMINOR:   .dw 0011h
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "BC23.10"
+REL_TXT:    .equ "2023.11"
 
         .end
 

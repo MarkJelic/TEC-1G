@@ -1,0 +1,283 @@
+; MAD Magazine Alfred E. Neuman Face
+; ----------------------------------
+; By B. Chiha May-2023
+        
+; The October 1985 issue of Mad Magazine featured a BASIC computer program which
+; rendered the face of Alfred E. Neuman in crude vector graphics. Here it is, drawn
+; for a 128x64 Pixel Graphics LCD
+; See:	https://meatfighter.com/mad/
+        
+; This program generates the face similar to the BASIC code, one stroke at a time.
+        ORG 2000H
+        
+; Graphics library routines used
+G_INIT_LCD:	EQU 0
+G_SET_GR_MODE:	EQU 4
+G_DRAW_LINE:	EQU 7
+G_PLOT_TO_LCD:	EQU 12
+G_SET_BUF_CLEAR:	EQU 17
+G_SET_BUF_NO_CLEAR:	EQU 18
+        
+START:	
+        LD A,G_INIT_LCD
+        RST 18H
+        LD A,G_SET_GR_MODE
+        RST 18H
+        LD A,G_SET_BUF_NO_CLEAR ;Set No Clear, to retrain existing buffer
+        RST 18H
+        LD HL, MAD_DATA ;after plotting
+MAD_LOOP:	
+        LD A, (HL) 		;Get X0
+        CP 0FFH
+        RET Z 			;Exit if FF
+        LD B, A
+        INC HL
+        LD C, (HL) 		;Get Y0
+        INC HL
+        LD D, (HL) 		;Get X1
+        INC HL
+        LD E, (HL) 		;Get Y1
+        INC HL
+        PUSH HL
+        LD A,G_DRAW_LINE ;Draw a line between BC and DE
+        RST 18H
+        LD A,G_PLOT_TO_LCD ;Plot the line to the LCD
+        RST 18H
+        POP HL
+        JR MAD_LOOP
+        
+; This is the FAST version, drawing the strokes and THEN displaying the face.  Some
+; people compained that the above slower version was too slow.  They didn't realise that
+; this is how it was if the BASIC code was keyed an run on an Apple II back in the '80s
+        
+DO_MAD_FAST:	
+        LD A,G_INIT_LCD
+        RST 18H
+        LD A,G_SET_GR_MODE
+        RST 18H
+        LD A,G_SET_BUF_CLEAR ;Set No Clear, to retrain existing buffer
+        RST 18H
+        LD HL, MAD_DATA
+MAD_LOOP1:	
+        LD A, (HL) 		;Get X0
+        CP 0FFH
+        JR Z, MDEND
+        LD B, A
+        INC HL
+        LD C, (HL) 		;Get Y0
+        INC HL
+        LD D, (HL) 		;Get X1
+        INC HL
+        LD E, (HL) 		;Get Y1
+        INC HL
+        PUSH HL
+        LD A,G_DRAW_LINE ;Draw a line between BC and DE
+        RST 18H
+        POP HL
+        JR MAD_LOOP1
+MDEND:	
+        LD A,G_PLOT_TO_LCD ;Plot the line to the LCD
+        RST 18H
+        RET
+        
+;Data here are in groups of 4, X0, Y0, X1, Y1 and a line is drawn between these
+;two X,Y points.  This data has been scaled down to be constrained to a 128x64 pixel
+;screen.  Its also been centered and magnified.  Its all ready to go...
+MAD_DATA:	
+        DB      2EH, 1EH, 30H, 1CH, 2DH, 1FH, 31H, 1CH
+        DB      33H, 1BH, 38H, 1BH, 2EH, 20H, 2EH, 1FH
+        DB      26H, 27H, 23H, 27H, 25H, 27H, 1EH, 21H
+        DB      3BH, 12H, 41H, 12H, 2CH, 17H, 2CH, 14H
+        DB      1EH, 21H, 24H, 27H, 1EH, 21H, 1EH, 1DH
+        DB      3BH, 13H, 41H, 13H, 2DH, 16H, 2DH, 12H
+        DB      1EH, 20H, 1EH, 1EH, 5DH, 26H, 5EH, 21H
+        DB      3EH, 14H, 32H, 12H, 44H, 01H, 42H, 03H
+        DB      1BH, 2CH, 21H, 31H, 1AH, 24H, 1AH, 27H
+        DB      16H, 24H, 18H, 24H, 23H, 2CH, 22H, 2CH
+        DB      5AH, 33H, 5AH, 34H, 27H, 31H, 2AH, 35H
+        DB      2AH, 35H, 2EH, 37H, 47H, 3EH, 58H, 34H
+        DB      45H, 1FH, 49H, 1EH, 4AH, 1DH, 51H, 1EH
+        DB      45H, 1FH, 48H, 1EH, 4FH, 1DH, 48H, 1DH
+        DB      30H, 20H, 30H, 22H, 2EH, 22H, 31H, 20H
+        DB      2FH, 22H, 31H, 22H, 30H, 22H, 32H, 21H
+        DB      1EH, 18H, 22H, 14H, 5BH, 1EH, 5FH, 20H
+        DB      45H, 12H, 45H, 14H, 3AH, 12H, 3CH, 15H
+        DB      3DH, 29H, 3EH, 29H, 3CH, 2BH, 3CH, 2BH
+        DB      3DH, 29H, 3DH, 29H, 3CH, 27H, 3CH, 27H
+        DB      25H, 29H, 26H, 2DH, 15H, 25H, 1BH, 2CH
+        DB      1EH, 27H, 1EH, 2AH, 1BH, 29H, 19H, 25H
+        DB      26H, 2AH, 25H, 2CH, 1DH, 22H, 17H, 24H
+        DB      19H, 25H, 1EH, 25H, 1FH, 25H, 20H, 2CH
+        DB      23H, 25H, 23H, 22H, 5DH, 26H, 5FH, 20H
+        DB      3EH, 15H, 33H, 12H, 46H, 01H, 43H, 04H
+        DB      53H, 2CH, 56H, 30H, 2CH, 2EH, 35H, 2BH
+        DB      39H, 32H, 48H, 31H, 53H, 2CH, 51H, 30H
+        DB      3EH, 3DH, 4AH, 3CH, 3EH, 3EH, 44H, 3EH
+        DB      44H, 3DH, 49H, 3DH, 46H, 3DH, 59H, 35H
+        DB      3FH, 31H, 44H, 34H, 36H, 2BH, 33H, 2EH
+        DB      4CH, 2AH, 57H, 2FH, 3CH, 33H, 45H, 31H
+        DB      5DH, 32H, 5BH, 2EH, 5CH, 2FH, 5BH, 32H
+        DB      5BH, 30H, 5AH, 33H, 5AH, 30H, 5AH, 30H
+        DB      4BH, 25H, 4DH, 25H, 51H, 22H, 51H, 23H
+        DB      49H, 22H, 4EH, 22H, 46H, 32H, 4FH, 31H
+        DB      38H, 33H, 3EH, 38H, 3DH, 31H, 4AH, 31H
+        DB      43H, 38H, 4CH, 33H, 24H, 22H, 24H, 26H
+        DB      5FH, 20H, 5FH, 23H, 31H, 12H, 31H, 12H
+        DB      46H, 02H, 42H, 04H, 25H, 24H, 25H, 27H
+        DB      5EH, 26H, 64H, 22H, 30H, 12H, 30H, 16H
+        DB      43H, 04H, 42H, 01H, 1DH, 2EH, 25H, 31H
+        DB      20H, 26H, 1EH, 2BH, 1BH, 22H, 17H, 23H
+        DB      21H, 27H, 1BH, 24H, 25H, 22H, 27H, 1CH
+        DB      64H, 22H, 64H, 1FH, 2FH, 16H, 2EH, 12H
+        DB      41H, 04H, 47H, 05H, 31H, 1DH, 33H, 1CH
+        DB      32H, 1DH, 34H, 1CH, 32H, 1CH, 39H, 1DH
+        DB      33H, 1DH, 35H, 1DH, 19H, 26H, 19H, 27H
+        DB      27H, 2DH, 27H, 2BH, 17H, 28H, 1EH, 2DH
+        DB      25H, 2BH, 27H, 2DH, 3DH, 27H, 3CH, 28H
+        DB      3CH, 27H, 3CH, 28H, 45H, 27H, 44H, 28H
+        DB      45H, 27H, 45H, 28H, 45H, 2BH, 47H, 2BH
+        DB      38H, 2CH, 3FH, 2CH, 3CH, 29H, 3FH, 2AH
+        DB      37H, 2AH, 3BH, 2CH, 33H, 22H, 35H, 21H
+        DB      37H, 22H, 36H, 21H, 35H, 22H, 35H, 22H
+        DB      33H, 21H, 37H, 21H, 25H, 21H, 28H, 1CH
+        DB      64H, 20H, 62H, 1FH, 30H, 15H, 30H, 12H
+        DB      41H, 05H, 49H, 05H, 27H, 1CH, 27H, 19H
+        DB      5DH, 20H, 5DH, 1DH, 30H, 15H, 30H, 13H
+        DB      4AH, 05H, 4EH, 05H, 2EH, 08H, 2AH, 06H
+        DB      2AH, 06H, 2CH, 09H, 2CH, 09H, 2CH, 07H
+        DB      2CH, 09H, 25H, 08H, 28H, 1BH, 28H, 19H
+        DB      5DH, 1FH, 5DH, 1FH, 2EH, 15H, 2EH, 12H
+        DB      4FH, 05H, 48H, 06H, 16H, 27H, 19H, 2BH
+        DB      20H, 2AH, 23H, 2BH, 1EH, 2CH, 21H, 2EH
+        DB      16H, 25H, 17H, 2AH, 6BH, 25H, 67H, 23H
+        DB      6BH, 24H, 6BH, 29H, 6BH, 27H, 6BH, 25H
+        DB      6BH, 27H, 6AH, 29H, 4CH, 33H, 44H, 38H
+        DB      45H, 31H, 4CH, 32H, 46H, 31H, 42H, 34H
+        DB      2DH, 2DH, 34H, 31H, 37H, 33H, 3EH, 38H
+        DB      3DH, 32H, 47H, 32H, 2EH, 2EH, 2DH, 30H
+        DB      3DH, 38H, 46H, 36H, 20H, 12H, 23H, 10H
+        DB      21H, 0CH, 21H, 11H, 23H, 10H, 23H, 13H
+        DB      22H, 13H, 1DH, 19H, 4BH, 22H, 4DH, 21H
+        DB      4AH, 21H, 4DH, 22H, 45H, 22H, 46H, 21H
+        DB      46H, 21H, 48H, 21H, 5CH, 2EH, 5BH, 2BH
+        DB      5CH, 2DH, 5DH, 29H, 5DH, 29H, 5DH, 2CH
+        DB      5CH, 2AH, 5CH, 2BH, 5EH, 2DH, 5FH, 2EH
+        DB      5FH, 2EH, 60H, 29H, 61H, 2BH, 60H, 2DH
+        DB      5EH, 2CH, 5FH, 2DH, 62H, 1EH, 61H, 15H
+        DB      5DH, 20H, 5DH, 1DH, 4BH, 06H, 4BH, 07H
+        DB      4CH, 07H, 4EH, 07H, 1EH, 27H, 1FH, 2BH
+        DB      16H, 29H, 15H, 26H, 1AH, 2AH, 22H, 31H
+        DB      20H, 2AH, 23H, 2AH, 37H, 39H, 3CH, 3CH
+        DB      4AH, 3BH, 57H, 35H, 4DH, 39H, 4FH, 38H
+        DB      4AH, 3CH, 51H, 39H, 56H, 2DH, 57H, 2EH
+        DB      43H, 2EH, 43H, 2EH, 31H, 2EH, 30H, 2EH
+        DB      3AH, 33H, 3AH, 33H, 56H, 2DH, 55H, 2FH
+        DB      4AH, 32H, 4FH, 31H, 2EH, 30H, 2FH, 30H
+        DB      2EH, 30H, 2EH, 30H, 3AH, 1EH, 39H, 20H
+        DB      3AH, 1EH, 3AH, 20H, 3AH, 1FH, 3BH, 1FH
+        DB      39H, 1EH, 3BH, 1FH, 4FH, 2CH, 55H, 2FH
+        DB      3CH, 31H, 3EH, 31H, 2EH, 2FH, 32H, 30H
+        DB      38H, 34H, 3CH, 37H, 62H, 16H, 63H, 1EH
+        DB      5CH, 1EH, 5DH, 1BH, 4DH, 07H, 50H, 07H
+        DB      4EH, 08H, 51H, 08H, 64H, 1AH, 60H, 15H
+        DB      5DH, 1BH, 5BH, 1EH, 51H, 07H, 5FH, 10H
+        DB      60H, 10H, 53H, 08H, 61H, 2DH, 61H, 2BH
+        DB      5FH, 2CH, 5FH, 2CH, 61H, 28H, 65H, 29H
+        DB      61H, 28H, 65H, 29H, 68H, 29H, 68H, 26H
+        DB      5FH, 25H, 63H, 23H, 45H, 1FH, 47H, 1DH
+        DB      48H, 1DH, 46H, 1FH, 51H, 1DH, 49H, 1CH
+        DB      48H, 1DH, 51H, 1EH, 68H, 25H, 66H, 25H
+        DB      65H, 25H, 68H, 25H, 68H, 29H, 67H, 26H
+        DB      68H, 26H, 68H, 27H, 65H, 25H, 68H, 26H
+        DB      37H, 1FH, 2EH, 21H, 38H, 21H, 3AH, 22H
+        DB      36H, 20H, 39H, 22H, 32H, 20H, 35H, 20H
+        DB      4DH, 23H, 4FH, 21H, 49H, 21H, 4CH, 22H
+        DB      46H, 23H, 48H, 22H, 4AH, 24H, 4EH, 24H
+        DB      31H, 24H, 37H, 23H, 35H, 24H, 32H, 24H
+        DB      32H, 23H, 33H, 24H, 33H, 23H, 34H, 23H
+        DB      61H, 17H, 63H, 1AH, 5DH, 1BH, 5AH, 18H
+        DB      61H, 11H, 5DH, 11H, 5DH, 11H, 61H, 14H
+        DB      5AH, 17H, 5DH, 1AH, 1EH, 1DH, 1FH, 1BH
+        DB      5FH, 13H, 60H, 14H, 3FH, 13H, 41H, 13H
+        DB      20H, 1BH, 1FH, 1DH, 1FH, 1AH, 1EH, 19H
+        DB      42H, 13H, 46H, 15H, 43H, 13H, 47H, 14H
+        DB      61H, 29H, 62H, 27H, 63H, 2CH, 63H, 2AH
+        DB      64H, 2BH, 64H, 25H, 64H, 2BH, 65H, 28H
+        DB      19H, 24H, 19H, 27H, 17H, 25H, 17H, 29H
+        DB      1BH, 24H, 20H, 27H, 20H, 2DH, 22H, 2EH
+        DB      22H, 2AH, 21H, 2CH, 22H, 2BH, 23H, 2BH
+        DB      22H, 2CH, 23H, 2CH, 1FH, 30H, 23H, 31H
+        DB      4FH, 21H, 48H, 22H, 50H, 21H, 4EH, 25H
+        DB      4FH, 25H, 50H, 22H, 48H, 24H, 4DH, 25H
+        DB      24H, 08H, 28H, 08H, 24H, 09H, 26H, 09H
+        DB      26H, 09H, 23H, 09H, 23H, 09H, 21H, 0AH
+        DB      3EH, 2BH, 38H, 2BH, 45H, 2AH, 45H, 2AH
+        DB      3EH, 2BH, 3BH, 2BH, 3BH, 2CH, 3EH, 2CH
+        DB      46H, 22H, 47H, 21H, 28H, 2FH, 2CH, 36H
+        DB      27H, 30H, 28H, 33H, 26H, 31H, 2EH, 35H
+        DB      28H, 31H, 2CH, 36H, 29H, 33H, 2FH, 36H
+        DB      2AH, 34H, 2FH, 37H, 29H, 31H, 37H, 3BH
+        DB      27H, 32H, 31H, 37H, 1EH, 1AH, 20H, 16H
+        DB      48H, 14H, 43H, 11H, 43H, 11H, 45H, 14H
+        DB      45H, 13H, 45H, 12H, 61H, 24H, 65H, 23H
+        DB      62H, 23H, 68H, 23H, 67H, 23H, 62H, 23H
+        DB      68H, 23H, 6AH, 24H, 51H, 39H, 57H, 37H
+        DB      56H, 36H, 58H, 35H, 58H, 36H, 59H, 33H
+        DB      59H, 35H, 5AH, 31H, 6BH, 29H, 5EH, 32H
+        DB      5FH, 32H, 64H, 2DH, 64H, 2DH, 60H, 30H
+        DB      69H, 2BH, 66H, 2DH, 25H, 0AH, 21H, 0DH
+        DB      26H, 0AH, 20H, 0EH, 20H, 0DH, 20H, 13H
+        DB      20H, 13H, 23H, 0BH, 45H, 27H, 45H, 28H
+        DB      4AH, 2AH, 4AH, 2AH, 43H, 2BH, 46H, 2AH
+        DB      44H, 2BH, 46H, 2BH, 35H, 31H, 3BH, 32H
+        DB      47H, 33H, 47H, 31H, 4FH, 2BH, 55H, 2CH
+        DB      35H, 2CH, 30H, 2DH, 4FH, 2BH, 57H, 2FH
+        DB      3FH, 38H, 44H, 37H, 47H, 36H, 4CH, 33H
+        DB      2EH, 2FH, 31H, 30H, 1DH, 18H, 22H, 13H
+        DB      45H, 12H, 4BH, 12H, 4AH, 13H, 4CH, 15H
+        DB      4FH, 14H, 53H, 17H, 23H, 13H, 1EH, 18H
+        DB      46H, 12H, 4EH, 13H, 4EH, 13H, 48H, 13H
+        DB      50H, 14H, 53H, 16H, 30H, 35H, 31H, 36H
+        DB      30H, 36H, 3EH, 3EH, 30H, 35H, 36H, 3AH
+        DB      32H, 35H, 3BH, 3DH, 3CH, 3DH, 38H, 3BH
+        DB      38H, 3BH, 3EH, 3CH, 32H, 36H, 37H, 3BH
+        DB      3AH, 3CH, 46H, 3EH, 49H, 29H, 4AH, 2AH
+        DB      4AH, 29H, 49H, 2BH, 4AH, 2AH, 4AH, 2BH
+        DB      48H, 2BH, 4AH, 2BH, 35H, 1CH, 3AH, 1DH
+        DB      37H, 1DH, 3AH, 1CH, 3AH, 1CH, 39H, 1CH
+        DB      38H, 1CH, 36H, 1CH, 4CH, 2AH, 4FH, 2CH
+        DB      45H, 38H, 4AH, 35H, 4AH, 32H, 35H, 31H
+        DB      43H, 2EH, 43H, 30H, 39H, 1FH, 38H, 20H
+        DB      38H, 1FH, 3AH, 20H, 33H, 21H, 36H, 21H
+        DB      35H, 21H, 36H, 21H, 39H, 24H, 38H, 25H
+        DB      3AH, 24H, 38H, 24H, 3AH, 23H, 39H, 25H
+        DB      3BH, 23H, 3AH, 24H, 29H, 1AH, 29H, 16H
+        DB      52H, 15H, 55H, 15H, 56H, 15H, 56H, 16H
+        DB      56H, 15H, 59H, 14H, 29H, 17H, 29H, 19H
+        DB      58H, 15H, 5AH, 15H, 5AH, 15H, 5AH, 18H
+        DB      59H, 17H, 59H, 15H, 2AH, 16H, 2BH, 13H
+        DB      2CH, 13H, 2CH, 17H, 43H, 01H, 3EH, 04H
+        DB      3DH, 04H, 42H, 01H, 3DH, 36H, 3CH, 38H
+        DB      49H, 33H, 4FH, 30H, 3FH, 34H, 3FH, 33H
+        DB      3EH, 37H, 43H, 38H, 22H, 30H, 24H, 31H
+        DB      1BH, 25H, 19H, 28H, 27H, 2EH, 27H, 31H
+        DB      20H, 2BH, 1EH, 29H, 25H, 31H, 21H, 30H
+        DB      26H, 30H, 28H, 2FH, 18H, 2BH, 1DH, 2DH
+        DB      18H, 2AH, 1FH, 2FH, 51H, 2EH, 57H, 2EH
+        DB      3EH, 37H, 3EH, 37H, 1BH, 22H, 1EH, 22H
+        DB      3DH, 3DH, 47H, 3DH, 48H, 24H, 48H, 24H
+        DB      4EH, 24H, 4EH, 24H, 4AH, 21H, 4AH, 21H
+        DB      47H, 22H, 48H, 23H, 2FH, 2EH, 32H, 2DH
+        DB      42H, 33H, 43H, 34H, 55H, 2DH, 56H, 30H
+        DB      53H, 2EH, 50H, 31H, 45H, 1EH, 4DH, 1CH
+        DB      4AH, 1CH, 4FH, 1CH, 50H, 1DH, 45H, 1EH
+        DB      41H, 2CH, 37H, 2BH, 37H, 2BH, 39H, 29H
+        DB      37H, 2AH, 38H, 29H, 67H, 2BH, 5DH, 32H
+        DB      61H, 31H, 6BH, 29H, 5DH, 31H, 5AH, 31H
+        DB      3AH, 23H, 3AH, 25H, 2DH, 20H, 31H, 1CH
+        DB      3EH, 03H, 2EH, 07H, 2EH, 07H, 3DH, 04H
+        DB      3AH, 05H, 33H, 07H, 2EH, 08H, 2EH, 06H
+        DB      3CH, 36H, 41H, 37H, 30H, 2EH, 32H, 2EH
+        DB      43H, 2FH, 43H, 30H, 43H, 33H, 43H, 33H
+        DB      0FFH
+        
