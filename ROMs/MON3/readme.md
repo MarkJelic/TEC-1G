@@ -1,13 +1,13 @@
 ## Mon 3 User Guide
 
 MON3 is the monitor for the TEC-1G.  
-A comprehensive User Guide has been provided that details how to use MON3.  Please see the [Mon3 User Guide](./MON3_User_Guide_v1.pdf) in this folder.
+A comprehensive User Guide has been provided that details how to use MON3.  Please see the [Mon3 User Guide](./MON3_User_Guide_v1.1.pdf) in this folder.
 
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](MON3-1G_BC23-11.bin) | Download and burn to a 16k ROM | 1.0 |
-| [MON3 User Guide](./MON3_User_Guide_v1.pdf) | MON3 User Guide in PDF format | 1.0 |
+| [MON3 for TEC-1G](./MON3-1G_BC23-11.bin) | Download and burn to a 16k ROM | 1.0 |
+| [MON3 User Guide](./MON3_User_Guide_v1.1.pdf) | MON3 User Guide in PDF format | 1.0 |
 
 ## MON 3 Usage (Brief)
 
