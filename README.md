@@ -13,7 +13,7 @@
 
 TEC-1G - A Z80 based single board computer.
 
-The TEC-1G is a direct descendent of the Talking Electronics Computer, known as the TEC-1, which was first published by the Australian electronics hobbyist magazine ["Talking Electronics"](https://www.talkingelectronics.com/te_interactive_index.html) (or simply TE), between 1981 and 1991.
+The TEC-1G is a direct descendant of the Talking Electronics Computer, known as the TEC-1, which was first published by the Australian electronics hobbyist magazine ["Talking Electronics"](https://www.talkingelectronics.com/te_interactive_index.html) (or simply TE), between 1981 and 1991.
 
 The TEC-1 was developed as a learning computer, designed to teach the basics of how a microprocessor works at the fundamental hardware and software level, and offered the ability to create and run simple programs in Z80 machine code. TE magazine covered the TEC-1 in six installments, known as "Issue 10" to "Issue 15". These magazines can be downloaded freely from the TEC-1 GitHub, located at [tec1group/TE-Magazines](https://github.com/tec1group/TE-Magazines)
 
@@ -23,7 +23,7 @@ The TEC-1 was revived around 2018 with a release of a reproduction PCB and relat
 
 The 1G builds on both the TEC-1's base and recent history to modernize the overall design, address various design limitations and integrate many of the excellent add-ons into to a single PCB for the first time.
 
-The TEC-1G remains true to the original TE design goals: it is is built using only simple through-hole TTL logic chips so it is easily built and understood by the hobbyist. For the first time, the TEC-1G will also be fully free and open soruce, in both its hardware and software. The TEC-1G may be the ultimate TEC-1!
+The TEC-1G remains true to the original TE design goals: it is is built using only simple through-hole TTL logic chips so it is easily built and understood by the hobbyist. For the first time, the TEC-1G will also be fully free and open source, in both its hardware and software. The TEC-1G is the ultimate TEC-1!
 
 The 1G has been developed by Mark Jelic with the input of the original designers, John Hardy and Ken Stone, ex-TE staff member Craig Hart, along with contributions from community members Brian Chiha and Ian McLean. Finally, the 1G has also been produced with the blessing of Colin Mitchell, Talking Electronics owner.
 
