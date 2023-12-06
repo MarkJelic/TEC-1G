@@ -5,7 +5,7 @@
 | [Assembly Instructions](./Documentation/Assembly/Readme.md) | Instructions on putting the TEC-1G together | 0.2 |
 | [Component Overlay](TEC-1G_Component_Overlay_v1-13.pdf) | Useful during Assembly | 1.1 |
 | [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Full list of parts  | 1.5 |
-| [BOM Sourcing](/files/TEC-1G_BOM_v1.4.xlsx) | Bill of Materials with Sources  | 1.4 |
+| [BOM Sourcing](/files/TEC-1G_BOM_v1.5.xlsx) | Bill of Materials with Sources  | 1.5 |
 | [Schematic](TEC-1G_Schematic_v1-13.pdf) | See what makes the TEC-1G tick | 1.13 |
 | [PCB Gerbers](/TEC-1G_Gerbers_OS_1-10.zip) | Gerbers of the PCB so you can print your own! | 1.10 |
 
