@@ -52,3 +52,6 @@ The 1G has been developed by Mark Jelic with the input of the original designers
 ## More Documentation [Coming Soon™](/Documentation/readme.md)
 
 ![TEC-1G Render - Gateron Keys](/pictures/TEC-1G_Render-Green+Components.jpg)
+
+I'd like to thank PCBWay for sponsoring the ongoing development of modules that are being added to the TEC-1G ecosystem. I'm impressed how proactive they are in finding projects like this one and encourage and foster such development. Thank you, PCBWay!
+![PCBWay Logo](/pictures/PCBWay_Logo_S.png)
