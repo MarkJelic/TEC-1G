@@ -85,8 +85,13 @@ Note: if a register is maked as destroyed - that means the value of the register
 | [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
 | [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
 | [_random](#_random)     | 49 | 31H | BC23-11 |
+| [_setDisStart](#_setDisStart)     | 50 | 32H | BC23-12 |
+| [_getDisNext](#_getDisNext)      | 51 | 33H | BC23-12 |
+| [_getDisassembly](#_getDisassembly)    | 52 | 34H | BC23-12 |
+| [_matrixScanASCII](#_matrixScanASCII) | 53 | 35H | BC23-12 |
 
-Future MON-3 versions may introduce additinal API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
+
+Future MON-3 versions may introduce additional API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
 
 ----
 ### _softwareID 
@@ -477,11 +482,40 @@ Input: none
 Destroys: A
 ```
 ### _random
-Generate a Pseudo Random number between 00-fF
+Generate a Pseudo Random number between 00-FF
 ```
 Input: none
 Output: A = random byte
 Destroys: B
+```
+### _setDisStart
+Set Disassembly start address.  Set the first address for disassembly output 
+```
+Input: HL = start address
+Output: none
+Destroy: none
+```
+### _getDisNext
+Get Disassembly next address.  The new start address for the next output.  
+```
+Input: none
+Output: HL = start address
+Destroy: none
+```
+### _getDisassembly
+Generate Disassembly line.  Must call setDisStart prior.  Only need to call setDisStart once as the next address is automatically increased.
+```
+Input: none
+Output: HL = pointer to disassembly ASCII, zero terminated
+Destroy: none
+```
+### _matrixScanASCII
+Convert the output of the matrixScan routine to ASCII.  matrixScan returns values between 0 and 64, these represent key presses on the keyboard.  This routine will convert the output of matrixScan DE, to the actual key pressed in ASCII.  If key doesn't map to an ASCII character then the matrix key value is returned.
+```
+Input: DE = value return from matrixScan.
+   E = key, D = Secondary key
+Output: A = key pressed in ASCII
+Destroy: BC, HL
 ```
 ---
 ## Breakpoints and Debugger
