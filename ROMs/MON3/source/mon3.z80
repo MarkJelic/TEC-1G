@@ -93,7 +93,8 @@ MENU_POS:   .equ    STACK_TOP+22    ;Menu listing position
 MENU_SEL:   .equ    STACK_TOP+23    ;Menu pointer seletion
 MENU_CNT:   .equ    STACK_TOP+24    ;Menu listing position
 MENU_CFG:   .equ    STACK_TOP+25    ;Menu pointer seletion
-HIGH_RAM:   .equ    STACK_TOP+27    ;High RAM address
+SPARE:      .equ    STACK_TOP+27    ;Spare
+CAPS_LOCK:  .equ    STACK_TOP+28    ;Caps Lock Flag
 SYS_MODE:   .equ    STACK_TOP+29    ;SYS_CTRL current monitor state
 PROT_MODE:  .equ    STACK_TOP+30    ;Use Protect at GO
 XPND_MODE:  .equ    STACK_TOP+31    ;Expand Mode
@@ -275,15 +276,19 @@ preInit:
         ld b,a
         and CART            ;Check bit 4
         jp nz,08000H        ;Launch CARTridge code if CART present
-        ld a,(XPND_MODE)    ;set Expand Mode to DIP setting
-        and EXPAND          ;honor EXPAND bit (if any as Hard Reset will fix)
-        ld c,SHADOW         ; activate SHADOW disable
-        or c                
-        out (SYS_CTRL),a
-        ld (SYS_MODE),a     ;Update MONitors idea of the config
         ld a,b              ;Honor PROTECT bit
         and PROTECT
         ld (PROT_MODE),a
+        ld a,(XPND_MODE)
+        and EXPAND
+        ld c,a
+        ld a,(CAPS_LOCK)
+        and CAPSLOCK
+        add a,c
+        ld b,SHADOW
+        add a,b
+        out (SYS_CTRL),a
+        ld (SYS_MODE),a     ;Update MONitors idea of the config
         ld a,(SYS_MODE)     ;Is shadow disabled ? (should be yes it is)
         and SHADOW
         jr z,hardBoot       ;if enabled, skip memcopy
@@ -297,18 +302,18 @@ hardBoot:
         ld hl,USER_ADDR     ;fixup edit location for startup
         ld (CEL),hl
         ld (DATA_BASE),hl   ;update base address
-        in a,(SYS_INPUT)    ;read simp buffer for keyboard input type
-        rrca                ;check bit 0
-        jr c,checkMatrix    ;if set, matrix keyboard in use
         in a,(KEYB)         ;Check for Fn key press when RESET key is released
         and 20H             ;Check bit 5
-        jr $+10             ;skip to jr z,hardInit
-checkMatrix:
+        jr z,hardInit       ;Fn Key pressed, do a hard initialise
+        in a,(SYS_INPUT)    ;read simp buffer for keyboard input type
+        rrca                ;check bit 0
+        jr nc,skipMatrix    ;if set, matrix keyboard in use
         call matrixScan
         jr nz,$+7           ;no key pressed, skip hard init       
         ld a,e              ;grab first key pressed
         cp K_FN             ;is it the FN key?
         jr z,hardInit       ;Fn Key pressed, do a hard initialise
+skipMatrix:
         ;Look for hard reset flag
         ld hl,SOFTWARE
         ld de,ROMSIG
@@ -318,14 +323,10 @@ checkMatrix:
 hardInit:
         ;Honour Expand
         in a,(SYS_INPUT)    ;read simp buffer for real expand bit
-        and EXPAND          ;honor EXPAND bit
-        ld (XPND_MODE),a    ;set Expand Mode to DIP setting
-        ld b,a              ;save expand status
-        ld a,(SYS_MODE)     ;get system mode
-        and -EXPAND-1       ;clear bit
-        or b                ;add it back if set
-        out (SYS_CTRL),a    ; update latch
-        ld (SYS_MODE),a     ; save state
+        call setExpand      ;honor EXPAND bit
+        ;Set Capslock to OFF
+        xor a               ;A = 0
+        call setCaps        ;set caps lock flag
         ;Copy ROMSTR into RAM - warm boot flag
         ld hl,SOFTWARE
         ld de,ROMSIG
@@ -408,6 +409,7 @@ keyFirst:
         ;set C=key pressed, B=MCB, HL=CEL
 keyProcessSegs:
         ld c,a              ;store key pressed
+        res 5,c             ;reset Fn key bit if set
         ld a,(HL)           ;get MCB
         ld b,a              ;save in B
         ld a,c              ;restore key pressed
@@ -432,6 +434,8 @@ keyMinus:
 keyAddress:
         cp K_ADDR           ;Address key press
         jr nz,keyGo         ;no, Check Go key
+        call checkFnKey     ;check for Function key
+        jp z,fnAd           ;handle Fn+AD key
         ld a,b              ;get MCB
         xor MCB_AD_DATA     ;flip Address/Data bit
         and 0FCH            ;clear nibble counter
@@ -505,7 +509,7 @@ keyFn:
 fnPlus:
         ;shift from CEL to High RAM 1 byte up, make CEL=0
         ld de,(CEL)         ;get current CEL
-        ld hl,(HIGH_RAM)    ;get high ram
+        ld hl,TOP_RAM       ;get high ram
         or a                ;clear carry
         sbc hl,de           ;get difference
         jp m,setDispBuffer  ;high ram < cel, exit
@@ -513,9 +517,9 @@ fnPlus:
         ld (COPY_START),hl  ;move from CEL
         inc hl
         ld (COPY_DEST),hl   ;save from CEL+1
-        ld hl,(HIGH_RAM)    ;HL = 7FFEH
+        ld hl,TOP_RAM       ;HL = 7FFEH
         dec hl
-        ld (COPY_END),hl    ;save from HIGH_RAM-1
+        ld (COPY_END),hl    ;save from TOP_RAM-1
         call smartCopyDirect ;do the smart update
         ld hl,(CEL)         ;get CEL
         ld (hl),00H         ;put zero in CEL
@@ -523,7 +527,7 @@ fnPlus:
 fnMinus:
         ;shift from CEL to High RAM 1 byte down, make High RAM=0
         ld de,(CEL)         ;get current CEL
-        ld hl,(HIGH_RAM)    ;get high ram
+        ld hl,TOP_RAM       ;get high ram
         or a                ;clear carry
         sbc hl,de           ;get difference
         jp m,setDispBuffer  ;high ram < cel, exit
@@ -531,12 +535,16 @@ fnMinus:
         ld (COPY_DEST),hl   ;move to CEL
         inc hl
         ld (COPY_START),hl  ;save from CEL+1
-        ld hl,(HIGH_RAM)    ;HL = 7FFFH
-        ld (COPY_END),hl    ;save from HIGH_RAM
+        ld hl,TOP_RAM       ;HL = 7FFFH
+        ld (COPY_END),hl    ;save from TOP_RAM
         call smartCopyDirect ;do the smart update
-        ld hl,(HIGH_RAM)    ;get High RAM
+        ld hl,TOP_RAM       ;get High RAM
         ld (hl),00H         ;put zero in High RAM
         jp setDispBuffer    ;jump back to main loop
+fnAd:
+        ;return back to menu
+        call switchMode
+        jp setDispBuffer
 
         ;process key press for segment data entry (A = key, HL = MCB)
 keyProcessLCD:
@@ -636,6 +644,8 @@ checkSecond:
 ; Update LCD screen.  Either show a menu if LCD mode or byte information if
 ; segment mode
 updateLCD:
+        ld b,0CH            ;display on, cursor off
+        call commandToLCD   ;update LCD
         ld b,01H            ;clear LCD instruction
         call commandToLCD   ;update LCD
         ld hl,MCB           ;get the MCB
@@ -776,6 +786,7 @@ beep:
         ld a,(KEY_BEEP)     ;check sound flag
         or a                ;is it zero?
         ret nz              ;exit if not zero
+beepAlways:
         push bc             ;save BC
         ld c,40H            ;Tone count
         xor a               ;clear A
@@ -855,7 +866,7 @@ scanDisplayBuff:
 
 ; Multiplex the Seven Segment displays with the contents of DE
 ; Inputs: DE = 6 byte location of segment data
-; Destorys: A, B
+; Destorys: A, B, DE = DE + 6
 scanSegments:
         ld b,00100000B      ;left most digit port address
 scanLoop:
@@ -941,7 +952,8 @@ keyPress:
         ld (KEY_PRESS),a    ;set key press flag to zero
         ;Universal key reader
         in a,(KEYB)         ;read key pressed
-        and 1FH             ;mask out high bits
+        and 3FH             ;mask out high bits
+        xor 20H             ;flip bit 5 (Fn-key)
 keyExit:
         cp a                ;set zero flag
         scf                 ;set carry flag
@@ -986,7 +998,7 @@ keySpecial:
         jr keyGood          ;clean exit
         cp 07H              ;is it greater than 06H?
         jr nc,keyBad        ;yes, return with non zero
-        cp 03H              ;is it less than 3?
+        cp 05H              ;is it less than 5?
         jr c,keyBad         ;yes, return with non zero
         sub 3               ;subtract 3
         xor 03H             ;flip bits
@@ -999,7 +1011,12 @@ keyGood:
         ret z               ;key pressed and held, return zero and carry not set
         xor a               ;clear a
         ld (KEY_PRESS),a    ;set key press flag to zero
-        ld a,e              ;restore key
+        ld a,d              ;check for Fn key
+        cp K_FN             ;is it function?
+        ld a,0              ;reset A but not flags
+        jr nz,$+4           ;skip adding function
+        ld a,00100000B      ;set bit 5
+        add a,e             ;restore key
         jr keyExit          ;clean exit
 keyBad:
         or 1                ;reset zero flag
@@ -1182,6 +1199,10 @@ timeDelay:
 ; Output: nothing
 ; Destroy: HL,DE,BC,A
 intelHexLoad:
+        ld b,01H            ;clear LCD instruction
+        call commandToLCD   ;update LCD
+        ld hl,intelLabel    ;point to text
+        call stringToLCD    ;Display Message on LCD
         ld a,(SYS_MODE)     ;reset hardware to MONitor mode
         ld b,a
         ld a,PROTECT        ;Disable PROTECT during load
@@ -2341,8 +2362,7 @@ paramDriver:
 ; Input: none
 ; Output: A = caps lock state; 0 = off, CAPSLOCK = on
 getCaps:
-        ld a,(SYS_MODE)     ; fetch current value
-        and CAPSLOCK        ; return caps lock bit only
+        ld a,(CAPS_LOCK)    ; fetch current value
         ret
 
 ; Get SHADOW state
@@ -2356,15 +2376,14 @@ getShadow:
         
 ; Get PROTECT state
 ; Input: none
-; Output: A = caps lock state; 0 = off
+; Output: A = protect state; 0 = off
 getProtect:
-        ld a,(SYS_MODE)     ; fetch current value
-        and PROTECT         ; return PROTECT only
+        ld a,(PROT_MODE)    ; fetch current value
         ret
 
 ; Get EXPAND state
 ; Input: none
-; Output: A = caps lock state; 0 = off
+; Output: A = expand state; 0 = off
 getExpand:
         ld a,(SYS_MODE)     ; fetch current value
         and EXPAND          ; return EXPAND bit only
@@ -2376,6 +2395,7 @@ getExpand:
 setCaps:
         push bc
         and CAPSLOCK        ; ensure only correct bit is accepted
+        ld (CAPS_LOCK),a    ; save caps lock
         ld b,a              ; save A in B
         ld a,(SYS_MODE)     ; get current state
         and CAPSLOCK-1      ; clear bit
@@ -2404,6 +2424,7 @@ setShadow:
 setProtect:
         push bc
         and PROTECT         ; ensure only correct bit is accepted
+        ld (PROT_MODE),a    ; save prot mode
         ld b,a              ; save A in B
         ld a,(SYS_MODE)     ; get current state
         and -PROTECT-1      ; clear bit
@@ -2415,6 +2436,7 @@ setProtect:
 setExpand:
         push bc
         and EXPAND          ; ensure only correct bit is accepted
+        ld (XPND_MODE),a    ; Save expand
         ld b,a              ; save A in B
         ld a,(SYS_MODE)     ; get current state
         and -EXPAND-1       ; clear bit
@@ -2424,6 +2446,9 @@ setExpand:
 ; Input: none
 ; Destroy: A
 toggleCaps:
+        ld a,(CAPS_LOCK)    ; get caps lock mode status
+        xor CAPSLOCK        ; toggle bit
+        ld (CAPS_LOCK),a    ; return it back
         ld a,(SYS_MODE)     ; get current state
         xor CAPSLOCK        ; toggle bit
 updateCTL:
@@ -2506,6 +2531,107 @@ random:
         add a,b
         ret
 
+; Set Disassembly Start Address.  Set the first address for disassembler output
+; Input: HL = start address
+; Output: none
+; Destroy: none
+setDisStart:
+        ld (DISFROM),hl     ;save start in DIS_FROM
+        ret
+
+; Get Disassembly Next Address.  Get the next disassembly address
+; Input: none
+; Output: HL = next disassembly address
+; Destroy: none
+getDisNext:
+        ld hl,(DISFROM)     ;get next address from DIS_FROM
+        ret
+
+; Generate Disassembly line
+; Input: None (but must call setDisStart first)
+; Output: HL = pointer to disassembly ASCII output, zero terminated
+; Destroy: All
+getDisassembly:
+        call disStart       ;generate Disassembly
+        ld hl,DISPTR        ;get end of output string
+        ld (hl),0           ;place zero at end of string
+        ld hl,DISLINE1      ;reset HL to point to start of string
+        ret
+
+; Convert the output of the matrixScan routine to ASCII.  matrixScan returns values between 0 and 64
+; these represent key presses on the keyboard.  This routine will convert the output of matrixScan, DE
+; to the actual key pressed in ASCII.  If key doesn't map to an ASCII character then the
+; matrix key value is returned.
+; Input: DE = value return from matrixScan. E = key, D = secondary key
+; Output: A = key pressed in ASCII
+; Destroy: BC, HL
+matrixScanASCII:
+        ld a,e              ;get key pressed
+;handle ESC, CR, Space, Single Quote and Backslash
+        ld hl,KMOD_TABLE    ;point to mod table
+        ld bc,0005H         ;five keys to check
+kCPI:   cpi                 ;compare A to value in Table
+        jr z,kModA          ;yes, mod it
+        inc hl              ;skip the next table entry
+        jp pe,kCPI          ;does BC=0, no check again
+        jr kNumChar         ;key doesn't need modding, move to next check
+kModA:
+        ld a,(hl)           ;save A with new modded value
+        cp 26H              ;is it either a quote or back slash?
+        ret c               ;no, then just cleanly exit as shift doesn't apply
+        ld b,a              ;save A in B
+        ld a,d              ;check second key
+        or a                ;is A a SHIFT? Shift = 0
+        jr nz,kAlpEnd       ;No, exit cleanly with modded value
+        ld hl,KSHIFT_TABLE  ;point to shift table
+        ld a,12H            ;set base index
+        add a,c             ;add key index
+kShiftIndex:
+        add a,l             ;index table
+        ld l,a              ;set L
+        ld a,(hl)           ;get shifted value for quote or backslash
+        ret                 ;cleanly exit
+KMOD_TABLE:
+;First value is key, second value is modded ASCII, 5 keys in total
+        .db 0AH,0DH,0CH,1BH,0DH,20H,0EH,27H,3FH,5CH
+kNumChar:
+;Handle number and Characters
+        cp 21H              ;check key range below A-Z
+        jr nc,kAlpha        ;its higher, check for Chracter
+        cp 0FH              ;is it greater than Comma?
+        jr c,kAlpha         ;yes, check for Character
+        add a,1DH           ;index to get correct ASCII
+        ld b,a              ;save key
+        ld a,d              ;check second key
+        or a                ;is it a SHIFT? Shift = 0
+        jr nz,kAlpEnd       ;No, exit cleanly with new value
+        ld hl,KSHIFT_TABLE  ;point to shift table
+        ld a,b              ;get key value
+        sub 2CH             ;set base index
+        jr kShiftIndex      ;do index and cleanly exit
+KSHIFT_TABLE:
+;Characters when shift is pressed.  22H is double quote
+        .db '<_>?)!@#$%^&*( : +|',22H
+kAlpha:
+;Handle Alphabet characters A-Z
+        cp 24H              ;is key is A or over
+        ret c               ;no, no mod just exit cleanly
+        add a,3DH           ;index key to get correct ASCII
+        ld b,a              ;save key
+        call getCaps        ;get CAPS lock state
+        or a                ;is it set or not?
+        jr nz,kUpper        ;yes, make upper case
+        ld a,d              ;check second key
+        or a                ;is it SHIFT?
+        jr nz,kAlpEnd       ;no, cleanly exit
+kUpper:
+        ld a,b              ;get key
+        sub "a"-"A"         ;subtract 20H to adjust for upper case
+        ret                 ;exit cleanly
+kAlpEnd:
+        ld a,b              ;save correct key
+        ret                 ;exit
+
 ; ----------------------------------------------------------------------------------------------------------------
 ; Strings, Constants, JP tables etc.
 ; ----------------------------------------------------------------------------------------------------------------
@@ -2533,7 +2659,7 @@ defaults:
         .db 00H             ;Menu selection
         .db 00H             ;Menu count
         .dw mainMenuCFG     ;Menu configuration
-        .dw TOP_RAM         ;Default High RAM
+        .db 00H             ;Spare
 defaultsSize:    .equ $-defaults
 
 ;LCD Initiliastion codes
@@ -2556,20 +2682,20 @@ hexToSegmentTable:
 functionJumpTable:
         .dw switchMode      ;0 = Change from LCD Menu to Data entry mode
         .dw intelHexLoad    ;1 = Intel Hex File Loader
-        .dw 0000H           ;2
-        .dw 0000H           ;3
-        .dw 0000H           ;4
-        .dw 0000H           ;5
-        .dw 0000H           ;6
-        .dw 0000H           ;7
-        .dw 0000H           ;8
-        .dw 0000H           ;9
-        .dw 0000H           ;A
+        .dw displayError    ;2 = Unused
+        .dw displayError    ;3 = Unused
+        .dw displayError    ;4 = Unused
+        .dw displayError    ;5 = Unused
+        .dw displayError    ;6 = Unused
+        .dw displayError    ;7 = Unused
+        .dw displayError    ;8 = Unused
+        .dw displayError    ;9 = Unused
+        .dw displayError    ;A = Unused
         .dw dumbCopy        ;B = Block Backup
         .dw smartCopy       ;C = Smart Copy
         .dw switchView      ;D = Switch between Hex and Disassembly view
         .dw toggleExpand    ;E = Toggle Expand
-        .dw 0000H           ;F
+        .dw displayError    ;F = Unused
 
 ASCIISegTable:
         .db 00H,18H,0AH,0EEH,0A7H,5CH,2CH,02H       ;  ! " # $ % & '
@@ -2621,9 +2747,10 @@ hardResetMessage:
 
 ;Main Menu Configuration
 mainMenuCFG:
-        .db 12   ;twelve entries
+        .db 13   ;thirteen entries
            ;"                   " <- Max LCD entry width
         .db "= TEC-1G Main Menu =",0
+intelLabel:
         .db "Intel HEX Load",0
         .dw intelHexLoad
         .db "Smart Block Copy",0
@@ -2640,6 +2767,8 @@ mainMenuCFG:
         .dw dataFromSerial
         .db "Tiny Basic",0
         .dw tinyBasic
+        .db "Terminal Monitor",0
+        .dw tmon
         .db "Music Routine",0
         .dw playTuneMenu
         .db "Setting",0
@@ -2691,7 +2820,7 @@ APITable:
         .dw softwareID
         .dw versionID
         .dw preInit
-        .dw beep
+        .dw beepAlways
         .dw convAToSeg
         .dw regAToASCII
         .dw ASCIItoSegment
@@ -2738,6 +2867,10 @@ APITable:
         .dw toggleProtect
         .dw toggleExpand
         .dw random
+        .dw setDisStart
+        .dw getDisNext
+        .dw getDisassembly
+        .dw matrixScanASCII
 API_COUNT:  .equ    $-APITable  ;Total number of API functions
 
         .org BASE_ADDR+1500H
@@ -2772,88 +2905,13 @@ API_COUNT2:  .equ    $-APITable2  ;Total number of GLCD API functions
         .org BASE_ADDR+1600H
         .include "packages.z80"
 
-APINames:
-_softwareID       .equ 0
-_versionID        .equ 1
-_preInit          .equ 2
-_beep             .equ 3
-_convAToSeg       .equ 4
-_regAToASCII      .equ 5
-_ASCIItoSegment   .equ 6
-_stringCompare    .equ 7
-_HLToString       .equ 8
-_AToString        .equ 9
-_scanSegments     .equ 10
-_displayError     .equ 11
-_LCDBusy          .equ 12
-_stringToLCD      .equ 13
-_charToLCD        .equ 14
-_commandToLCD     .equ 15
-_scanKeys         .equ 16
-_scanKeysWait     .equ 17
-_matrixScan       .equ 18
-_joystickScan     .equ 19
-_serialEnable     .equ 20
-_serialDisable    .equ 21
-_txByte           .equ 22
-_rxByte           .equ 23
-_intelHexLoad     .equ 24
-_sendToSerial     .equ 25
-_receiveFromSerial .equ 26
-_sendAssembly     .equ 27
-_sendHex          .equ 28
-_genDataDump      .equ 29
-_checkStartEnd    .equ 30
-_menuDriver       .equ 31
-_paramDriver      .equ 32
-_timeDelay        .equ 33
-_playNote         .equ 34
-_playTune         .equ 35
-_playTuneMenu     .equ 36
-_getCaps          .equ 37
-_getShadow        .equ 38
-_getProtect       .equ 39
-_getExpand        .equ 40
-_setCaps          .equ 41
-_setShadow        .equ 42
-_setProtect       .equ 43
-_setExpand        .equ 44
-_toggleCaps       .equ 45
-_toggleShadow     .equ 46
-_toggleProtect    .equ 47
-_toggleExpand     .equ 48
-_random           .equ 49
-
-APINames2:
-_initLCD          .equ 0  ;Initalise the LCD
-_clearGBUF        .equ 1  ;Clear the Graphics Buffer
-_clearGrLCD       .equ 2  ;Clear the Graphics LCD Screen
-_clearTxtLCD      .equ 3  ;Clear the Text LCD Screen
-_setGrMode        .equ 4  ;Set Graphics Mode
-_setTxtMode       .equ 5  ;Set Text Mode
-_drawBox          .equ 6  ;Draw a rectangle between two points
-_drawLine         .equ 7  ;Draw a line between two points
-_drawCircle       .equ 8  ;Draw a circle from Mid X,Y to Radius
-_drawPixel        .equ 9  ;Draw one pixel at X,Y
-_fillBox          .equ 10 ;Draw a filled rectangle between two points
-_fillCircle       .equ 11 ;Draw a filled circle from Mid X,Y to Radius
-_plotToLCD        .equ 12 ;Display the Graphics Buffer to the LCD Screen
-_printString      .equ 13 ;Print Text on the screen in a given row
-_printChars       .equ 14 ;Print Characters on the screen in a given row and column
-_delayUS          .equ 15 ;Microsecond delay for LCD updates
-_delayMS          .equ 16 ;Millisecond delay for LCD updates
-_setBufClear      .equ 17 ;Clear the Graphics buffer on after Plotting to the screen
-_setBufNoClear    .equ 18 ;Retain the Graphics buffer on after Plotting to the screen
-_clearPixel       .equ 19 ;Remove a Pixel at X,Y
-_flipPixel        .equ 20 ;Flip a Pixel On/Off at X,Y
-
         .org BASE_ADDR+3FECH    ; 16k
 
 RELMAJOR:   .dw 07E7h	; 2023 - for the API
-RELMINOR:   .dw 0011h
+RELMINOR:   .dw 0012h
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "2023.11"
+REL_TXT:    .equ "2023.12"
 
         .end
 

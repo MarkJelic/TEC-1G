@@ -1,0 +1,1659 @@
+; -----------------------------------------------------------------------------
+; TMON - a serial monitor for the TEC-1G computer
+;
+; Requires MON-3
+;
+; Written by Craig Hart and released under the GPL v3 license
+;
+; -----------------------------------------------------------------------------
+
+; setup system
+tmon:
+        ld c,beep_          ; make a beep
+        rst 10h
+
+        ld hl,1000h
+        ld (caddr),hl       ; setup edit location
+        ld a,1
+        ld (autinc),a       ; seyup address autoinc mode
+
+        call serialOn       ; enable serial port
+
+        ld hl,clrhome       ; clear terminal screen
+        call smsg
+
+; welcome screen text
+        call vers           ; display ROM version
+        call ramfind        ; display RAM stats
+
+mainloop2:
+        call uprompt        ; draw user prompt
+        call usin           ; get a line from the user
+        call usparse        ; parse that line into its components
+        call docmd          ; find and do a command
+        jp mainloop2
+
+; -----------------------------------------------------------------------------
+; uprompt - draw the default user input prompt
+; -----------------------------------------------------------------------------
+uprompt:
+        ld hl,(caddr)       ; fill up prompt with current address
+        ld de,wordbuf       ; where to write it
+        ld c,HLToString_
+        rst 10h
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld hl,wordbuf       ; display main prompt
+        call smsg
+
+        call prtinl
+        .db " > ",0
+        ret
+
+; -----------------------------------------------------------------------------
+; docmd - match input to a command and do it, if found
+; -----------------------------------------------------------------------------
+docmd:
+        ld hl,cmds
+        ld de,ucmd
+        ld a,(ucmdl)
+        ld b,a
+        call match          ; look for a valid command & do it
+        ret z               ; bail if not found
+        jp (hl)             ; the RET of the command returns to main loop
+        ret
+
+; -----------------------------------------------------------------------------
+; parameter parser - extracts hex address(es) and/or data from command params
+;
+; input: uparam and uparaml populated with 4 hex digits
+;
+; not a lot of error checking so far
+;
+; returns:	HL = first hex word
+;		BC = second hex word (if present)
+;		A = third hex byte (if present)
+;		CF = 1 = no data available
+; -----------------------------------------------------------------------------
+
+pp:
+        ld a,(uparaml)
+        cp 4
+        ret c               ; exit with Z flag set if <4 chars
+        jr z,do4b
+
+        cp 9
+        jr z,do8b
+
+        cp 12
+        jr z,do12b
+
+        scf                 ; in order to return C set with ret nz
+        ret nz              ; must be exactly 4 or 9 bytes
+
+
+do12b:
+        ld hl,uparam+10
+        call pp1a
+        ld (bytbuf),a
+
+do8b:
+        ld hl,uparam+5      ; second parameter
+        call pp1a
+        ld b,a
+
+        ld hl,uparam+7
+        call pp1a
+        ld c,a
+
+do4b:
+        ld hl,uparam        ; first parameter
+        call pp1a
+        ld d,a
+
+        ld hl,uparam+2
+        call pp1a
+        ld e,a
+
+        ld h,d
+        ld l,e
+        ld a,(bytbuf)
+        or a                ; clears carry flag
+        ret
+
+
+pp1a:   push bc
+        ld a,(hl)           ; 2nd digit
+        inc hl
+        call a2hex1
+        rrca                ; move to upper nibble
+        rrca
+        rrca
+        rrca
+        ld c,a              ; save it
+        ld a,(hl)           ; 1st digit
+        call a2hex1
+        or c                ; add in other bit
+        pop bc
+        ret
+
+a2hex1:
+        cp 61h
+        jr c, less1
+        sub 20h
+
+less1:
+        sub 30h
+        cp 10
+        ret c
+        sub 7
+        ret
+
+; -----------------------------------------------------------------------------
+; Command input matcher
+;
+; Finds and Executes any matched commands
+;
+; Input:	HL points to table of elements to match
+;		DE = string to be matched on
+;		B = length of this string
+;
+; Output: 	Z=1 = no match
+;		Z=0 = matched; HL = returned data
+;
+; -----------------------------------------------------------------------------
+match:
+        ld a,(hl)           ; outerloop; 0xff terminated
+        cp 0ffh
+        ret z
+
+; a = length of command
+; b = length of input
+
+        ld c,a              ; save it
+        inc hl              ; start of string
+
+        cp b                ; cant be if different lengths
+        jp nz,notm
+
+        call cmp
+        jp z, found         ; z = matched
+
+notm:
+        ld a,b              ; backup b
+        inc c               ; skip 2 bytes
+        inc c
+        ld b,0
+        add hl,bc           ; next element
+        ld b,a              ; retore b
+
+        jr match            ; try again
+
+
+found:
+        ld b,0              ; c already contains length
+        add hl,bc           ; HL already points at string start
+        ld d,h
+        ld e,l
+
+        ld a,(de)
+        ld l,a
+        inc de
+        ld a,(de)
+        ld h,a
+
+        or 1                ; clear z flag
+        ret
+
+; -----------------------------------------------------------------------------
+; string compare
+;
+; HL - source
+; DE - compare
+; B - # bytes
+;
+; Z flag set = matched
+; -----------------------------------------------------------------------------
+cmp:
+        push hl
+        push bc
+        push de
+
+cmp1:
+        ld a,(de)
+        call toupper
+        cp (hl)
+        jr nz, nocmp        ;nz means they are not equal
+
+        inc hl
+        inc de
+        djnz cmp1
+
+        cp a                ; set Z flag for success
+
+nocmp:
+        pop de
+        pop bc
+        pop hl
+        ret
+
+; -----------------------------------------------------------------------------
+; Command input processor
+;
+; populates
+;	ucmd with asciiz of user input delimited by first space
+;	ucmdl with length not including the null
+;
+;	uparam with asciiz of user input beyond first space
+;	uparaml with length not including the null
+; -----------------------------------------------------------------------------
+usparse:
+        xor a
+        ld (ucmdl),a
+        ld c,a              ; set counter
+
+        ld a,(sbufl)
+        or a
+        ret z
+
+        ld b,a              ; max length
+        ld hl,sbuf          ; from
+        ld de,ucmd          ; to
+
+uloop:
+        ld a,(hl)
+        or a
+        jr z,udone1
+        cp 20h              ; space char?
+        jr z,drest
+
+        call toupper
+
+        ld (de),a
+        inc hl
+        inc de
+
+        inc c
+
+        djnz uloop		; next until all done
+
+        jp udone1
+
+
+; if here we got a space - so get the rest of the input
+; HL = position in input buffer ucmd
+; B = bytes left to go
+; C = length of first string
+
+; first finish cleanup of first string
+drest:
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld a,c
+        ld (ucmdl),a        ; store length not incl null
+
+
+        ld a,b
+        cp 1                ; space on the end ???
+        jp z, pdone
+
+; setup new counters
+        ld de,uparam        ; new to buffer
+        xor a
+        ld (uparaml),a      ; new length zero bytes
+        ld c,a
+        inc hl              ; skip space
+
+ploop:
+        ld a,(hl)
+        or a
+        jr z,pdone1
+
+        ld (de),a
+        inc hl
+        inc de
+
+        inc c
+
+        djnz ploop          ; next until all done
+
+pdone1:
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld a,c
+        ld (uparaml),a      ; store length not incl null
+
+        jr pdone
+
+; ucmd now contans the first string only - one word typed in
+
+udone1:
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld a,c
+        ld (ucmdl),a        ; store length not incl null
+
+        xor a
+        ld (uparam),a
+        ld (uparaml),a      ; zero out : no parameters
+
+pdone:
+        ret
+
+; -----------------------------------------------------------------------------
+; Command input editor - user interactive
+;
+; populates	sbuf with user input string
+;		sbufl with length of string input in bytes
+; -----------------------------------------------------------------------------
+usin:
+        xor a               ; no chars input
+        ld (sbufl),a
+        ld (sbuf),a
+
+sbuflp:
+
+        call srx            ; wait for a byte input
+
+; future VT100 support
+; bitbang can't keep up with serial data stream though
+
+vt1:
+        cp 01bh             ; ESC -- special key
+        jr nz,bsp
+;	ld c,rxData_
+;	rst 30h			; now get byte 2
+;	cp 01bh
+;	ret z			; esc esc = outta here
+;	cp 05bh			; "[" ?
+;	jr nz,sbuflp
+        call dobeep
+        jr sbuflp
+
+
+bsp:
+        cp 07fh	            ; special chars? 7f = backspace
+        jr nz,cr1
+
+; backspace code
+        ld a,(sbufl)        ; cant bksp beyond start
+        or a
+        jr z,sbuflp
+        dec a
+        ld (sbufl),a
+
+        ld hl,bkspc	        ; back one char
+        call smsg
+
+        ld a,32	            ; space -- erase old text
+        call stx
+
+        ld hl,bkspc         ; and back again
+        call smsg
+
+        jr sbuflp
+
+
+cr1:
+        cp 0dh              ; 0Dh = enter
+        jr nz,stor
+
+; pressed enter code
+        ld hl,sbuf
+        ld a,(sbufl)
+        ld c,a
+        ld b,0
+        add hl,bc
+
+        xor a               ; add the 0 on the end of string
+        ld (hl),a
+        call crlf1
+        ret	                ; we done, exit
+
+stor:
+        ld d,a              ; store for later our character
+
+        ld a,(sbufl)
+        cp INPLEN-7         ; ***MAX LINE LENGTH IN chars less prompt ***
+        jr z,bfull          ; but not if full
+
+        ld hl,sbuf          ; add to buffer
+        ld c,a
+        ld b,0
+        add hl,bc
+
+        ld a,d              ; our character restored
+        ld d,c              ; store buff length
+
+        call stx
+
+        ld (hl),a           ; put in buffer
+
+        inc d               ; +1 buffer length
+        ld a,d
+        ld (sbufl),a
+        jr sbuflp
+
+bfull:
+        ld c,beep_          ; beep = error!!
+        rst 10h
+
+        jr sbuflp
+
+; -----------------------------------------------------------------------------
+; SMON - dump serial input as hex bytes
+; -----------------------------------------------------------------------------
+banglp:
+        call srx
+
+        cp 051h             ; ? "Q"
+        jr z,exsmon
+
+        ld b,a
+        call mkprnt
+
+        ld de,wordbuf
+        ld (de),a           ; store our character
+        inc de
+
+        ld a,b
+        ld c,AToString_
+        rst 10h
+
+        ld a,32             ; space
+        ld (de),a
+        inc de
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld hl,wordbuf
+        call smsg
+
+        jr banglp
+
+exsmon:
+        call crlf1
+
+        ret
+
+; -----------------------------------------------------------------------------
+; TOUPPER convert text to uppercase; not a perect conversion
+; -----------------------------------------------------------------------------
+toupper:
+        cp 61h
+        jr c, less
+        sub 20h
+
+less:
+        ret
+
+; -----------------------------------------------------------------------------
+; ramfind - locate block(s) of RAM and display info about them
+; -----------------------------------------------------------------------------
+ramfind:
+        ld hl,0h            ; setup start address
+        ld (ramtst),hl
+
+        xor a               ; 1 = we are already a block
+        ld (ramflag),a
+
+rloop:
+        ld hl,(ramtst)
+        call rtst           ; does it work ?
+        jr z,ok1            ; Z flag set = ram present, go on
+
+        ld a,(ramflag)      ; end of block found ?
+        cp 1
+        jr z, dumpp
+        jr cont
+
+dumpp:
+        call dumpblk        ; end of the block was reached
+
+        xor a
+        ld (ramflag),a
+
+        ld hl,(ramtst)      ; carry on looking for next block
+        jr cont
+
+ok1:
+        ld a,(ramflag)      ; in a block ?
+        cp 1
+        jR z,ok2
+
+        ld (ramst),hl       ; new block!!
+        ld a,1              ; set flag
+        ld (ramflag),a
+
+ok2:
+        ld (ramend),hl      ; update location of end of ram
+
+cont:
+        ld bc,ADINC         ; next block
+        add hl,bc
+        ld (ramtst),hl
+
+        ld a,h
+        or a
+        jr z,rtdone         ; if H=0 we are done (wrap round)
+
+        jr rloop            ; otherwise test next block
+
+rtdone:
+        ld a,(ramflag)
+        or a
+        jr z, doneit
+
+        call dumpblk        ; all ram ?
+
+doneit:
+        ret
+
+; -----------------------------------------------------------------------------
+; HELP command
+; -----------------------------------------------------------------------------
+help:
+        ld hl,helpstr       ; display message
+        call smsg
+        ld hl,helpst2       ; display message part 2
+        call smsg
+        ret
+
+; -----------------------------------------------------------------------------
+; EXMON command; returns to monitor
+; -----------------------------------------------------------------------------
+exmon:
+        ld c,preInit_
+        rst 10h
+        ret	                ; no RET in reality - we never coming back!!
+
+; -----------------------------------------------------------------------------
+; INTEL command; RX Intel HEX file
+; -----------------------------------------------------------------------------
+intel:
+        ld hl,intelhx       ; message
+        call smsg
+
+        ld c,intelHexLoad_
+        rst 10h
+
+        ld hl,success       ; good load
+        jr z, imsg
+        ld hl,failure       ; bad load
+
+imsg:
+        ld c,serialEnable_  ; re-enable serial
+        rst 10h
+
+        call smsg
+        ret
+
+; -----------------------------------------------------------------------------
+; LIST command; show all commands
+; -----------------------------------------------------------------------------
+lst:
+        ld hl,cmds          ; start off
+        xor a
+        ld (llen),a
+
+listl:
+        ld a,(hl)
+        cp 0ffh             ; done?
+        jp z, outs          ; if done then return
+
+        inc hl
+
+        ld c,a
+        ld a,(llen)
+        add a,c
+        inc a               ; + space
+        ld (llen),a
+
+        ld b,0
+        ld de,ucmd
+        ldir                ; copy commmand to buffer
+
+        ld a,20h            ; add space
+        ld (de),a
+        inc de
+        xor a               ; add null terminator
+        ld (de),a
+
+        push hl
+
+        ld hl,ucmd          ; show command
+        call smsg
+
+        ld a,(llen)
+        cp 75
+        jr c, contn
+
+        call outs
+
+        xor a
+        ld (llen),a
+
+contn:
+        pop hl
+
+        inc hl              ; skip the jp bytes
+        inc hl
+
+        jp listl
+
+outs:
+        call crlf1
+        ret
+
+; -----------------------------------------------------------------------------
+; BEEP command; make a beep sound on the TEC/SC
+; -----------------------------------------------------------------------------
+dobeep:
+        ld c,beep_
+        rst 10h
+        jp serialOn         ; exit with serial back on
+
+; -----------------------------------------------------------------------------
+; BELL command; make a beep sound on the serial console
+; -----------------------------------------------------------------------------
+bell:
+        ld a,07h            ; 7 = bell
+        call stx
+        ret
+
+; -----------------------------------------------------------------------------
+; VER command; return version strings
+; -----------------------------------------------------------------------------
+vers:
+        ld hl,tmonver       ; display boot message
+        call smsg
+
+        ld hl,romver        ; display ROM Version message
+        call smsg
+
+        ld c,versionID_     ; get monitor version
+        rst 10h
+        call smsg           ; display it
+        call crlf1
+        ret
+
+; -----------------------------------------------------------------------------
+; CLS command; clear screen
+; -----------------------------------------------------------------------------
+cls:
+        ld hl,clrhome
+        call smsg
+        ret
+
+; ---------------------------------------------------------------------------
+; INC command; control automatc updating of CADDR
+; -----------------------------------------------------------------------------
+autoinc:
+        ld a,(uparaml)
+        or a
+        jr z,shinc          ; skip if no input
+
+        ld hl,onstr
+        ld de,uparam
+        ld b,3
+        call cmp
+        jr nz,notone
+
+        ld a,1
+        ld (autinc),a
+        jr shinc
+
+notone:
+        ld hl,offstr
+        ld de,uparam
+        ld b,4
+        call cmp
+        jr nz,shinc
+        xor a
+        ld (autinc),a
+
+shinc:
+        ld hl,incstr        ; message part 1
+        call smsg
+        ld hl,incon
+        ld a,(autinc)
+        cp 1
+        jr z, outinc
+        ld hl,incoff
+
+outinc:
+        call smsg
+        ret
+
+; -----------------------------------------------------------------------------
+; GO command; run somenthing; no parameter = go from caddr
+; -----------------------------------------------------------------------------
+go:
+        call pp
+        jr nc,exec1
+        ld hl,(caddr)
+
+exec1:
+        jp (hl)
+        ret
+
+; -----------------------------------------------------------------------------
+; SETADDR command;update current edit address
+; -----------------------------------------------------------------------------
+setaddr:
+        call pp
+        jr c, shaddr        ; exit if C set = bad/no input
+        ld (caddr),hl
+        ret
+
+shaddr:
+        ld hl,(caddr)       ; fill up prompt with current address
+        ld de,wordbuf       ; where to write it
+        ld c,HLToString_
+        rst 10h
+        xor a               ; null terminate it
+        ld (de),a
+
+        ld hl,wordbuf       ; display addr
+        call smsg
+        call crlf1
+        ret
+
+; -----------------------------------------------------------------------------
+; DISASSEMBLE command; disassemble the Z-80 instruction at current address
+; -----------------------------------------------------------------------------
+
+disassemble:
+        call pp
+        jr c,dinp
+        ld (caddr),hl
+
+dinp:
+        ld hl,(caddr)
+        ld c,setDisStart_
+        rst 10h
+
+        ld b,16             ; loop 16 instructions
+        ld c,getDisassembly_
+disblk:
+        push bc
+        rst 10h
+        call smsg
+        call crlf1
+        pop bc
+        djnz disblk
+
+        ld c,getDisNext_
+        rst 10h
+
+        call pauser
+        jr z,dinp
+
+        ret
+
+; -----------------------------------------------------------------------------
+; incchk - updates CURRENT ADDRESS if mode turned on
+; HL = new address to be used if inc mode is selected
+; -----------------------------------------------------------------------------
+incchk:
+        ld a,(autinc)       ; update caddr?
+        cp 1
+        ret nz
+
+        ld (caddr),hl
+        ret
+
+; -----------------------------------------------------------------------------
+; Pause-er. Space to continue, Q to quit
+; -----------------------------------------------------------------------------
+pauser:
+        call incchk         ; update address?
+        call srx
+        call toupper
+
+        cp 20h              ; space
+        ret z               ; C flag set = continue
+
+        cp 51h
+        jr nz,pauser
+
+        cp 20h              ; clear zero flag; fail on purpose
+
+        ret
+
+; -----------------------------------------------------------------------------
+; DATAINP command;input data interactively from the user
+; -----------------------------------------------------------------------------
+datainp:
+        call pp
+        jr c,cinp
+        ld (caddr),hl
+
+cinp:
+        ld hl,(caddr)       ; fill up prompt with current address
+        ld de,wordbuf       ; where to write it
+        ld c,HLToString_
+        rst 10h
+        xor a               ; null terminate it
+        ld (de),a
+        ld hl,wordbuf       ; display main prompt for data entry mode
+        call smsg
+
+        call prtinl
+        .db " ",0
+
+        ld hl,(caddr)
+        ld a,(hl)
+        ld de,wordbuf
+        ld c,AToString_     ; and put into string
+        rst 10h
+        xor a               ; null terminate it
+        ld (de),a
+        ld hl,wordbuf       ; display main prompt for data entry mode
+        call smsg
+
+        call prtinl
+        .db " : ",0
+
+        call usin           ; get the user's input
+
+        ld a,(sbufl)
+
+        or a
+        jr z, ent           ; 0 chars == pressed enter
+
+        cp 1                ; 1 char ?
+        jr z, qut
+
+        cp 2                ; 2 chars exactly ?
+        jr z, inpb
+
+        cp 3                ; 3 chars, could be dis command?
+        jr z, isdis
+
+        jr cinp	            ; invalid entry : do nothing
+
+
+qut:
+        ld a,(sbuf)
+
+        cp 2dh              ; "-" = decrement CADDR
+        jr nz,qut2
+
+        ld hl,(caddr)
+        dec hl
+        ld (caddr),hl
+        jr cinp
+
+qut2:
+        call toupper
+
+        cp 51h              ; "Q" = QUIT entry mode
+        ret z               ; bail out of data entry mode
+
+        jr cinp	            ; if not a valid char: do nothing
+
+; assuming enter here; sbuf and sbufl = 00
+
+ent:
+        ld hl,(caddr)       ; pressed ENTER so inc. caddr
+        inc hl
+        ld (caddr),hl
+
+        jr cinp
+
+isdis:
+        ld hl,disstr        ; is it "DIS" ?
+        ld de,sbuf
+        ld b,4
+        call cmp
+
+        jr nz,cinp          ; nope
+
+
+        ld hl,(caddr)       ; yes, so disassemble that instruction
+    ;   ld (PERFROM),hl
+        ld b,1
+
+    ;   call DIS_START
+    ;   call disout
+
+        jr cinp
+
+; if here we have a byte to enter
+
+inpb:
+        ld a,(sbuf+1)
+        call ASCHEX
+
+        ld b,a
+
+        ld a,(sbuf)
+        call ASCHEX
+        rrca
+        rrca
+        rrca
+        rrca
+        add a,b
+
+        ld hl,(caddr)
+        ld (hl),a
+        inc hl
+        ld (caddr),hl
+
+        jp cinp
+
+; -----------------------------------------------------------------------------
+; SEGTEST command - exercises the 7-seg displays and keyboard
+; -----------------------------------------------------------------------------
+segtest:
+        call clearSegBuf
+
+        ld hl,(caddr)
+        ld de,segbuf
+        ld a,h
+        ld c,convAToSeg_
+        rst 10h
+        ld a,l
+        ld c,convAToSeg_
+        rst 10h
+
+        ld a,(hl)
+        ld c,convAToSeg_
+        rst 10h
+
+        ld de,segbuf
+        ld c,scanSegments_
+        rst 10h
+
+        ld c,scanKeys_
+        rst 10h
+
+        jr nz,segtest       ; Z set = Kreypressed
+        jr nc,segtest       ; C set = new key pressed
+
+newkey:
+        cp 13h              ; pressed 0 ?
+        jp z, serialOn      ; exit with restoring serial port status
+
+        cp 10h              ; + ?
+        jr nz, tstdec
+
+        ld hl,(caddr)
+        inc hl
+        ld (caddr),hl
+        jr segd
+
+tstdec:
+        cp 11h              ; - ?
+        jr nz,segd
+
+        ld hl,(caddr)
+        dec hl
+        ld (caddr),hl
+
+segd:
+        jr segtest
+
+; ----------
+
+clearSegBuf:
+        push hl
+        push bc
+        ld hl,segbuf
+        ld b,6
+        ld a,00h
+fillSegBuf:
+        ld (hl),a
+        inc hl
+        djnz fillSegBuf
+        pop bc
+        pop hl
+        ret
+
+; -----------------------------------------------------------------------------
+; DOHALT - Halt the CPU
+; -----------------------------------------------------------------------------
+dohalt:
+        halt
+        ret
+
+; -----------------------------------------------------------------------------
+; KEYBTEST - test the hexpad -> 7seg
+; -----------------------------------------------------------------------------
+keybtst:
+        call clearSegBuf
+
+    kbloop:
+        ld de,segbuf
+        ld c,scanSegments_
+        rst 10h
+
+        ld c,scanKeys_
+        rst 10h
+
+        jr nz,kbloop        ; Z = kry pressed
+
+        cp 13h              ; ADDR = Exit
+        ret z
+        
+        ld de,segbuf+4
+        ld c,convAToSeg_
+        rst 10h
+
+        jr kbloop
+
+; -----------------------------------------------------------------------------
+; DUMP command; dump a memory block; no parameter = dump from caddr
+; -----------------------------------------------------------------------------
+dump:
+        call pp
+        jr c,usecad
+
+        ld a,l
+        and 0f0h            ; align to 16 byte boundary
+        ld l,a
+        jr dval
+
+
+usecad:
+        ld hl,(caddr)
+        ld e,l
+        ld a,l
+        and 0f0h            ; align to 16 byte boundary
+        ld l,a
+
+dval:
+
+    ;   ex de,hl            ; really, load DE from HL
+
+        ld b,16             ; 16 rows, outer loop
+
+odlp:
+        push bc
+
+        ld b,16             ; 16 bytes, inner loop (one row)
+        ld de,dispbuf
+
+
+        ld a,h              ; address
+        ld c,AToString_
+        rst 10h
+        ld a,l
+        ld c,AToString_
+        rst 10h
+        ld a,20h
+        ld (de),a
+        inc de
+        ld a,20h
+        ld (de),a
+        inc de
+
+ dlp:
+        ld a,(hl)           ; data
+        inc hl
+
+        ld c,AToString_
+        rst 10h
+
+        ld a,20h
+        ld (de),a
+        inc de
+
+        djnz dlp
+
+        ld a,20h            ; 2 spaces
+        ld (de),a
+        inc de
+        ld a,20h
+        ld (de),a
+        inc de
+
+        ld b,16             ; back to start of block
+decde:
+        dec hl
+        djnz decde
+
+        ld b,16
+
+asl:
+        ld a,(hl)           ; ascii dump
+        inc hl
+
+        call mkprnt         ; clean up nonprintables
+
+        ld (de),a
+        inc de
+
+        djnz asl
+
+        xor a               ; null terminate it
+        ld (de),a
+
+        push hl
+
+        ld hl,dispbuf       ; output the buffer (one line)
+        call smsg
+        call crlf1
+
+        pop hl
+
+        pop bc
+
+        djnz odlp
+
+        call pauser
+        jr z,dval
+        ret
+
+; -----------------------------------------------------------------------------
+; BLOCKFILL command; fill a memory block with a byte
+; -----------------------------------------------------------------------------
+blockfill:
+        call pp
+        ret c               ; bail if error
+
+; hl = first
+; bc = second
+; a = value
+
+        ld (blkval),a
+        ld (blkst),hl
+        ld (blkend),bc
+        ld b,h
+        ld c,l
+        ld hl,(blkend)
+        or a
+        sbc hl,bc
+        ld (blkbyt),hl
+        ret z               ; bail if 0 bytes to write
+
+        call prtinl
+        .db "Filling Memory from ",0
+
+        ld de,wordbuf+4	    ; pop in the null terminate
+        xor a
+        ld (de),a
+
+        ld hl,(blkst)       ; start value
+        ld de,wordbuf
+        ld c,HLToString_
+        rst 10h
+        ld hl,wordbuf
+        call smsg
+
+        call prtinl
+        .db "h to ",0
+
+        ld hl,(blkend)      ; end value
+        ld de,wordbuf
+        ld c,HLToString_
+        rst 10h
+        ld hl,wordbuf
+        call smsg
+
+        call prtinl
+        .db "h with value ",0
+
+        ld a,(blkval)
+        ld de,wordbuf
+        ld c,AToString_
+        rst 10h
+        ld a,0
+        ld (de),a
+        ld hl,wordbuf
+        call smsg
+
+        call prtinl
+        .db "h",13,10,0
+
+        ld hl,(blkst)       ; setup ldir
+        ld d,h
+        ld e,l
+        inc de
+        ld a,(blkval)
+        ld (hl),a
+        ld bc,(blkbyt)
+
+        ldir
+
+        call prtinl
+        .db "Wrote ",0
+
+        ld hl,(blkbyt)
+        inc hl
+        call decimal
+
+        call prtinl
+        .db " bytes",13,10,0
+
+        ret
+
+; -----------------------------------------------------------------------------
+; MKPRNT - make an ASCII value printable
+;
+; IN: A = byte to fix up
+; OUT: A = fixed up byte
+;
+; -----------------------------------------------------------------------------
+mkprnt:
+        cp 7fh              ; > 7fh = unprintable
+        jr nc,fix
+        cp 32               ; < 32 = unprintable
+        jr nc,yok
+
+fix:
+        ld a,2eh            ; swap in a '.'
+
+yok:
+        ret
+
+; -----------------------------------------------------------------------------
+; dumpblk - display info about the RAM block found
+; -----------------------------------------------------------------------------
+dumpblk:
+        ld hl,rammsg
+        call smsg
+
+        ld hl,(ramst)       ; dump values to screen
+        ld de,wordbuf
+        ld c,HLToString_
+        rst 10h
+        xor a               ; null terminate it
+        ld (de),a
+        ld hl,wordbuf
+        call smsg
+
+        call prtinl
+        .db "h and ",0
+
+        ld hl,(ramend)
+        dec l               ; adjust to xxffh
+        ld de,wordbuf
+        ld c,HLToString_
+        rst 10h
+        ld hl,wordbuf
+        call smsg
+
+        call prtinl
+        .db "h - ",0
+
+; work out how many bytes
+        ld hl,(ramend)
+        ld bc,ADINC
+        add hl,bc
+
+        ld de,(ramst)
+        or a
+        sbc hl,de
+
+        call decimal        ; HL -> output
+
+        call prtinl
+        .db " bytes",13,10,0
+
+        ret
+
+; -----------------------------------------------------------------------------
+; DECIMAL - HL to decimal, sent out the serial one char at a time
+; -----------------------------------------------------------------------------
+decimal:
+        ld e,1              ; 1 = don't print a digit
+
+        ld bc,-10000
+        call Num1
+        ld bc,-1000
+        call Num1
+        ld bc,-100
+        call Num1
+        ld c,-10
+        call Num1
+        ld c,-1
+
+Num1:
+        ld	a,'0'-1
+
+Num2:
+        inc	a
+        add	hl,bc
+        jr c,Num2
+        sbc	hl,bc
+
+        ld d,a              ; backup a
+        ld a,e
+        or a
+        ld a,d              ; restore it in case
+        jr z,prout          ; if E flag 0, all ok, print any value
+
+        cp '0'              ; no test if <>0
+        ret z               ; if a 0, do nothing (leading zero)
+
+        ld e,0              ; clear flag & print it
+
+prout:
+        push bc
+        call stx
+        pop bc
+
+        ret
+
+; -----------------------------------------------------------------------------
+; RTST   checks a byte of memory to see if it can store and return values
+;
+; In:
+; HL = memory location to check
+;
+; out:
+; Z flag set if ram present
+; DE trashed
+; -----------------------------------------------------------------------------
+; test code cant be at xx00h or it'll be overwriten by the tester
+        .org (($ + 0FFH) & 0FF00H) +1   ; align to next 256 byte boundary +1 byte
+
+rtst:
+        di                  ; disable interrupts; avoid memory corruption
+
+        ld e,(hl)           ; backup original value
+
+        ld a,0aah           ; test 1 store aa
+        ld (hl),a
+        nop
+        ld d,(hl)
+        cp d
+        jr nz, noram
+
+        ld a,055h           ; test 2 store 55
+        ld (hl),a
+        nop
+        ld d,(hl)
+        cp d
+        jr nz, noram
+
+        ld a,00h            ; test 3 store 00
+        ld (hl),a
+        nop
+        ld d,(hl)
+        cp d
+        jr nz, noram
+
+        ld a,0ffh           ; test 4 store ff
+        ld (hl),a
+        nop
+        ld d,(hl)
+        cp d
+        jr nz, noram        ; Z flag set (=1), == ram present
+
+noram:
+        ld (hl),e           ; restore value (even if failed teset!)
+                            ; if failed Z flag is reset (=0)
+        ei                  ; end test enable interrupts
+        ret
+
+; -----------------------------------------------------------------------------
+; CRLF; utility to simply move to next line
+; -----------------------------------------------------------------------------
+crlf1:
+        call prtinl
+        .db 13,10,0
+        ret
+
+; -----------------------------------------------------------------------------
+; PRTINL - print ASCIIZ string embedded in-line
+; -----------------------------------------------------------------------------
+prtinl:
+        pop	hl              ;RETURN ADDRESS IS START OF STRING
+lsz:
+        ld a,(hl)           ;GET CHARACTER
+        call stx            ;AND SEND IT
+        inc hl              ;POINT TO THE NEXT
+        or a                ;CHARACTER AND
+        jr nz,lsz           ;RETURN IF CHAR = 0
+        jp (hl)             ;RETURN TO LOCATION AFTER 0 TERMINATOR
+
+; -----------------------------------------------------------------------------
+; SMSG - print ASCIIZ string
+; -----------------------------------------------------------------------------
+smsg:
+        push bc
+        push hl
+        push af
+        ld b,255	        ;255 CHARS MAX
+smsg1:
+        ld a,(hl)           ;GET THE CHAR
+        or a                ;ZERO TERMINATOR?
+        jr z,smsg2          ;FOUND A ZERO TERMINATOR, EXIT
+        call stx            ;TRANSMIT THE CHAR
+        inc hl
+        djnz smsg1          ;255 CHARS MAX!
+
+smsg2:
+        pop af
+        pop hl
+        pop bc
+        ret
+
+stx:
+        ld c,txByte_        ; bit bang Tx
+        rst 10h
+        ret
+
+srx:    
+        ld c,rxByte_        ; bit bang Rx
+        rst 10h
+        ret
+
+; -----------------------------------------------------------------------------
+; PRINT - Echoes input back to user
+; -----------------------------------------------------------------------------
+print1:
+        ld a,(uparaml)
+        cp 0
+        ret z
+
+        ld hl,uparam
+        call smsg
+        call crlf1
+        ret
+
+; -----------------------------------------------------------------------------
+; STATE - Show system state
+; -----------------------------------------------------------------------------
+sysstate:
+        call prtinl
+        .db "Shadow ",0
+        ld c,getShadow_
+        rst 10h
+        call shState
+
+        call prtinl
+        .db "Protect ",0
+        ld c,getProtect_
+        rst 10h
+        call shState
+
+        call prtinl
+        .db "Expand ",0
+        ld c,getExpand_
+        rst 10h
+        call shState
+
+        call prtinl
+        .db "Caps Lock ",0
+        ld c,getCaps_
+        rst 10h
+        call shState
+        ret
+
+shState:
+        ld hl,offstr
+        cp 0
+        jr z,outState
+
+        ld hl,onstr
+
+outState:
+        call smsg
+        call crlf1
+        ret
+
+; -----------------------------------------------------------------------------
+; DEBUG - call debugger
+; -----------------------------------------------------------------------------
+breakpoint1:
+        rst 30h
+        ret
+
+;------------------------------------------------------------------------------
+; ASCHEX: CONVERT ASCII CHARACTER TO HEX
+;------------------------------------------------------------------------------
+ASCHEX:	bit 6,a
+        JR Z,aschex1
+        add a,09h
+aschex1:
+        and 0fh
+        ret
+
+; -----------------------------------------------------------------------------
+; SERIALON : initialze serial port
+; -----------------------------------------------------------------------------
+serialOn:
+        ld c,serialEnable_
+        rst 10h
+        ret
+
+; -----------------------------------------------------------------------------
+; Constants, Strings and Variables
+; -----------------------------------------------------------------------------
+
+; API calls routines
+
+versionID_      .equ 1
+preInit_        .equ 2
+beep_           .equ 3
+convAToSeg_     .equ 4
+HLToString_     .equ 8
+AToString_      .equ 9
+scanSegments_   .equ 10
+scanKeys_       .equ 16
+serialEnable_   .equ 20
+txByte_         .equ 22
+rxByte_         .equ 23
+intelHexLoad_   .equ 24
+getCaps_        .equ 37
+getShadow_      .equ 38
+getProtect_     .equ 39
+getExpand_      .equ 40
+setDisStart_    .equ 50
+getDisNext_     .equ 51
+getDisassembly_ .equ 52
+
+; constants
+
+ADINC   .equ 0100h          ; ram check block jump size
+INPLEN  .equ 40             ; max user input line length (add 7 for prompt)
+
+; Strings
+
+clrhome .db 27,"[H",27,"[2J",0
+bkspc   .db 27,"[1D",0
+tmonver .db "TMON for TEC-1G Version 1.0",13,10,0
+romver  .db "MON-3 Version: ",0
+rammsg  .db "RAM Found between ",0
+helpstr .db "This is the HELP page",13,10
+        .db 13,10
+        .db "Type a command and press Enter",13,10
+        .db "Type EXIT to quit to monitor",13,10
+        .db 13,10,0
+helpst2 .db "Type HELP to display this information",13,10
+        .db "Type ? to see a list of commands",13,10,0
+success .db "Success",13,10,0
+failure .db "Failed",13,10,0
+incstr  .db "Auto-Increment mode is ",0
+incon   .db "on",13,10,0
+incoff  .db "off",13,10,0
+intelhx .db "Ready to receive Intel HEX File...",0
+onstr   .db "ON",0
+offstr  .db "OFF",0
+disstr  .db "DIS",0
+
+; format of cmds table : length in bytes of command, command, jmp address.
+; terminates with 0xffh
+
+cmds    .db 4,"HELP"
+        .dw help
+        .db 1,"?"
+        .dw lst
+        .db 4,"EXIT"
+        .dw exmon
+        .db 5,"INTEL"
+        .dw intel
+        .db 4,"BEEP"
+        .dw dobeep
+        .db 4,"BELL"
+        .dw bell
+        .db 3,"VER"
+        .dw vers
+        .db 5,"STATE"
+        .dw sysstate
+        .db 3,"CLS"
+        .dw cls
+        .db 6,"RAMCHK"
+        .dw ramfind
+        .db 2,"GO"
+        .dw go
+        .db 4,"DUMP"
+        .dw dump
+        .db 4,"ADDR"
+        .dw setaddr
+        .db 4,"DATA"
+        .dw datainp
+        .db 3,"DIS"
+        .dw disassemble
+        .db 3,"INC"
+        .dw autoinc
+        .db 4,"7SEG"
+        .dw segtest
+        .db 4,"SMON"
+        .dw banglp
+        .db 4,"HALT"
+        .dw dohalt
+        .db 5,"DEBUG"
+        .dw breakpoint1
+        .db 7,"KEYTEST"
+        .dw keybtst
+        .db 4,"FILL"
+        .dw blockfill
+        .db 5,"PRINT"
+        .dw print1
+        .db 0ffh            ; FFh  = end of list marker
+
+; Variables -- these need to live in RAM; set them 'out of the way'
+
+
+ramst:  .equ 0A00H
+ramtst  .equ 0A02H
+ramend  .equ 0A04H
+segbuf  .equ 0A06H          ; 7-seg display buffer
+wordbuf .equ 0A0CH          ; general word size buffer
+bytbuf  .equ 0A11H
+ramflag .equ 0A12H
+autinc  .equ 0A13H
+llen    .equ 0A14H
+sbufl   .equ 0A15H
+sbuf    .equ 0A16H
+ucmdl   .equ 0A3EH
+ucmd    .equ 0A3FH
+uparaml .equ 0A67H
+uparam  .equ 0A68H
+dispbuf .equ 0A90H          ; one line of terminal always
+caddr   .equ 0AE0H          ; current address
+blkst   .equ 0AE2H
+blkend  .equ 0AE4H
+blkbyt  .equ 0AE6H
+blkval  .equ 0AE8H
+
+    .end
