@@ -6,7 +6,7 @@ A comprehensive User Guide has been provided that details how to use MON3.  Plea
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](./MON3-1G_BC23-11.bin) | Download and burn to a 16k ROM | 1.1 |
+| [MON3 for TEC-1G](./MON3-1G_BC23-12.bin) | Download and burn to a 16k ROM | 1.2 |
 | [MON3 User Guide](./MON3_User_Guide_v1.2.pdf) | MON3 User Guide in PDF format | 1.2 |
 
 ## MON 3 Usage (Brief)
