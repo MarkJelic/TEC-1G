@@ -1,6 +1,7 @@
 ; ----------------------------------------------------------------------------
 ; Simple DS1302 demo for the TEC-1G
 ; By Craig Hart, December 2023
+; Version 1.1
 ; ----------------------------------------------------------------------------
                .org 4000h
 
@@ -116,9 +117,75 @@ isam:   ld bc,2                 ; copy 2 bytes AM or PM to buffer
         rst 10h
         jr nc,nokey
         cp 0fh
+        jr nz, tryplus
+        halt
+        jr nokey
+
+tryplus:
+        cp 10h
+        jr nz,tryzero
+
+        ld d,85h                ; read hours
+        call rtc_rd
+
+        ld c,a                  ; backup
+        and 0e0h                ; the bits we want are 7,6 and 5
+        ld d,a                  ; d contains needed bits
+        ld a,c                  ; restore a
+
+
+        and 1fh                 ; mask off junk bits
+        inc a
+        daa
+        cp 13h
+        jr nz,notwrong
+
+        ld a,1                  ; wrap around to 1
+
+notwrong:
+        cp 12h                  ; AM/PM toggles at 12.
+        jr nz,noflip
+
+        ld c,a                  ; backup a
+        ld a,d                  ; toggle AM/PM bit
+        xor 20h
+        ld d,a                  ; save change
+        ld a,c                  ; restore a
+
+noflip:
+        or d
+        ld d,84h
+        ld e,a
+        call rtc_wr
+        jr nokey
+
+tryzero:
+        cp 0
+        jr nz, tryone
+
+        ld d,83h                ; read minutes
+        call rtc_rd
+
+        inc a
+        or a
+        daa
+        cp 60h
+        jr nz,notoverflow
+        xor a
+
+notoverflow:
+        ld e,a
+        ld d,82h
+        call rtc_wr
+        jr nokey
+
+tryone:
+        cp 1
         jr nz, nokey
 
-        halt
+        ld de,8000h             ; reset seconds to zero
+        call rtc_wr
+
 
 nokey:
         jp clock
