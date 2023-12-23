@@ -2,7 +2,7 @@
 | File | Description | Version |
 |---|---|---|
 | [Assembly Instructions]() | Coming Soon... | 1.0 |
-| [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Coming Soon...  | 1.0 |
+| [Parts List]() | Coming Soon...  | 1.0 |
 | [Schematic](TEC-1G_GPIO_RTC_Schematic_v1-0.pdf) | It's a simple circuit, but it's honest timekeeping. | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
 
@@ -45,7 +45,9 @@ It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 
 ![TEC-1G GPIO RTC](./TEC-1G_GPIO_RTC-Board.jpg)
 
-## Ho Do You Use It?
+## How Do You Use It?
 The clever people at <b>TEC-1 Inc.</b> will soon release an API as part of MON3.
 This will allow you to set the current time, read the current time, save and read bytes out of the battery backed RAM.
 All this and more, <b>Coming Soon®...</b>
+
+While you're waiting, take a read of the [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) sheet to get a handle on what commands you can send it.
