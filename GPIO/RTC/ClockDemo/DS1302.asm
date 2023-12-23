@@ -112,6 +112,15 @@ isam:   ld bc,2                 ; copy 2 bytes AM or PM to buffer
         rst 10h
 
 
+        ld c,_scanKeys
+        rst 10h
+        jr nc,nokey
+        cp 0fh
+        jr nz, nokey
+
+        halt
+
+nokey:
         jp clock
 
 ; ----------------------------------------------------------------------------
