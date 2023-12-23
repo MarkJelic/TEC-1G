@@ -8,7 +8,8 @@
 
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
-the RTC chip will be powered and will continue to keep accurate time.
+the RTC chip will be powered and will continue to keep accurate time. Oh and it has some battery backed RAM,
+a full 31 bytes for you to use for saving variables or settings between power ups.
 
 ## How Does It Work
 The circuit is based around the very cheap and widely used timekeeping chip, the DS1302. 
@@ -35,9 +36,16 @@ Want more reasons?
 - How about making an automation system for your home, turning on the Christmas lights at sunset?
 - Need the sprinklers to come on at a certain time?
 - Want to control your model train based on a strict timing schedule?
+- What about saving some settings in the battery-backed 31 bytes?
 
 These are just some of the reason you may want an Real Time Clock. 
-For me, I want to finally be able to hang up my TEC-1G for the world to see how clever I am with a soldering iron and have it be useful and tell the time, that automatically adjusts for daylight savings. :)
+For me, I want to finally be able to hang up my TEC-1G for the world to see how clever I am with a soldering iron. :)
+Oh, and finally be able to answer the question I *always* get: "So what can it do?"<br>
+It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 
 ![TEC-1G GPIO RTC](./TEC-1G_GPIO_RTC-Board.jpg)
 
+## Ho Do You Use It?
+The clever people at <b>TEC-1 Inc.</b> will soon release an API as part of MON3.
+This will allow you to set the current time, read the current time, save and read bytes out of the battery backed RAM.
+All this and more, <b>Coming Soon®...</b>
