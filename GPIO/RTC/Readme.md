@@ -1,9 +1,9 @@
 # GPIO Real Time Clock (RTC) Board
 | File | Description | Version |
 |---|---|---|
-| [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
-| [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
 | [Schematic](TEC-1G_GPIO_RTC_Schematic_v1-0.pdf) | It's a simple circuit, but it's honest timekeeping. | 1.0 |
+| [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
+| [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
 | [Code Samples](./Code.md) | Coming Soon... | 1.0 |
 
