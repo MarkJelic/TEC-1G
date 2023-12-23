@@ -16,5 +16,5 @@
 | 1 | 2x8 pin | Long Legged Female Header |
 | 2 | 1x2 pin | Long Legged Female Header |
 | 2 | 12mm Standoff | M3 Nylon |
-| 1 | M3 Screw ||
-| 1 | M3 Nut ||
+| 1 | Screw | M3 Nylon |
+| 1 | Nut | M3 Nylon |
