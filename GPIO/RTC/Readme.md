@@ -3,12 +3,19 @@
 |---|---|---|
 | [Assembly Instructions]() | Coming Soon... | 1.0 |
 | [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Coming Soon...  | 1.0 |
-| [Schematic](TEC-1G_GPIO_RTC_Schematic_v1-0.pdf) | It's a simply circuit, but it's honest timekeeping. | 1.0 |
+| [Schematic](TEC-1G_GPIO_RTC_Schematic_v1-0.pdf) | It's a simple circuit, but it's honest timekeeping. | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
 
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
 the RTC chip will be powered and will continue to keep accurate time.
+
+## How Does It Work
+The circuit is based around the very cheap and widely used timekeeping chip, the DS1302. 
+The DS1302 uses a very simple 3 wire serial interface to communicate with it, so the extra chips you see on the board are basically
+just to help with serial communications.
+
+![RTC Circuit](./RTC_Circuit.jpg)
 
 ## Why Build It?
 Since you first built the TEC-1, be it the original like I did, or the latest TEC-1G... Did you look at those six 7 Segment displays
@@ -33,3 +40,4 @@ These are just some of the reason you may want an Real Time Clock.
 For me, I want to finally be able to hang up my TEC-1G for the world to see how clever I am with a soldering iron and have it be useful and tell the time, that automatically adjusts for daylight savings. :)
 
 ![TEC-1G GPIO RTC](./TEC-1G_GPIO_RTC-Board.jpg)
+
