@@ -1,4 +1,4 @@
-# Simple clock Demo
+# Simple Clock Demo
 
 A basic example of working with the DS1302 RTC chip to display a simple clock on the 7-seg displays and also the LCD.
 
