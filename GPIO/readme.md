@@ -1,4 +1,4 @@
-# GPIO Connector
+# TEC-1G GPIO Connector
 
 Adding General Purpose Input/Output capabilities to the TEC-1G, easily.
 
