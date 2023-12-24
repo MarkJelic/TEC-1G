@@ -1,4 +1,5 @@
-# TEC-1G GPIO Parallel Printer Port Parts List
+# TEC-1G GPIO Parallel Printer Port
+### Parts List
 
 | QTY | Part # | Description |
 |---|---|---|
@@ -10,7 +11,7 @@
 | 1 | 14 pin | DIP Socket |
 | 3 | 20 pin | DIP Socket |
 | 1 | 2x8 pin | Long Legged Female Header |
-| 2 | 1x2 pin | Long Legged Female Header |
+| 1 | 1x2 pin | Long Legged Female Header |
 | 1 | 10K x 9 pin | Resistor Network |
 | 1 | 330R | Resistor |
 | 1 | 3mm LED | Green |
