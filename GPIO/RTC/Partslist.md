@@ -1,4 +1,4 @@
-# TEC-1G GPIO Real Time CLock (RTC)
+# TEC-1G GPIO Real Time Clock (RTC)
 ### Parts List
 
 | QTY | Part # | Description |
