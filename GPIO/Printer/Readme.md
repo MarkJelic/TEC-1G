@@ -1,4 +1,4 @@
-# GPIO Parallel Printer Board
+# GPIO Parallel Printer Port
 | File | Description | Version |
 |---|---|---|
 | [Schematic](TEC-1G_GPIO_Printer_Schematic_v1-0.pdf) | It's a simple circuit, but it's honest printing. | 1.0 |
