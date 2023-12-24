@@ -5,7 +5,7 @@
 | [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
 | [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
-| [Sample Programs](./Pragrams/) | Coming Soon... | 1.0 |
+| [Sample Programs](./Programs/) | Sample code and API reference | 1.0 |
 
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
