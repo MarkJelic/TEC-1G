@@ -1,3 +1,0 @@
-# TEC-1G GPIO RTCC Code Samples
-
-Coming Soon®...
