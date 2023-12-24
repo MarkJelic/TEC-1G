@@ -5,7 +5,7 @@
 | [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
 | [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
-| [Code Samples](./Code.md) | Coming Soon... | 1.0 |
+| [Sample Programs](./Programs/) | Coming Soon... | 1.0 |
 
 ## What Does it Do?
 It lets you connect to a parallel printer and print things!<br>
