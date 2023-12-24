@@ -17,7 +17,7 @@ The circuit is based around the very cheap and widely used timekeeping chip, the
 The DS1302 uses a very simple 3 wire serial interface to communicate with it, so the extra chips you see on the board are basically
 just to help with serial communications.
 
-![RTC Circuit](./RTC_Circuit.jpg)
+![RTC Circuit](pictures/RTC_Circuit.jpg)
 
 ## Why Build It?
 Since you first built the TEC-1, be it the original like I did, or the latest TEC-1G... Did you look at those six 7 Segment displays
@@ -44,7 +44,7 @@ For me, I want to finally be able to hang up my TEC-1G for the world to see how 
 Oh, and finally be able to answer the question I *always* get: "So what can it do?"<br>
 It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 
-![TEC-1G GPIO RTC](./TEC-1G_GPIO_RTC-Board.jpg)
+![TEC-1G GPIO RTC](pictures/TEC-1G_GPIO_RTC-Board.jpg)
 
 ## How Do You Use It?
 The clever people at <b>TEC-1 Inc.</b> will soon release an API as part of MON3.
