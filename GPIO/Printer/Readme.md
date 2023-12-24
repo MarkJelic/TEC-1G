@@ -11,4 +11,4 @@
 It lets you connect to a parallel printer and print things!
 It also doubles as another general Input / Output board, much like the GPIO SD Card board.
 
-![TEC-1G GPIO Printer](./TEC-1G_GPIO_Printer-Render.jpg)
+![TEC-1G GPIO Printer](pictures/TEC-1G_GPIO_Printer-Render.jpg)
