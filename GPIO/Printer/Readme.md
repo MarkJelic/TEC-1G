@@ -8,7 +8,7 @@
 | [Code Samples](./Code.md) | Coming Soon... | 1.0 |
 
 ## What Does it Do?
-It lets you connect to a parallel printer and print things!
+It lets you connect to a parallel printer and print things!<br>
 It also doubles as another general Input / Output board, much like the GPIO SD Card board.
 
 ![TEC-1G GPIO Printer](pictures/TEC-1G_GPIO_Printer-Render.jpg)
