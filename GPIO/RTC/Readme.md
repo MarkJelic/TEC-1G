@@ -10,7 +10,8 @@
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
 the RTC chip will be powered and will continue to keep accurate time. Oh and it has some battery backed RAM,
-a full 31 bytes for you to use for saving variables or settings between power ups.
+a full 31 bytes for you to use for saving variables or settings between power ups. 
+We will be calling it PRAM from here on in, short for Parameter RAM, as that is what we will be using it for.
 
 ## How Does It Work
 The circuit is based around the very cheap and widely used timekeeping chip, the DS1302. 
