@@ -1,5 +1,6 @@
-;Sound and Music Routine. 
+;Sound and Music Routine.
 ;------------------------
+;Version: 1.0
 
 ; Based on Mon1 routine by J. Hardy and modified to work at 4Mhz
 ; By B. Chiha
@@ -112,7 +113,7 @@ FREQ_TABLE:
         .db 36H,3DH,32H,41H,2FH,45H,2CH,49H
         .db 2AH,4DH,27H,52H,25H,57H,23H,5CH
 
-tuneParams:        
+tuneParams:
         .db 1                           ;Three parameters
         .db "= Enter Parameters =",0    ;Parameter title
         .db "Start Address:",0          ;Text and Address
