@@ -41,10 +41,12 @@ We wish future TEC-1G users all the best in resolving what happens in 2122 :)
 
 The day of week register supports the range 1 to 7; as we know however the actual day that corresponds to any given date varies based on time zone. Therefore, the DS1302 simply incrmeents this value at midnight, but has no knolwege of timezones or what is 'correct'.
 
-TEC-1G designers have followed ISO8601 which Defines Moday as the first day of the week. Therefore:
+TEC-1G designers have followed ISO8601 which defines Moday as the first day of the week. Therefore:
 
 Day 1 = Monday
+
 ....
+
 Day 7 = Sunday
 
 ---
