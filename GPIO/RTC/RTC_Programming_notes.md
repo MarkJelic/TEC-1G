@@ -55,17 +55,16 @@ Day 7 = Sunday
 
 The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the **P**aramemter **RAM**, or PRAM for short.
 
+Part of the PRAM is set aside for MON3's use. User Bytes are free for software authors to put to any use they see fit.
+
 | PRAM Byte | Purpose |
 | :--: | ----- |
 |01| Fn-1 Editing Address |
 |03| Fn-2 Editing Address |
 |05| Fn-3 Editing Address |
-|07| -- |
-|08| -- |
-|09| -- |
-|10| -- |
-|11| -- |
-|12| -- |
+|07| Quick Backup - Start address |
+|09| Quick Backup - End address |
+|11| Quick Backup - Destination address |
 |13| -- |
 |14| -- |
 |15| -- |
@@ -76,15 +75,14 @@ The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the
 |20| -- |
 |21| -- |
 |22| -- |
-|23| -- |
-|24| -- |
-|25| -- |
-|26| -- |
-|27| -- |
-|28| -- |
-|29| -- |
-|30| -- |
-|31| nnh - Checksum (Two's compliment of other 30 bytes) |
+|23| User Byte |
+|24| User Byte |
+|25| User Byte |
+|26| User Byte |
+|27| User Byte |
+|28| User Byte |
+|29| User Byte |
+|30| User Byte |
+|31| nnh - Checksum (Two's compliment of MON3 controlled bytes) |
 
-The Checksum is used to verify that the PRAM contents are valid and not corrupted.
-
+The Checksum is used to verify that the PRAM contents used by MON3 are valid and not corrupted.
