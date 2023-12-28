@@ -9,7 +9,7 @@ The DS1302 register set presents sertain ambiguous choices, which this document 
 ---
 The TEC-1G supports both 12 and 24 hour time formats. The register layout makes this a lttle difficult to understand; this is how it works.
 
-The hours are either 01..12 (12 hour) or 00.23 (24 hour).
+The hours are either 01..12 (12 hour) or 00..23 (24 hour).
 
 Bit 7 of the hour register is a 1 if 12 hour mode is selected
 bit 5 of the hour register is a 1 if it is PM (12 hour mode), or part of the hour (if 24 hour)
