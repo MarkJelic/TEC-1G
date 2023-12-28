@@ -8,6 +8,12 @@ The DS1302 register set presents sertain ambiguous choices, which this document 
 
 ---
 
+When initially accessing the DS1302, Register 8Eh needs to be written with the value 00h. Until this is done, the DS1307 is considered read-only and no changes can be made. Set bit 7 to a 1 to write-protect the DS1302.
+
+Similarly, register 90h should be written with 00h to suit the hardware design of the GPIO RTC board (no trickle charging).
+
+---
+
 The TEC-1G supports both 12 and 24 hour time formats. The register layout makes this a lttle difficult to understand; this is how it works.
 
 The hours are either 01..12 (12 hour) or 00..23 (24 hour).
@@ -41,6 +47,7 @@ Day 1 = Monday
 Day 7 = Sunday
 
 ---
+
 # PRAM Memory
 
 The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the **P**aramemter **RAM**, or PRAM for short.
@@ -79,4 +86,5 @@ The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the
 |30| -- |
 |31| nnh - Checksum (Two's compliment of other 30 bytes) |
 
+The Checksum is used to verify that the PRAM contents are valid and not corrupted.
 
