@@ -54,12 +54,9 @@ The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the
 
 | PRAM Byte | Purpose |
 | :--: | ----- |
-|01| -- |
-|02| -- |
-|03| -- |
-|04| -- |
-|05| -- |
-|06| -- |
+|01| Fn-1 Editing Address |
+|03| Fn-2 Editing Address |
+|05| Fn-3 Editing Address |
 |07| -- |
 |08| -- |
 |09| -- |
