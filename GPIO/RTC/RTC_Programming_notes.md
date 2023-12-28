@@ -14,7 +14,7 @@ Similarly, register 90h should be written with 00h to suit the hardware design o
 
 ---
 
-The TEC-1G supports both 12 and 24 hour time formats. The register layout makes this a lttle difficult to understand; this is how it works.
+The TEC-1G supports both 12 and 24 hour time formats. The register layout makes this a little difficult to understand; this is how it works.
 
 The hours are either 01..12 (12 hour) or 00..23 (24 hour).
 
@@ -22,9 +22,10 @@ Bit 7 of the hour register is a 1 if 12 hour mode is selected
 bit 5 of the hour register is a 1 if it is PM (12 hour mode), or part of the hour (24 hour mode)
 
 ---
-The Year register only supports 2 digits with value range of 00 too 99; hence only a 100 year span is available. This means that a 'base year' needs to be added to arrive at a Calendar year.
 
-TEC-1G designers have determined that 2023 will be the bease year. Hence, **CalendarYear = 2023 + RTCYear**
+The Year register only supports 2 digits with value range of 00 too 99; hence only a 100 year span is available. This means that a 'base year' needs to be added to the Year value read from the RTC, to arrive at a Calendar year.
+
+TEC-1G designers have determined that 2023 will be the base year. Hence, **CalendarYear = 2023 + RTCYear**
 
 | DS1302 Year | Calendar Year |
 | :--: | :----: |
