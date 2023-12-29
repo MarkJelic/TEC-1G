@@ -3,8 +3,19 @@
 
 [Simple Clock Demo](./ClockDemo/) by Craig Hart
 
-## MON3 API Guide
-Coming Soon®
+## MON3 API Extension for Real Time Clock
+The Real Time Clock API extensions were added to MON3 from version 1.3
+
+**rtcExist** is a variable/location in the reserved System RAM.
+
+It is set to TRUE or FALSE on _hardBoot, as the system checks if a RTC is present or not.
+The quickest way to test if the RTC is present would be this code:
+
+| API Name | Description | Command | Notes |
+|---|---|---|---|
+| $81 | Read Seconds | Bit 7 = 0, Bits 6 - 4 = 10s of Seconds, Bits 3 - 0 = Seconds | Binary Coded Decimal |
+
+
 
 
 
