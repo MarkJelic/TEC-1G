@@ -107,10 +107,13 @@ PARAM_DATA  .equ    MON_FRAM+32     ;Start of Parameter storage (08C0H)
 
 ; ASCII string for data entry area  ;IE "4000: 23 34 45 56 78"
 DATA_BASE:  .equ    MON_FRAM        ;Base address for Data view (08A0H)
-DATA_ROW:   .equ    MON_FRAM+96     ;Start of ASCII data entry string (0900H)
+DATA_ROW:   .equ    DATA_BASE+96    ;Start of ASCII data entry string (0900H)
+
+; Current Editing Location Quick Jump locations
+CEL_QJMP:   .equ    MON_FRAM+2      ;Location 1,2, and 3 (08A2H,08A4H,08A6H)
 
 ; Breakpoint regsiter save area.
-BP_BASE_SP: .equ    MON_FRAM+2      ;Start of Register save area (08A2H)   
+BP_BASE_SP: .equ    MON_FRAM+96     ;Start of Register save area (0900H)   
 BP_HL:      .equ    BP_BASE_SP+2    ;HL position in BP stack
 BP_REGS:    .equ    BP_BASE_SP+20   ;Top of Stack (Goes down towards MON_RAM)
 BP_PC:      .equ    BP_BASE_SP+20   ;Calling Program Counter
@@ -337,6 +340,11 @@ hardInit:
         ld de,CEL           ;Set to CEL and onwards in RAM
         ld bc,defaultsSize  ;Load defaultsSize bytes
         ldir
+        ;Default CEL Jump Table
+        ld hl,USER_ADDR     ;default to intial CEL
+        ld (CEL_QJMP),hl
+        ld (CEL_QJMP+2),hl
+        ld (CEL_QJMP+4),hl
         ;LCD initialise
         ld bc,400H+LCD_INST ;4 instructions, LCD Instruction port
         ld hl,LCDInitTable  ;LCD instructions table
@@ -1290,29 +1298,22 @@ getHexChar:
 ; Destroys: A,HL,DE,BC
 dataToSerial:
         call getToFrom      ;collect parameters
-        call readyToTransmit ;set up serial for transmit
-; transmits data between DATA_FROM / DATA_TO to the serial terminal.  Can
-; be called externally provided DATA_FROM/TO (08C0-08C3) are populated.
+; transmits data from HL for BC bytes
 sendToSerial:
-        ld a,01000000B      ;bit 6 of 7seg digits
-        out (DIGITS),a      ;set transmit line high
-        ex de,hl            ;save HL
-        ld hl,2000H         ;small
-        call timeDelay      ;delay
-        ex de,hl            ;HL = start address
+        call readyToTransmit ;set up serial for transmit
 sendLoop:
         ld a,(hl)           ;load A with data
         call txByte         ;transmit it to FTDI
         cpi                 ;inc HL, dec BC
         jp pe,sendLoop      ;repeat until BC=0
         ret                 ;all done
-dataRangeParams:        
-        .db 2                           ;Three parameters
-        .db "= Enter Parameters =",0    ;Parameter title
-        .db "From Address:",0           ;Text and Address
-        .dw DATA_FROM
-        .db "To Address:",0             ;Text and Address
-        .dw DATA_TO
+; send to serial Entry for API
+; Input: HL = start address
+;        DE = length in bytes
+sendToSerialAPI:
+        push de             ;make BC = DE
+        pop bc
+        jp sendToSerial
 
 ; SIO receive data.  Receive binary data from FTDI
 dataFromSerial:
@@ -1323,6 +1324,13 @@ receiveFromSerial:
         cpi                 ;inc HL, dec BC
         jp pe,receiveFromSerial  ;repeat until BC=0
         ret                 ;all done
+; receive from serial Entry for API
+; Input: HL = start address
+;        DE = length in bytes
+receiveFromSerialAPI:
+        push de             ;make BC = DE
+        pop bc
+        jp receiveFromSerial
 
 ; Collect Address To and From information from user via the LCD interface
 ; Stores From at DATA_FROM (08C0H) and To at DATA_TO (08C2H)
@@ -1338,6 +1346,14 @@ getToFrom:
         ret nc              ;All good, continue
         pop hl              ;remove call return from stack
         jp displayError     ;display error if end < start
+
+dataRangeParams:        
+        .db 2                           ;Three parameters
+        .db "= Enter Parameters =",0    ;Parameter title
+        .db "From Address:",0           ;Text and Address
+        .dw DATA_FROM
+        .db "To Address:",0             ;Text and Address
+        .dw DATA_TO
 
 ; Send Disassembly to serial terminal
 ; Destroys: All
@@ -1359,6 +1375,8 @@ assemblyLoop:
         djnz $-5            ;repeat 38 times
         ld a,0DH            ;carriage return
         call txByte         ;send CR
+        ld a,0AH            ;line feed
+        call txByte         ;send LF
         ld hl,(DISFROM)     ;get current start
         ld de,(DATA_TO)     ;get end address
         or a                ;clear carry
@@ -1366,7 +1384,15 @@ assemblyLoop:
         add hl,de           ;start and end address
         jr c,assemblyLoop   ;if not zero then loop
         ret                 ;all done
-
+; send assembly to serial Entry for API
+; Input: HL = start address
+;        DE = length in bytes
+sendAssemblyAPI:
+        ld (DISFROM),hl     ;save start in DIS_FROM
+        add hl,de           ;get end address
+        ld (DATA_TO),hl     ;get end address
+        call readyToTransmit ;set up serial for transmit
+        jp assemblyLoop
 ; Send a traditional HEX dump to the serial terminal.
 ; Input: none
 ; Output: text to  serial
@@ -1402,14 +1428,29 @@ hexTextloop:
 skipHex:
         ld a,0DH            ;carriage return
         call txByte         ;send CR
+        ld a,0AH            ;line feed
+        call txByte         ;send LF
         pop de              ;restore next start address
         pop bc              ;restore bytes remaining
         ld hl,(DATA_TO)     ;get end address
         or a
         sbc hl,de           ;check difference
+        ret z               ;return if all done
         ret c               ;return if all done
         ex de,hl            ;set hl to new start address
         jr sendHex          ;repeat until all bytes are printed
+; send hex dump to serial Entry for API
+; Input: HL = start address
+;        DE = length in bytes
+sendHexAPI:
+        push de             ;make BC = DE
+        pop bc
+        ex de,hl            ;set HL for add
+        add hl,de           ;get end address
+        ld (DATA_TO),hl     ;put end address in RAM
+        ex de,hl            ;restore HL  
+        call readyToTransmit ;set up serial for transmit
+        jp sendHex
 
 ; Display 7Seg Message.  Display data on the Seven Segment Display and 
 ; maintain display until a key is pressed
@@ -2156,43 +2197,79 @@ restoreLCD:
         jr nz,$-3           ;Do unitl B=0
         ret
 
-; Display System Control Latch Byte on LCD Screen
+; Set the address of a Quick Jump CEL
 ; Input: none
-; Destroy: all
-displaySystemCtrl:
-        call beep           ;indicate key press
+; Destroys: All
+setCELQuickJump:
+        call beep           ;beep the speaker bit
         ld b,01H            ;clear LCD
         call commandToLCD   ;update LCD
-        ; display system control text on LCD
-        ld de,sysCtrlRows;LCD row table (same as BP)
-        ld hl,sysCtrlText   ;LCD system control text
-        ld b,8              ;eight bits
-        ld a,(SYS_MODE)     ;get value on system control latch
-        ld c,a              ;store in C
-scText:
-        ld a,(de)           ;get row position
-        push bc             ;save BC
-        ld b,a              ;move to B
+        ld hl,CELJumpText   ;point to CEL Jump text
+        call stringToLCD    ;write text
+        ld b,0C9H           ;set cursor to Row 2,Col 9
         call commandToLCD   ;update LCD
-        pop bc              ;restore BC
-        inc de
-        call stringToLCD    ;output text (HL) to LCD
-        ld a,c              ;get system contrl
-        and 01H             ;get last bit
-        push af             ;uggg
-        ld a,b              ;messy 
-        cp 8                ;to set 
-        jr nz,$+7           ;shadow 
-        pop af              ;properly
-        xor 01H
-        jr $+3
-        pop af
-        add a,"0"           ;convert to ASCII
-        rrc c               ;rotate sys control byte
-        call charToLCD      ;send to LCD
-        djnz scText         ;repeat for all 8 registers
-        ;wait for keyboard input to exit
-        rst 08H             ;wait for key press
+        ld hl,CELHelpText   ;point to CEL Help text
+        call stringToLCD    ;write text
+        ld c,3              ;three values
+        ld de,LCDBaseRows+3 ;set de to last row
+        ld hl,CEL_QJMP+5    ;move to last entry
+printCELRow:
+        ld a,(de)           ;get column
+        ld b,a              ;set B as LCD row
+        call commandToLCD   ;update LCD
+        ld a,c              ;get location value
+        add a,30H           ;adjust for ascii
+        call charToLCD      ;send character to LCD
+        ld a,":"
+        call charToLCD      ;send character to LCD
+        ld b,2              ;two nibbles
+printHL:
+        push hl             ;save CEL jump table
+        ld a,(hl)           ;get nibble
+        call regAToASCII
+        ld a,h
+        call charToLCD      ;send character to LCD
+        ld a,l
+        call charToLCD      ;send character to LCD
+        pop hl              ;restore CEL jump table
+        dec hl              ;move to next nibble
+        djnz printHL
+        dec de              ;move to next column
+        dec c               ;move to next location
+        jr nz,printCELRow   ;do next row
+; LCD displayed, now get key
+CELKeyPress:
+        rst 08H             ;get key and wait
+        cp K_ADDR           ;is it address?
+        ret z               ;yes, just exit
+        dec a               ;adjust key for index
+        cp 3                ;check for range 0-2
+        jr nc,CELKeyPress   ;loop again until 1-3,AD is pressed
+        ld hl,CEL           ;get CEL
+        ld de,CEL_QJMP      ;point to table
+QJmpToCEL:
+        add a,a             ;double for index
+        add a,e             ;index it
+        ld e,a
+        ld bc,2             ;two bytes
+        ldir
+        ret
+
+getCELQuickJump:
+        ld de,CEL           ;get CEL
+        ld hl,CEL_QJMP      ;point to table
+        ;reg c=key
+        ld a,c              ;get key pressed
+        dec a               ;adjust for index
+        add a,a             ;double for index
+        add a,l             ;index it
+        ld l,a
+        ld a,(hl)           ;hl = (hl)
+        inc hl
+        ld h,(hl)
+        ld l,a
+        ld (CEL),hl
+        ld (DATA_BASE),hl   ;update base address
         ret
 
 ; Serial Enable.  Sets the TX line to high ready for serial transfer
@@ -2680,11 +2757,11 @@ hexToSegmentTable:
 
 ; Jump table to various routines and function when a Fn+key is pressed
 functionJumpTable:
-        .dw switchMode      ;0 = Change from LCD Menu to Data entry mode
-        .dw intelHexLoad    ;1 = Intel Hex File Loader
-        .dw displayError    ;2 = Unused
-        .dw displayError    ;3 = Unused
-        .dw displayError    ;4 = Unused
+        .dw setCELQuickJump ;0 = Set CEL Quick Jump Address
+        .dw getCELQuickJump ;1 = Get CEL Quick Jump 1
+        .dw getCELQuickJump ;2 = Get CEL Quick Jump 2
+        .dw getCELQuickJump ;3 = Get CEL Quick Jump 3
+        .dw intelHexLoad    ;4 = Intel Hex File Loader
         .dw displayError    ;5 = Unused
         .dw displayError    ;6 = Unused
         .dw displayError    ;7 = Unused
@@ -2728,11 +2805,11 @@ breakPointFlags:
 breakPointFlagRows:
         .db 91H,0D1H,0A5H,0E5H,00H
 
-sysCtrlRows:
-        .db 80H,8AH,0C0H,0CAH,94H,9EH,0D4H,0DEH
-sysCtrlText:
-        .db "Shadow ",0,"Protect ",0,"Expand ",0,"FF-D3   ",0
-        .db "FF-D4  ",0,"FF-D5   ",0,"FF-D6  ",0,"Caps    ",0
+;Address Jump text
+CELJumpText:
+        .db "Save Current Address",0
+CELHelpText:
+        .db "Press 1,2,3",0
 
 ;Hard Reset Tune
 hardResetTune:
@@ -2842,10 +2919,10 @@ APITable:
         .dw txByte
         .dw rxByte
         .dw intelHexLoad
-        .dw sendToSerial
-        .dw receiveFromSerial
-        .dw sendAssembly
-        .dw sendHex
+        .dw sendToSerialAPI
+        .dw receiveFromSerialAPI
+        .dw sendAssemblyAPI
+        .dw sendHexAPI
         .dw genDataDump
         .dw checkStartEnd
         .dw menuDriver
@@ -2908,10 +2985,10 @@ API_COUNT2:  .equ    $-APITable2  ;Total number of GLCD API functions
         .org BASE_ADDR+3FECH    ; 16k
 
 RELMAJOR:   .dw 07E7h	; 2023 - for the API
-RELMINOR:   .dw 0012h
+RELMINOR:   .dw 0013h
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "2023.12"
+REL_TXT:    .equ "2023.13"
 
         .end
 

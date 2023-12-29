@@ -12,7 +12,7 @@ tmon:
         ld c,beep_          ; make a beep
         rst 10h
 
-        ld hl,1000h
+        ld hl,initadr
         ld (caddr),hl       ; setup edit location
         ld a,1
         ld (autinc),a       ; seyup address autoinc mode
@@ -1634,7 +1634,8 @@ cmds    .db 4,"HELP"
 ; Variables -- these need to live in RAM; set them 'out of the way'
 
 
-ramst:  .equ 0A00H
+initadr .equ 4000H
+ramst   .equ 0A00H
 ramtst  .equ 0A02H
 ramend  .equ 0A04H
 segbuf  .equ 0A06H          ; 7-seg display buffer

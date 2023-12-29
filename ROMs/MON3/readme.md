@@ -1,13 +1,13 @@
 ## Mon 3 User Guide
 
 MON3 is the monitor for the TEC-1G.  
-A comprehensive User Guide has been provided that details how to use MON3.  Please see the [Mon3 User Guide](./MON3_User_Guide_v1.1.pdf) in this folder.
+A comprehensive User Guide has been provided that details how to use MON3.  Please see the [Mon3 User Guide](./MON3_User_Guide_v1.3.pdf) in this folder.  This readme file is obsolete!
 
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](./MON3-1G_BC23-12.bin) | Download and burn to a 16k ROM | 1.2 |
-| [MON3 User Guide](./MON3_User_Guide_v1.2.pdf) | MON3 User Guide in PDF format | 1.2 |
+| [MON3 for TEC-1G](./MON3-1G_BC23-13.bin) | Download and burn to a 16k ROM | 1.2 |
+| [MON3 User Guide](./MON3_User_Guide_v1.3.pdf) | MON3 User Guide in PDF format | 1.2 |
 
 ## MON 3 Usage (Brief)
 
@@ -79,7 +79,7 @@ A comprehensive User Guide has been provided that details how to use MON3.  Plea
 |  |  |  F# | 18H |
 
 
-- Graphical LCD library.  If using the TEC-DECK Graphical LCD (GLCD) add-on, a suite of routines to interface with the GLCD has been provide.  The Routines can be called from the GLCD API `RST 18H`.   For information on using these routines see the [Mon3 User Guide](./MON3_User_Guide_v1.pdf).
+- Graphical LCD library.  If using the TEC-DECK Graphical LCD (GLCD) add-on, a suite of routines to interface with the GLCD has been provide.  The Routines can be called from the GLCD API `RST 18H`.   For information on using these routines see the [Mon3 User Guide](./MON3_User_Guide_v1.3.pdf).
 
 
    
