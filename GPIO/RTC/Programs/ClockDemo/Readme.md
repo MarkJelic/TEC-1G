@@ -37,6 +37,8 @@ Each field 'wraps around' once maximum is reached. At this stage is is necessary
 ## Notes
 The program assumes a DS1302 clock chip exists on port $FC. If no clock chip exists, a random (and probably invalid) time will be displayed.
 
+If your RTC doesn't 'tick' first time after it is built, try un-commenting the first few lines in he program below "; set a starting time - values in E" - this will program a valid time into the chip and it should start running. My experience is that all registers reset to zero initially, and then the clock starts from there - however if you have issues, try this. The initial programming only needs to be done once - so don't leave the lines un-commented - or you'll reset your clock every time you start the program.
+
 ## Changelog
 1.2 - add full 12/24 hour support, ability to set calendar day/date/month/year
 
