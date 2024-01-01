@@ -1,7 +1,7 @@
 ; ----------------------------------------------------------------------------
 ; Simple DS1302 demo for the TEC-1G
-; By Craig Hart, December 2023
-; Version 1.2
+; By Craig Hart, January 2024
+; Version 1.3
 ;
 ; Setting time:
 ;               + sets hours
@@ -16,8 +16,14 @@
 ;		5 sets month
 ;		6 sets year
 ;
+; Special Keys:
+;
+; A - Reset the DS1302 to 01/01/2024, 01:00.00am & 12hr mode
+; D - DUMPs the RTC RAM to LCD (Addr to exit dump mode)
+; F - HALTs the TEC; any key to resume
+;
 ; ----------------------------------------------------------------------------
-			.org 4000h
+		.org 4000h
 
 ; setup RTC chip
 
@@ -25,15 +31,6 @@
 	call rtc_wr
 	ld de,9000h		; clear trickle charge bits
 	call rtc_wr
-
-; set a starting time - values in E
-
-;	ld de, 8000h		; seconds 00
-;	call rtc_wr
-;	ld de, 8200h		; minutes 00
-;	call rtc_wr
-;	ld de, 8490h		; hours 12. bit 7=1=1 hr clock. bit 5=1=PM set
-;	call rtc_wr
 
 ; clear the LCD
 
@@ -257,14 +254,16 @@ doneday:
 	ld c,_scanKeys
 	rst 10h
 	jp nc,nokey
-	cp 0fh			; HALT ?
+
+trya:	cp 0ah			; A = reset clock
+	jr nz,tryf
+	call resetDS1302
+	jp clock
+
+tryf:	cp 0fh			; HALT ?
 	jr nz, tryplu
 	halt
 	jp nokey
-
-
-
-
 
 tryplu:	cp 10h			; HOURS ADJUST ?
 	jr nz,tryzro
@@ -448,10 +447,8 @@ loadmonth:
 	call rtc_wr
 	jr refrsh
 
-
-
 trysix:	cp 6
-	jr nz, nokey
+	jr nz, tryd
 	
 	ld a,(year)
 	inc a
@@ -462,11 +459,193 @@ loadyear:
 	call rtc_wr
 	jr refrsh
 
+tryd:	cp 0dh
+	jr nz, nokey
+	call dumpram
+	jr nokey
+
+
+; -------
+
+
+
 ; ----------------------------------------------------------------------------
 ; Subroutines
 ; ----------------------------------------------------------------------------
 
 ; ----------------------------------------------------------------------------
+; Reset the DS1302 fully
+; ----------------------------------------------------------------------------
+
+resetDS1302:
+	ld de,8e00h		; clear write protect bit
+	call rtc_wr
+	ld de,9000h		; clear trickle charge bits
+	call rtc_wr
+
+	ld de, 8000h		; seconds 00
+	call rtc_wr
+	ld de, 8200h		; minutes 00
+	call rtc_wr
+	ld de, 8490h		; hours 01, 12 hour mode
+	call rtc_wr
+
+	ld de,8601h		; date 01
+	call rtc_wr
+	ld de,8801h		; month 01
+	call rtc_wr
+	ld de,8a01h		; day 01 (Monday)
+	call rtc_wr
+	ld de,8c01h		; year 01 (2024)
+	call rtc_wr
+
+	ret
+
+; ----------------------------------------------------------------------------
+; display the RTC RAM bytes (31 bytes)
+; ----------------------------------------------------------------------------
+dumpram:
+	call rtcram_rd		; get the bytes
+
+	ld hl,rambuff		; fill LCD buffer with spaces
+	ld de,rambuff+1
+	ld a,20h
+	ld (hl),a
+	ld bc,159
+	ldir
+
+	ld b,7			; setup fill defaults
+	xor a
+	ld (bcount),a
+	ld de,rambuff
+	ld hl,rtcram
+
+fillBuff:
+	ld a,(bcount)		; fill LCD buffer with the data
+	ld c,_AToString
+	rst 10h
+	ld a,':'
+	ld (de),a
+	inc de
+	ld a,' '
+	ld (de),a
+	inc de
+
+	push bc
+	ld b,5
+	ld a,(bcount)		; last line has 1 byte only
+	cp 1eh
+	jr nz,writeLine
+	ld b,1
+
+writeLine:
+	ld a,(hl)
+	ld c,_AToString
+	rst 10h
+	ld a,' '
+	ld (de),a
+	inc de
+	inc hl
+	djnz writeLine
+
+	pop bc
+
+	ld a,' '
+	ld (de),a
+	inc de
+
+	ld a,(bcount)
+	add a,5
+	ld (bcount),a
+
+	djnz fillBuff
+
+; ---- ok now buffer is ready. paint it to LCD & do scrolling etc.
+
+	ld b,01				; clear LCD
+	ld c,_commandToLCD
+	rst 10h
+
+	ld hl,rambuff			; setup defaults
+	ld (rambuffPtr),hl
+	xor a
+	ld (rambuffPage),a
+
+
+dbuff:	ld hl,(rambuffPtr)		; send buffer to LCD
+	call blatline
+ 	ld b,0c0h
+	ld c,_commandToLCD
+	rst 10h
+	call blatline
+ 	ld b,94h
+	ld c,_commandToLCD
+	rst 10h
+	call blatline
+ 	ld b,0d4h
+	ld c,_commandToLCD
+	rst 10h
+	call blatline
+
+	ld c,_scanKeysWait
+	rst 10h
+	
+	cp 10h				; plus
+	jr nz,tryneg
+
+	ld a,(rambuffPage)
+	inc a
+	cp 4
+	jr nz,updatePtr
+	ld a,3
+	jr updatePtr
+
+
+tryneg:	cp 11h				; minus
+	jr nz,tryaddr
+
+	ld a,(rambuffPage)
+	dec a
+	jp p,updatePtr
+	xor a
+	jr updatePtr
+
+tryaddr:
+	cp 13h
+	jr nz,dbuff
+
+	ld b,01				; clear LCD before exit
+	ld c,_commandToLCD
+	rst 10h
+	ret
+
+updatePtr:
+	ld (rambuffPage),a
+
+	ld hl,rambuff-20
+	ld b,a
+	inc b
+	ld de,20
+
+add20:	add hl,de
+	djnz add20
+	ld (rambuffPtr),hl
+	jr dbuff
+
+; ----
+
+blatline:
+	ld b,20
+fillLcd:
+	ld a,(hl)
+	ld c,_charToLCD
+	rst 10h
+	inc hl
+	djnz fillLcd
+	ret
+
+; ----------------------------------------------------------------------------
+; Conversion routine - BCD to true Binary
 ; input:  A = BCD value
 ; output: A = binary value
 ; ----------------------------------------------------------------------------
@@ -485,7 +664,6 @@ bcdToBin:
 	add a,b
 	pop bc
 	ret
-
 
 ; -----------------------------------------------------------------------------
 ; DECIMAL - HL to decimal
@@ -570,9 +748,35 @@ rtc_rd:
 	ret
 
 ; ----------------------------------------------------------------------------
+; Read cycle. Writes command and reads result into memory using burst mode
+; ----------------------------------------------------------------------------
+rtcram_rd:
+	ld c,RTCport
+	ld a,10h		; raise CS, enable data out
+	out (c),a
+  
+	ld d,0ffh		; ram burst
+	call bytelpW		; write D to select the register
+
+	ld b,31
+	ld hl,rtcram
+
+bRead:	call bytelpR		; read value (into D)
+	ld (hl),d
+	inc hl
+	djnz bRead
+
+	xor a			; drop CS
+	out (c),a
+
+	ret
+
+; ----------------------------------------------------------------------------
 ; write one byte to the DS1302
+; byte in D
 ; ----------------------------------------------------------------------------
 bytelpW:
+	push bc
 	ld b,8
  
 blp:    srl d			; data bit 0 to carry
@@ -582,6 +786,7 @@ blp:    srl d			; data bit 0 to carry
 	or 40h			; raise CLK
 	out (c),a
 	djnz blp
+	pop bc
 	ret
 
 ; ----------------------------------------------------------------------------
@@ -589,6 +794,7 @@ blp:    srl d			; data bit 0 to carry
 ; byte read is returned in D
 ; ----------------------------------------------------------------------------
 bytelpR:
+	push bc
 	ld b,8
 	ld d,0
 
@@ -603,6 +809,7 @@ blp2:
 	srl e
 	rr d
 	djnz blp2
+	pop bc
 	ret
 
 ; ----------------------------------------------------------------------------
@@ -636,5 +843,13 @@ month:		.block 1
 year:		.block 1
 
 lcdbuff: 	.block 20
+
+rtcram:		.block 31
+
+rambuff:	.block 160
+rambuffPtr:	.block 2
+rambuffPage:	.block 1
+bcount:		.block 1
+
 
 		.end
