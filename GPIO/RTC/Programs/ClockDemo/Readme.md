@@ -10,7 +10,13 @@ Both the 7-seg and the LCD display informtion - the 7-seg being limited to the t
 
 In 12 hour mode, PM is indicated by the '.' being lit on the minutes digit of the 7-seg display.
 
-If the F key is pressed on the hexpad, the TEC will HALT - the HALT LED will light, the 7-seg displys will cease udating the the LCD disply will stop on the time that HALT occurred. Pressing any key resumes normal operation. Note that if you HALT the TEC for several seconds (or more), the updated time will be displayed upon resuming, proving that the DS1302 is working independently even if the TEC itself is HALTed.
+### special Keys
+**A** Pressing A resets the Ds1302 to 01/01/2024, 1:00.00Am and 12 hour mode. Use this to set the clock to a known time (useful for fault finding)
+
+**D** Dumps the 31 bytes of RTC memory to the LCD - use + and - to scroll through, ADDR to return to normal clock.
+
+**F**
+If the F key is pressed on the hexpad, the TEC will HALT - the HALT LED will light, the 7-seg displys will cease updating and the LCD display will stop on the time that HALT occurred. Pressing any key resumes normal operation. Note that if you HALT the TEC for several seconds (or more), the updated time will be displayed upon resuming, proving that the DS1302 is working independently even if the TEC itself is HALTed.
 
 ## Setting the Time
 \+ increments the Hour (and rolls over AM/PM, if 12 hour mode, sets 00-23 if 24 hour mode)
@@ -40,6 +46,8 @@ The program assumes a DS1302 clock chip exists on port $FC. If no clock chip exi
 If your RTC doesn't 'tick' first time after it is built, try un-commenting the first few lines in he program below "; set a starting time - values in E" - this will program a valid time into the chip and it should start running. My experience is that all registers reset to zero initially, and then the clock starts from there - however if you have issues, try this. The initial programming only needs to be done once - so don't leave the lines un-commented - or you'll reset your clock every time you start the program.
 
 ## Changelog
+1.3 - Added D key - dump, A key - reset DS1302
+
 1.2 - add full 12/24 hour support, ability to set calendar day/date/month/year
 
 1.1 - add Calendar support, ptial 12/24 hour support
