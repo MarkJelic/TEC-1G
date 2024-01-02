@@ -4,7 +4,7 @@ This is a list of TEC-1G expansion port connectors and their respective pin-outs
 A note on PCB connector orientation markings. Pin 1 is identified as the pin that is not within the solid connector outline on the silkscreen, but instead has a small L on one corner, or is individually outlined. Pin 1 also has a square solder pad, the other pins are round. Lastly, the label of the connector (eg. J1) is usually placed as close as possible to Pin 1.
 
 ## J1 - Z80 Bus Vertical Connector
-Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc. Except for one small difference; Pin 28 is NOT the usual Refresh pin, since that function is largely not used in any modernised Z80 computers. Pin 28 has instead been repurposed for the use of the GLCD as an Inverted Read control line from the Z80. 
+Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc. Except for one small difference; Pin 28 is NOT the usual Refresh pin, since that function is largely not used in any modernised Z80 computers. Pin 28 has instead been repurposed for the use of the GLCD as an Inverted RD line from the Z80. 
 
 ## J2 - Z80 Bus Horizontal Connector
 Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.  This connector should ideally be a female connector to allow for direct connection of expansion cards, or the X4 Expansion Board, and IDC cables can still be connected if the user desires.
@@ -13,6 +13,27 @@ Follows the Z80 CPU pinout i.e. pin 1 - A11, pin 2 - A12, etc.  This connector s
 This 20 pin port is an extension of the 16 pin IO port of the Southern Cross Computer. Any peripherals made for the SCC can be plugged into the left (first 16) pins and work as intended.
 
 The extra 4 pins have been added so peripherals like the Speech Board can be re-implemented fully, using only a single connector.
+
+1 - +5v  
+2- /RESET  
+3 - 8x8 Port 05h select  
+4 - 8x8 Port 06h select  
+5 - Port F8h select  
+6 - Port F9h select  
+7 - GND  
+8 - GND  
+9 - D4  
+10 - D3  
+11 - D5  
+12 - D2  
+13 - D6  
+14 - D1  
+15 - D7  
+16 - D0  
+17 - /WR  
+18 - /WAIT  
+19 - CLK  
+20 - /INT  
 
 ## J4 - MATRIX Keyboard
 This port is for connecting the external Matrix Keyboard & Joysticks.
@@ -86,8 +107,28 @@ This is where the SD Card, Real Rime Clock, and General Input/Output cards will 
 ## PROBE
 This set of connectors have a 2 pronged purpose; The outer male pins are for connecting Oscilloscope or Multimeter probes to, for measuring and testing purposes. The pair of inner pins, fitted with a 2-pin female header, is used for alternate power delivery, as well as a power take-off point for the boards connected to the J10 - GPIO connector.
 
+## LCD1
+Connector for a standard HD44780 LCD display. TEC-1G expects a 20x4 display, but any HD44780 based screen will work.
+
+1 - GND  
+2 - +5v  
+3 - Contrast (10k trimpot)  
+4 - RS (A7)  
+5 - R/W (RD)  
+6 - E  
+7 - D0  
+8 - D1  
+9 - D2  
+10 - D3  
+11 - D4  
+12 - D5  
+13 - D6  
+14 - D7  
+15 - Backlight A  
+16 - Backlight K (GND)  
+
 # Connector <-> IO Port assignment
-This chart shows whih Z-80 I/O port select lines are availalbe on each I/O connector.
+This chart shows which Z-80 I/O port select lines are availalbe on each I/O connector.
 
 | Connector | F8h | F9h | FAh | FBh | FCh | FDh | FEh | FFh |
 | -- | -- | -- | -- | -- | -- | -- | -- | -- |
