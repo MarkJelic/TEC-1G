@@ -150,7 +150,6 @@ nokey:	in a,(KEYB)			; Shift check
 
 	halt
 
-
 ; init LCD
 
 cp0:	ld hl,LCDINIT-HIROM
@@ -218,10 +217,7 @@ cp2x:
 cp3:	ld a,(SEGMNT+3-HIROM)		; LCD message - checkpoint 3 pass
 	out (SEGS),a
 
-
-
 ; long delay
-
 	ld bc, 0400h
 
 l_outer:
@@ -237,9 +233,7 @@ l_inner:
 	ld a,b
 	or c
 	jr nz, l_outer
-
 ;
-
 	ld hl,r5-HIROM
 	jp lo_lcr
 	
@@ -251,7 +245,6 @@ r5:	ld a,lcdCls			; clear lcd
 	jp rlo_lcdstr
 
 ; now quickly check the RAM
-
 
 rtsts:	ld hl,RAMST
 	ld (hl),00h
@@ -268,7 +261,6 @@ rtsts:	ld hl,RAMST
 	ld a,(hl)
 	cp 055h
 	jr nz, ramfail
-
 
 	ld hl,RAMEND
 	ld (hl),00h

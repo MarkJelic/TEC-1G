@@ -137,10 +137,20 @@ shres:	call lcdStr
 
 ; setup menu & system state
 
+menuInit:
 	xor a
 	ld (menuPos),a		; menu draw from first slot
 	ld (menuSel),a		; menu selected first item
-	ld (capsval),A		; capslock off
+	ld hl,menuTable
+	ld (menuMenu),hl	; default menu
+	ld (menuNest),a		; top level
+	ld a,menuLen
+	ld (menuLength),a
+	ld hl,menutitle
+	ld (menuTitl),hl
+
+	ld (capsval),a		; capslock off
+
 
 	ld a,40h
 	ld (kState),a		; no HexPad key pressed
@@ -159,7 +169,7 @@ shres:	call lcdStr
 menu:	ld c,lcdCls
 	call lcdCommand
 
-	ld hl,menutitle
+	ld hl,(menuTitl)
 	call lcdStr
 
 	call drawMenu
@@ -189,13 +199,14 @@ menu:	ld c,lcdCls
 
 	jp (hl)
 
-menuJP:	.dw isPlus, isMinus, isGo, menu	; JP table
+menuJP:	.dw isPlus, isMinus, isGo, isAddr	; JP table
 
 ;------------
 
 isPlus:
+	ld a,(menuLength)
+	ld b,a
 	ld a,(menuSel)
-	ld b,menuLen
 	cp b				; at max already ?
 	ret z				; if max, bail
 	inc a				; otherwise update
@@ -233,7 +244,7 @@ isGo:
 	call lcdCommand
 
 	ld a,(menuSel)			; display selected test name
-	ld hl,menuTable
+	ld hl,(menuMenu)
 	call setMenuPtr
 	call lcdStr
 
@@ -241,43 +252,89 @@ isGo:
 	ld c,lcdRow3			; select outpout row
 	call lcdCommand
 
-	ld hl,menu			; save RET address on stack
+	ld hl,menuRet			; save RET address on stack
 	push hl
 	ld h,b				; BE => HL. That's not a typo
 	ld l,e
 	jp (hl)				; 'call' the routine
-	
-	ret
 
+	halt				; should never run (returns to menu)
+
+menuRet:
+	call getKeyNoScan		; no beep if no key
+	jp nz,menu
+
+keyUp:	call getKeyNoScan		; wait for release
+	jp z,keyUp
+	call tone			; and beep
+	jp menu
+
+
+isAddr:
+	ld a,(menuNest)
+	cp 0
+	ret z				; exit if already at top level
+
+	ld hl,menutitle			; reset title
+	ld (menuTitl),hl
+
+	ld hl,(parentMenu)		; return to top level
+	ld (menuMenu),hl
+
+	ld a,(oldMenuLen)		; reset menu length
+	ld (menuLength),a
+
+	ld a,(oldMenuPos)
+	ld (menuPos),a
+
+	ld a,(oldMenuSel)
+	ld (menuSel),a
+
+	xor a
+	ld (menuNest),a
+	ret
+	
 ; -----------------------------------
 ;  Draw the menu
 ; -----------------------------------
 
 drawMenu:
+	ld hl,menuLength		; setup B
+	ld a,(hl)
+	ld e,a
+	inc e
+
 	ld c,lcdRow2+1
 	call lcdCommand
 	ld a,(menuPos)
-	ld hl,menuTable
+	cp e
+	jr nc,putPtr
+
+	ld hl,(menuMenu)
 	call setMenuPtr
 	call lcdStr
 
 	ld c,lcdRow3+1
 	call lcdCommand
 	inc a
-	ld hl,menuTable
+	cp e
+	jr nc,putPtr
+	ld hl,(menuMenu)
 	call setMenuPtr
 	call lcdStr
 
 	ld c,lcdRow4+1
 	call lcdCommand
 	inc a
-	ld hl,menuTable
+	cp e
+	jr nc,putPtr
+	ld hl,(menuMenu)
 	call setMenuPtr
 	call lcdStr
 
 ; position pointer
 
-	ld a,(menuPos)
+putPtr:	ld a,(menuPos)
 	ld b,a
 	ld a,(menuSel)
 	sub b
@@ -289,7 +346,7 @@ drawMenu:
 	jr drawPointer
 
 try3:	cp 1
-	jr nz, try4
+	jr nz,try4
 
 	ld c,lcdRow3
 	jr drawPointer
@@ -306,7 +363,7 @@ drawPointer:
 	ret
 
 ; -----------------------------------------------------
-;  setMenuPtr
+; setMenuPtr
 ;  call:
 ; A: location in menu required
 ; HL: menu table (4 bytes per)
@@ -342,6 +399,38 @@ setMenuPtr:
 	ld l,a
 	pop de
 	pop af
+	ret
+
+; -----------------------------------------------------
+; doGPIOMenu Sets up the GPIO sub-menu
+; -----------------------------------------------------
+
+doGPIOMenu:
+	ld hl,GPIOtitle
+	ld (menuTitl),hl
+
+	ld hl,(menuMenu)
+	ld (parentMenu),hl
+	ld hl,GPIOMenu
+	ld (menuMenu),hl
+
+	ld a,(menuLength)
+	ld (oldMenuLen),a
+
+	ld a,GPIOmenuLen
+	ld (menuLength),a
+
+	ld a,(menuPos)
+	ld (oldMenuPos),a
+	ld a,(menuSel)
+	ld (oldMenuSel),a
+	xor a
+	ld (menuPos),a		; menu draw from first slot
+	ld (menuSel),a		; menu selected first item
+
+	inc a
+	ld (menuNest),a		; not top level
+
 	ret
 
 ; -----------------------------------------------------
@@ -1891,7 +1980,7 @@ bitDump:
 	push bc
 	push de
 
-	ld c,lcdRow1
+	ld c,lcdRow3
 	call lcdCommand
 
 	ld b,8
@@ -2049,6 +2138,22 @@ keyP:
 	ret
 
 ; ----------------------------------------------------------------
+; keyPause - wait for a keypress, release & beep
+; ----------------------------------------------------------------
+
+keyPause:
+	call getKeyNoScan
+	jr nz,keyPause
+
+keyPause2:
+	call getKeyNoScan
+	jr z,keyPause2
+
+	call tone
+
+	ret
+
+; ----------------------------------------------------------------
 ; CRC-16-CCITT checksum
 ;
 ; Poly: &1021
@@ -2192,6 +2297,60 @@ diagsVer:
 	ld hl,RELEASE
 	call lcdStr
 	call delay
+	ret
+
+; -----------------------------------------------------------------------------
+; GPIO8bitio: Test the GPIO I/O ports
+; -----------------------------------------------------------------------------
+
+GPIO8bitio:
+	in a,(SDIO)
+	out (SDIO),a
+	ld e,a
+	call bitDump
+	call getKeyNoScan
+	jr nz,GPIO8bitio
+	cp 13h
+	jr z,exitTest
+	jr GPIO8bitio
+
+exitTest:
+	xor a
+	out (SDIO),a
+	ret
+
+; -----------------------------------------------------------------------------
+; GLCD Test: Test out the GLCD
+; -----------------------------------------------------------------------------
+
+GLCDtest:
+	call initLCD
+
+	ld bc,0000h
+	ld de,7f3fh
+	call drawBox
+
+	ld b,63
+	ld c,31
+	ld e,30
+	call drawCircle
+
+	call plotToLCD
+
+	call setTxtMode
+
+	ld c,1
+	call printString
+	.db "TEC-1G and GLCD!",0
+
+waitkey:
+	call getKeyNoScan
+	jr nz,waitkey
+
+	cp 13h
+	ret z
+	jr waitkey
+
 	ret
 
 ; -----------------------------------------------------------------------------
@@ -2556,10 +2715,13 @@ prout:
 	inc ix
 	ret
 
+#include "glcd_library.asm"
 #include "pi.asm"
 #include "Diags_Music.asm"
 #include "matrix_library.asm"
 #include "Diags_FTDI.asm"
+#include "Diags_RTC.asm"
+#include "Diags_SD.asm"
 #include "Diags_Strings_Variables.asm"
 
 	.end

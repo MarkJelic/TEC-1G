@@ -29,6 +29,7 @@ addrMsg:	.db "Addr ",0
 burnScan:	.db "Scanning",0
 burnLatch:	.db "Latched ",0
 menutitle:	.db "  Diags Main Menu",0
+GPIOtitle:	.db "  GPIO Diags Menu",0
 t1GMsg:		.db 0c6h,0c7h,0c3h,04h,28h,0e3h	; 7-seg hexbytes
 segScr		.db "7-Seg Scroll",0
 segLamp		.db "7-Seg Lamp Test",0
@@ -49,6 +50,11 @@ joyScr		.db "Joystick Port Test",0
 diagVer		.db "Diags Version Info",0
 ftdiScr		.db "FTDI Loopback Test",0
 piCalc		.db "Calculate Pi ",0f7h,0
+GPIOMenuStr	.db "=> GPIO Boards",0
+GPIO8bit	.db "GPIO 8 bit I/O Test",0
+GPIOClock	.db "GPIO RTC Test",0
+GPIOSdCard	.db "GPIO SD Card Test",0
+GLCDMenuStr	.db "GLCD Test",0
 ex8msg		.db "8x8 Display Test",0
 ftdiMsg		.db "FTDI Tx Rx Tests",0
 discoMsg	.db "Disco LEDs Tests",0
@@ -72,9 +78,16 @@ menuTable:	.dw lcdMsg, lcdTest
 		.dw ftdiMsg, FTDI, ftdiScr, ftdiLoopback			; serial
 		.dw hex, hexPad, matrixScr, matrix, joyScr, joy			; keyboard/joystick
 		.dw piCalc, pi							; misc
+		.dw GPIOMenuStr, doGPIOMenu					; GPIO peripherals
+		.dw GLCDMenuStr, GLCDtest					; GLCD
 		.dw burnst, burn, diagVer, diagsVer				; burnin & version
 
-menuLen:	.EQU (($-menuTable)/4)-1		; menu entries-1
+menuLen:	.equ (($-menuTable)/4)-1		; menu entries-1
+
+GPIOMenu:	.dw GPIO8bit, GPIO8bitio
+		.dw GPIOClock, clock
+		.dw GPIOSdCard, sd_test
+GPIOmenuLen:	.equ (($-GPIOMenu)/4)-1			; menu entries-1
 
 burnTable:	.dw diagVer, diagsVer
 		.dw lcdMsg, lcdTest
@@ -109,6 +122,41 @@ lcdText:	.db 0,4,4,4,4,4,4,6,6,7,7,6,6,4,4,4,4,4,4,1
 		.db 5,"   Open Source!   ",5
 		.db 2,4,4,4,4,4,4,6,6,7,7,6,6,4,4,4,4,4,4,3
 
+; for GLCD
+
+INIT_BASIC:
+        .db      30H             ;8 Bit interface, basic instruction
+        .db      0CH             ;display on, cursor & blink off
+        .db      06H             ;cursor move to right ,no shift
+        .db      01H             ;clear RAM
+ROWS:   .db      80H,90H,88H,98H ;Text Row start position
+
+; for RTC
+
+days:		.db "Monday",0
+		.db "Tuesday",0
+		.db "Wednesday",0
+		.db "Thursday",0
+		.db "Friday",0
+		.db "Saturday",0
+		.db "Sunday",0
+ 
+; for SD
+
+spiCMD0:	.db 40h,0,0,0,0,95h		; reset			R1
+spiCMD8:	.db 48h,0,0,1,0aah,87h		; send_if_cond		R7
+spiCMD9:	.db 49h,0,0,1,0aah,87h		; send_CSD		R1
+spiCMD10:	.db 4ah,0,0,0,0,1h		; send_CSD		R1
+spiCMD55:	.db 77h,0,0,0,0,1		; APP_CMD		R1
+spiACMD41:	.db 69h,40h,0,0,0,1		; send_OP_COND		R1
+cmd8Str:	.db "CMD8: ",0
+noCardStr:	.db "SD Card not Found",0
+sdErrorStr:	.db "SD Card Error "
+sdErrorStrNum:	.db "XX",0
+megaBytes	.db "MB",0
+cardTypeStr:	.db "SD Card type ",0
+
+
 ; ----------------------------------------------------------------
 ; RAM variables
 ; ----------------------------------------------------------------
@@ -122,6 +170,14 @@ segptr:		.block 1
 burnLoops:	.block 2
 menuPos:	.block 1
 menuSel:	.block 1
+oldMenuPos:	.block 1
+oldMenuSel:	.block 1
+menuMenu:	.block 2
+parentMenu	.block 2
+menuNest:	.block 1
+menuLength:	.block 1
+oldMenuLen:	.block 1
+menuTitl:	.block 2
 RAMCRC:		.block 2
 ROMCRC:		.block 2
 ramst:		.block 2
@@ -166,39 +222,60 @@ rTestBuff:	.block RTBLK
 ; for Pi
 ; ----------------------------------------------------------------
 		.org 1000h
-IY0		.EQU	$			; Base value for IY
-NS		.EQU	$-IY0			; N = Number of Digits
+IY0		.equ	$			; Base value for IY
+NS		.equ	$-IY0			; N = Number of Digits
 Nnn		.block	2			;
-LENS		.EQU	$-IY0			; LEN = array length
+LENS		.equ	$-IY0			; LEN = array length
 LENnn		.block	2			;
-IS		.EQU	$-IY0			; I sub loop counter
+IS		.equ	$-IY0			; I sub loop counter
 Inn		.block	2			;
-JS		.EQU	$-IY0			; J main loop counter
+JS		.equ	$-IY0			; J main loop counter
 Jnn		.block	2			;
-RESS		.EQU	$-IY0			; RES = quotient
+RESS		.equ	$-IY0			; RES = quotient
 RESnn		.block	2			;
-NINESS		.EQU	$-IY0			; NINES = 9s counter
+NINESS		.equ	$-IY0			; NINES = 9s counter
 NINESnn		.block	1			;
-PREDIGS		.EQU	$-IY0			; PREDIG = digit preceding 9s
+PREDIGS		.equ	$-IY0			; PREDIG = digit preceding 9s
 PREDIGnn	.block	1			;
-DOTS		.EQU	$-IY0			; DOT = dot to display after 1st digit
+DOTS		.equ	$-IY0			; DOT = dot to display after 1st digit
 DOTnn		.block	1			;
-GROUPS		.EQU	$-IY0			; GROUP = Digits in group counter
+GROUPS		.equ	$-IY0			; GROUP = Digits in group counter
 GROUPnn		.block	1			;
-GROUPSS		.EQU	$-IY0			; GROUPS = Groups in line counter
+GROUPSS		.equ	$-IY0			; GROUPS = Groups in line counter
 GROUPSnn	.block	1			;
 COUNTnn		.block	2			; COUNT = decimals counter
 COUNTlcd	.block  1			; LCD line wrap counter
 ARRAY		.block  1
+
+; for RTC
+rtcHours:	.block 1
+rtcMinutes:	.block 1
+rtcSeconds:	.block 1
+rtcBuff:	.block 16
+
+; for GLCD
+GBUF:		.block 1024	; Graphics Buffer 16 * 64 = 1024 byte
+ENDPT:		.block 2	; End Point for Line
+SX:		.block 1	; Sign of X
+SY:		.block 1	; Sign of Y
+DX:		.block 2	; Change of X
+DY:		.block 2	; Change of Y
+ERR:		.block 2	; Error Rate
+RAD:		.block 2	; Radius
+CLRBUF:		.block 1	; Clear Buffer Flag on LCD Displaying
+
+; for SD
+byteBuff:	.block 2
+sdSize:		.block 12
+sdBuff:		.block 512+1+2			; 512 + header + CRC16
 
 ; ----------------------------------------------------------------
 ; ROM Signatures
 ; ----------------------------------------------------------------
 
 	.ORG 0ffech			; release with 0ffech -- 16k
-;	.ORG 0dfech			; build with 0dfech -- 8k
 
 RELMAJOR:	.dw 07e7h		; 2023 !!
-RELMINOR:	.dw 0100h		; 1.0
+RELMINOR:	.dw 0101h		; 1.0
 SOFTWARE:	.db "DIAGS  ",0
-RELEASE:	.db "1.0    ",0
+RELEASE:	.db "1.1    ",0
