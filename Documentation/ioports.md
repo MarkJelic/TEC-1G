@@ -50,6 +50,7 @@ If you are looking for physical pinouts of the TEC-1G port connectors, please re
  - bit 7 - FTDI serial input
 
 ### Port 04 - LCD Display command
+<img align="right" src="8x8_layout.png" alt="8x8 display port layout">
  - bits 0-7 - LCD command register
 
 ### Port 84h - LCD Display data
@@ -64,8 +65,6 @@ Bit 0 is the left most column
 Y axis
 
 Bit 0 is the bottom most row
-
-
 
 ### Port 07 - GLCD port
  - Reserved for future 128x64 Graphic LCD
