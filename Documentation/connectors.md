@@ -128,14 +128,13 @@ Connector for a standard HD44780 LCD display. TEC-1G expects a 20x4 display, but
 16 - Backlight K (GND)  
 
 # Connector <-> IO Port assignment
-This chart shows which Z-80 I/O port select lines are availalbe on each I/O connector.
+This chart shows which Z-80 I/O port select lines are available on each I/O connector.
 
-| Connector | F8h | F9h | FAh | FBh | FCh | FDh | FEh | FFh |
-| -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| IObus | YES | YES | YES | YES | YES | YES | -- | -- |
-| TEC Expander | YES | YES | -- | -- | -- | -- | -- | -- |
-| GPIO | -- | -- | -- | YES | YES | YES | -- | -- |
-| TEC-1G | -- | -- | -- | -- | -- | -- | YES* | YES* |
+| Connector | 05h | 06h | F8h | F9h | FAh | FBh | FCh | FDh | FEh | FFh |
+| -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| IObus |  -- | -- | YES | YES | YES | YES | YES | YES | -- | -- |
+| TEC Expander |  YES | YES | YES | YES | -- | -- | -- | -- | -- | -- |
+| GPIO |  -- | -- | -- | -- | -- | YES | YES | YES | -- | -- |
+| TEC-1G |  -- | -- | -- | -- | -- | -- | -- | -- | YES* | YES* |
 
-\* Means used on the TEC-1G mainboard internally. Not available for expansion boards.
-
+\* Used on the TEC-1G mainboard internally. Not available for expansion boards.
