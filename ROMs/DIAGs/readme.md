@@ -1,7 +1,29 @@
-# Diags - Diagnostic, Test and Demo ROM for the TEC-1G
+# Diags - Diagnostic and Test ROM for the TEC-1G
 
-## Release 1.0
+## Release 1.1
 Burn to ROM at 0000 offset in the ROM itself, plug into the 1G and turn on. Requires a 16k ROM for correct results.
+
+## changelog
+
+### 1.1
+Add basic test for GLCD  
+Add sub-menu for GPIO cards  
+ - I/O Card
+ - RTC Card
+ - SD Card
+
+### 1.0
+Initial Public Release
+
+### todo
+- The LCD does not have a " \ " character. Produces the Yen symbol instead. Possible remap/custom char ?
+- display CART signature string (risky?) [BFFFh must be 0]
+- RAM test detects and does not overwrite it's own buffers
+- 2 joysticks to be tested
+- ram test to include EXPAND to check for full 64k (i.e. block wrapping checks; 8k RAM chip detect)
+- add debugger stuff on a hotkey
+
+- hexSeg routine exists but not presently used. Saving for possible future need.
 
 # General Notes
 Diags_Shadow.asm is the portion of code running at 0000h - this source code is rather special in that it tricks the assembler into building it in a way that will produce a single binary file for burning into a ROM, yet run from shadow space. If I didn't do it this way, the assembler would turn out a 48k+ file (code at 0000h + code at C000h) which of course wouldn't be easily usable to burn into a ROM.
@@ -62,7 +84,7 @@ Quickly verifies there is R/W memory at the first and last byte of the expected 
 Pushes the memory location of the start of the next block of code onto the stack, then does a RET which pops it off the stack. If code worked, the stack must work. Stack location is previously set at 3FFFh - the top of memory that can't be PROTECTed.
 
 ### Config register test
-The config register value is reading back the bits of port 03h - the value will change as the config dipswitches are changed or various other system operation bits are active.
+The config register value is reading back the bits of port 03h - the value will change as the config dipswitches are changed.
 
 The system default config respects the position of the EXPAND dipswitch & sets the system latch port FFh accordingly.
 
@@ -82,14 +104,14 @@ Writing FFh followed by the checksumming ensures that actual RAM was written to 
 Bank 1 Write Protect toggles the WP line and verifies memory is/isn't writeable at 4000h
 
 ### Main Menu
-We then arrive at the main menu - select a test with + and - on the HexPad and press GO to perform the test. Results are displayed on the LCD and/or the relevant device is activated. Once completed, the test exists back to the menu.
+We then arrive at a menu - select a test with + and - on the HexPad and press GO
 
-Note: to exit the HexPad and Joystick tests - press **Shift+ADDR**
+Note: to exit the HexPad and Joystick tests - press Shift+ADDR
 
-Note: The RAM test is not super comprehensive, but is good enough to work out how many Kb are fitted. It is not meant to thoroughly check the actual RAM chip, nor does it look for address clashes (i.e. address decoder errors). Modern RAM is considered reliable enough. The default TEC-1G result on Diags startup should be 32768 bytes found unless the expansion socket is also populated wth a 32k RAM chip, in which case its 49152 bytes.
+Note: The RAM test is not super comprehensive, but is good enough to work out how many Kb are fitted. It is not meant to thoroughly check the actual RAM chip, nor does it look for address clashes (i.e. address decoder errors). Modern RAM is considered reliable enough. The default TEC-1G result on Diags startup should be 32768 bytes found unless the expansion is also populated wth a 32k RAM chip, in which case its 49152 bytes.
 Each RAM memory block displayed is accompanied with a beep - two beeps, two blocks found. Read the LCD carefully for block info.
 
-Toggling the SHADOW, PROTECT and EXPAND lines and running the RAM test will demonstate (by the different memory sizes and block(s) reported) that these controls work.
+Toggling the SHADOW, PROTECT and EXPAND lines and running the RAM test will demonstate (by the different memory sizes reported) that these controls work --> when PROTECT is active, bank 1 does not act as RAM, so it's not found by the RAM test, as expected. When SHADOW is active, the bottom 2k canont be seen. With EXPAND if a second RAM chip is fitted, the RAM test will see it as a seond memory block.
 
 # Experiments with Diags
 ## Burn-in Mode
@@ -106,16 +128,10 @@ R - 4 increase, 0 decrease
 G - 5 increase, 1 decrease
 B - 6 increase, 2 decrease
 
-Note that most RGB LEDs have a stronger R output, and a weaker B output - the B value generally has to be a lot higher to get a similar light output, meaning that quite different values are needeed to get a "white" colour output.
+## RAM Tests
+This is a more extensive memory test, which checks memory loations by writing various bit-patterns then reading them back. The test is non-destructive and leaves memory contents in its original state afterwards.
 
-'water clear' RGB LEDs may not be able to adequately mix the R, G and B light to achieve an overall white effect; we have found the regular frosted LEDs to be the better choice.
-
-Also, different brands of LED have different characeristics, and so values needed to produce any given colour may vary quite a lot between brands.
-
-## RAM tests
-This is a more extensive memory test, which checks memory locations by writing various bit-patterns then reading them back. The test is non-destructive and leaves memory contents in its original state afterwards. Currently the test patters 00 FF 55 and AA are used.
-
-This test does not check all RAM thoroughly, as e.g. it can't test itself without corrupting its own program code, nor does it test every single memory byte. The aim here is to demonstrate simple checks of e.g. address and data bus basic functions. The test is not designed to verify the memory chip itself; we assume that SRAM chips are reliable. However, the tests could be enhanced to offer this ability with some additional work.
+This test does not check all RAM thoroughly, as e.g. it can't test itself without corrupting its own program code, nor does it test every single memory byte. The aim here is to demonstrate simple checks of e.g. address and data bus basic functions. It is not designed to verify the memory chip itself; we assume that SRAM chips are reliable. However, the tests could be enhanced to offer this ability with some additional work.
 
 The RAM Test respects the SHADOW, PROTECT and EXPAND states.
 
@@ -123,8 +139,8 @@ Try the following:
 
  - run RAM Test. Note 32k reported from 0000h - 7FFFh (Assuming a standard 32k 1G)
  - Enable PROTECT (Note PROTECT light comes on)
- - re-run RAM test. Note 16k reported from 000h - 3FFFh. This means the second 16k (Bank 1) of RAM is now not RAM any more. Protect makes it read-only, hence it is no longer RAM
- - Enable SHADOW (Leave PROTECT enabled; both PROTECT and SHADOW lights on)
+ - re-run RAM test. Note 16k reported from 000h - 3FFFh. This means the second 16k (Bank 1) of RAM is now not RAM any more. Protect makes it read-only, hence it is no longe RRAM
+ - Enable SHADOW (Leave PROTECT enabled; both PROTECT and sHADOW lights on)
  - re-run RAM test. Note 14k reported from 0800h - 3FFFh. Now the bottom 2K is not RAM thanks to shadow replacing it with the system ROM.
  - Disable PROTECT (Leave SHADOW enabled)
  - re-run RAM test. Note 30k reported - 0800h to 7FFFh. As expected.
@@ -133,13 +149,13 @@ In ths way, the functions of SHADOW and PROTECT are verified.
 
 For those with a second RAM chip fitted to the 1G, the same tests can be re-run.
  - by Default, 48k is recognized from 0000h - BFFFh
- - Note that with PROTECT enabled, two separate 16k RAM blocks are observed - Bank 0 and Bank 2; with SHADOW and PROTECT enabled, the first block is reported as 14k in size.
- - Note that EXPAND makes no difference - The RAM test simply works with whatever memory it sees mapped into the Z80's address space and does not care which page is selected.
+ - Note that with PROTECT enabled, two separate 16k RAM blocks are observed - Bank 0 and Bank 2; with SHADOW and PROTECT enabled, the first block is reproted as 14k in size.
+ - Note that EXPAND makes no difference - The RAM test simply works with whatever memory it sees mapped into the Z80's address space and does no care which page is selected.
 
 ## Geral input bit test
 Should normally read as Low. Connecting the G.Inp bit pin high or low should read accordingly. This bit will be used in a future project add-on for the 1G.
 
-## 7-seg Lamp test
+## 7-seg Lamp Test
 This test lights every possible segment of the 7-seg displays.
 
 The first test 'scanning' mode uses display scanning (normal operation mode) where each of the 6 digits is lit 1/6th of the time.
@@ -147,46 +163,66 @@ The second test 'Latched' mode locks all the segments of all 6 disaplys simultan
 
 Visually, there may be little observable difference tetween the two tests; however the current drawn by the machine from the power supply should noticably increase when the segments are Latched, as there are six times as many LEDs lit vs. scanned mode.
 
-The lack of noticeable display brightness change between the two modes demonstrates how well our eyes and brain make up for what is really 1/6th the light output of each digit.
+The lack of noticeable display brihtness change between the two modes demonstrates how well our eyes and brain make up for what is really 1/6th the light output of each digit.
 
-## Speaker test
+## Speaker Test
 The speaker test comes with one non-obvious check: clock speed. The pitch and speed of the notes is directly related to the CPU clock speed. At 4MHz the tune plays in around 12 seconds. If you select the slow clock and adjust the speed pot while playing the tune, you can observe the tune's speed and pitch changing in real time.
 
 Even at the fastest setting, the slow clock is somewhere around 4 to 8 times slower, showing the original TEC clock speed is around 500KHz (with some uncertainty - it's not a true linear relationship).
 
 ## Calculate Pi
-This routine shows the Z80's computational skills. It uses the Spigot method to calculate Pi to 100 decimal places (Yes it really is calculating Pi in real time...not just repeating a pre-programmed value). You can check the Z80's work if you like!
+This routine shows the Z80's computational skills. It uses the Spigot method to calculate Pi to 100 decimal places. You can check the Z80's work if you like!
 
 3.14159265358979323 8462643383279502884 1971693993751058209 7494459230781640628 6208998628034825342 1170679
 
 This code was taken from https://github.com/GmEsoft/Z80-MBC2_PiSpigot/tree/master and is used with thanks under the terms of the GPL v3 License.
 
 ## FTDI Tx Rx tests
-Receives characters from the serial to the LCD. Acts as a simple serial typewriter.
+Receives characters from the serial to the LCD. Acys as a simple serial typewriter
 Transmits hexpad keys to the serial port
-
-Press **ADDR** to exit
+Press ADDR to exit
 
 **Note** that because this test is pseudo "full duplex" it can not handle full speed serial IO - the characters will corrupt if sent at faster than 'human typing' speed due to the delays needed when updating the LCD.
 
 The bitbang serial is really only half duplex and has very few clock cycles to spare, so this test relies on working at 'human speed' only.
 
-## FTDI loopback test
-**Remove FTDI Module** and connect TX and RX pins with a Jumper. Test passes if signals sent on TX are received on RX.
-
-It is _normal_ for this test to fail with an FTDI module fitted, or the FTDI socket empty!!
-
-This test is primarily available for those who want to test the TEC stand-alone, those without an FTDI module, or simply no computer to run the FTDI Tx Rx tests with.
+## FTDI Loopback Test
+**Remove FTDI Module** and connect TX and RX pins with a Jumper. Test passes if signals sent on TX are received on RX
+If is normal for this test to fail with an FTDI module fitted!!
 
 ## Joystick port test
-Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input.
+Wiggle the joystick or press fire to start the test; icon moves around the LCD in response to user input
+Fire changes the icon character on the LCD
+Fire 2 or ADDR exits test
 
-Fire changes the icon character on the LCD.
+## GPIO I/O Test
+This test continuously reads input port FDh and writes the value back out to port FDh. Use the Input Selector and Output display test modules to test the ports - as the dip switches on the Input Selector are flipped, the Output Display LEDs change accordingly. The bit-value being read/output is also displayed on the LCD.
 
-**Fire 2** or **ADDR** exits test.
+**Note: This test will return unexpected values if the SD module is also fitted.
 
-## Assumptions and notes
-- TEC-1G hardware only; may also partially work on older TEC hardware if enough RAM is fitted.
+## GPIO RTC Test
+This test looks for the DS1302 RTC chip at port FCh.
+
+Press '2' to toggle between 12 and 24 hour mode. does not set the clock - only reads what is already present. A newly powered up DS1302 will set itself to Monday 1/1/2023 and 00:00.00, and then start counting from there. ADDR exits the test.
+
+If an RTC is not fitted, all bits read back as a '1' so the time etc. will be all FF's (mostly).
+
+See the DS1302 utility at https://github.com/MarkJelic/TEC-1G/tree/main/GPIO/RTC/Programs/ClockDemo for a full set to tools for mangaging the DS1302, setting time and calendar, etc. A future version of MON3 will have native clock support included.
+
+### GPIO SD Card Test
+Looks for an SD card on port FCh. If found, reads card data, as follows:
+
+ Card Name            Card size in MB
+ SD Card Type (type 01 and 02 exist).
+
+Every SD card has a 5 byte 'name' or identifier. In most cases this is either the manufacturer's name (abbreviated), or a general indication of card size.
+
+The card size is typically not exactly a powwer of 2. E.G. A 4Gb Card may return 3768MB instead of the expected 4096MB.
+
+MON3 etc. generally expect a type 02 card, which are the larger (1Gb+) cards made today. Very old (?<1Gb cards) are probably type 01 and not supported.
+
+## Assumptions and Notes
+- TEC-1G hardware only; may also work on older hardware if enough RAM is fitted.
 - Assumes 32k RAM fitted at U8; will work with 16k but not less due stack location.
 - Will run at least partly without any working RAM at all. This allows for some very basic troubleshooting even with a very sick machine.
 - LCD must be fitted to progress beyond first couple of tests; LCD is considered essential. 20x4 LCD assumed; works with 16x2 but a lot of info is missing.
@@ -196,7 +232,7 @@ Fire changes the icon character on the LCD.
 - any test can generally be be exited with the ADDR key at any time. Hexpad test press Fn-ADDR to exit.
 - any Hexpad key exits burn-in mode; Diags will reboot when pressed. This is done by patching the keyboard Interrupt Routine whilst in burn-in mode.
 
-## Build process
+## build process
 Assemble Diags_Main.asm - it pulls in everything else needed.
 
 I have used TASM as my assembler; I used the -80 -b -fFF commandline parameters to turn out a 16k binary file that is ready to burn.
