@@ -1,4 +1,4 @@
-# TEC-1G GPIO Real Time Clock (RTC)
+# TEC-1G GPIO SD-Card * 8Bit Input/Output
 ### Parts List
 
 | QTY | Part # | Description |
