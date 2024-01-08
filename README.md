@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Errata](Errata.md) | <b>*CRITICAL:*</b> The latest Errata announcements. **Read BEFORE assembly!** | 2/Nov/2023 |
+| [Errata](Errata.md) | <b>*CRITICAL:*</b> The latest Errata announcements. **Read BEFORE assembly!** | 15/Dec/2023 |
 | [Assembly Instructions](./Documentation/Assembly/Readme.md) | Instructions on putting the TEC-1G together | 0.2 |
 | [Component Overlay](TEC-1G_Component_Overlay_v1-13.pdf) | Useful during Assembly | 1.1 |
 | [Parts List](/TEC-1G_PartsList_v1-5.pdf) | Full list of parts  | 1.5 |
