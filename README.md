@@ -8,6 +8,8 @@
 | [BOM Sourcing](/files/TEC-1G_BOM_v1.5.xlsx) | Bill of Materials with Sources  | 1.5 |
 | [Schematic](TEC-1G_Schematic_v1-13.pdf) | See what makes the TEC-1G tick | 1.13 |
 | [PCB Gerbers](/TEC-1G_Gerbers_OS_1-10.zip) | Gerbers of the PCB so you can print your own! | 1.10 |
+| [Monitors / ROMs](./ROMs/) | Download and burn the ROMs for your TEC-1G from this link! | 1.3 |
+
 
 # TEC-1G Introduction
 
