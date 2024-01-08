@@ -1,0 +1,1429 @@
+0000   C3 F0 05               JP   0x05f0
+0003   FF                     RST   0x38
+0004   FF                     RST   0x38
+0005   FF                     RST   0x38
+0006   FF                     RST   0x38
+0007   FF                     RST   0x38
+0008   C3 20 03               JP   0x0320
+000B   FF                     RST   0x38
+000C   FF                     RST   0x38
+000D   FF                     RST   0x38
+000E   FF                     RST   0x38
+000F   FF                     RST   0x38
+0010   C3 E0 03               JP   0x03e0
+0013   FF                     RST   0x38
+0014   FF                     RST   0x38
+0015   FF                     RST   0x38
+0016   FF                     RST   0x38
+0017   FF                     RST   0x38
+0018   C3 90 04               JP   0x0490
+001B   FF                     RST   0x38
+001C   FF                     RST   0x38
+001D   FF                     RST   0x38
+001E   FF                     RST   0x38
+001F   FF                     RST   0x38
+0020   FF                     RST   0x38
+0021   FF                     RST   0x38
+0022   FF                     RST   0x38
+0023   FF                     RST   0x38
+0024   FF                     RST   0x38
+0025   FF                     RST   0x38
+0026   FF                     RST   0x38
+0027   FF                     RST   0x38
+0028   21 30 02               LD   hl,0x0230
+002B   C3 41 00               JP   0x0041
+002E   FF                     RST   0x38
+002F   FF                     RST   0x38
+0030   21 30 05               LD   hl,0x0530
+0033   C3 41 00               JP   0x0041
+0036   FF                     RST   0x38
+0037   FF                     RST   0x38
+0038   C7                     RST   0x00
+0039   FF                     RST   0x38
+003A   FF                     RST   0x38
+003B   FF                     RST   0x38
+003C   FF                     RST   0x38
+003D   FF                     RST   0x38
+003E   FF                     RST   0x38
+003F   FF                     RST   0x38
+0040   FF                     RST   0x38
+0041   22 00 08               LD   (0x0800),hl
+0044   C3 B0 01               JP   0x01b0
+0047   FF                     RST   0x38
+0048   FF                     RST   0x38
+0049   FF                     RST   0x38
+004A   FF                     RST   0x38
+004B   FF                     RST   0x38
+004C   FF                     RST   0x38
+004D   FF                     RST   0x38
+004E   FF                     RST   0x38
+004F   FF                     RST   0x38
+0050   FF                     RST   0x38
+0051   FF                     RST   0x38
+0052   FF                     RST   0x38
+0053   FF                     RST   0x38
+0054   FF                     RST   0x38
+0055   FF                     RST   0x38
+0056   FF                     RST   0x38
+0057   FF                     RST   0x38
+0058   FF                     RST   0x38
+0059   FF                     RST   0x38
+005A   FF                     RST   0x38
+005B   FF                     RST   0x38
+005C   FF                     RST   0x38
+005D   FF                     RST   0x38
+005E   FF                     RST   0x38
+005F   FF                     RST   0x38
+0060   FF                     RST   0x38
+0061   FF                     RST   0x38
+0062   FF                     RST   0x38
+0063   FF                     RST   0x38
+0064   FF                     RST   0x38
+0065   FF                     RST   0x38
+0066   DB 00                  IN   a,(0x00)
+0068   E6 1F                  AND   0x1f
+006A   ED 47                  LD   i,a
+006C   C9                     RET
+006D   31 D0 0F               LD   sp,0x0fd0
+0070   CD 31 01               CALL   0x0131
+0073   CD 8E 01               CALL   0x018e
+0076   3A F9 0F               LD   a,(0x0ff9)
+0079   FE 00                  CP   0x00
+007B   C2 96 00               JP   nz,0x0096
+007E   ED 57                  LD   a,i
+0080   FE 10                  CP   0x10
+0082   DA 88 00               JP   c,0x0088
+0085   C3 E3 00               JP   0x00e3
+0088   21 F7 0F               LD   hl,0x0ff7
+008B   CD 6F 01               CALL   0x016f
+008E   ED 6F                  RLD
+0090   23                     INC   hl
+0091   ED 6F                  RLD
+0093   C3 DA 00               JP   0x00da
+0096   ED 57                  LD   a,i
+0098   FE 10                  CP   0x10
+009A   DA B7 00               JP   c,0x00b7
+009D   AF                     XOR   a
+009E   32 FA 0F               LD   (0x0ffa),a
+00A1   ED 57                  LD   a,i
+00A3   FE 13                  CP   0x13
+00A5   CA DA 00               JP   z,0x00da
+00A8   FE 12                  CP   0x12
+00AA   CA C2 00               JP   z,0x00c2
+00AD   FE 11                  CP   0x11
+00AF   CA C6 00               JP   z,0x00c6
+00B2   FE 10                  CP   0x10
+00B4   CA D0 00               JP   z,0x00d0
+00B7   2A F7 0F               LD   hl,(0x0ff7)
+00BA   CD 7B 01               CALL   0x017b
+00BD   ED 6F                  RLD
+00BF   C3 E3 00               JP   0x00e3
+00C2   2A F7 0F               LD   hl,(0x0ff7)
+00C5   E9                     JP   (hl)
+00C6   2A F7 0F               LD   hl,(0x0ff7)
+00C9   2B                     DEC   hl
+00CA   22 F7 0F               LD   (0x0ff7),hl
+00CD   C3 E3 00               JP   0x00e3
+00D0   2A F7 0F               LD   hl,(0x0ff7)
+00D3   23                     INC   hl
+00D4   22 F7 0F               LD   (0x0ff7),hl
+00D7   C3 E3 00               JP   0x00e3
+00DA   3E 00                  LD   a,0x00
+00DC   06 04                  LD   b,0x04
+00DE   21 F3 0F               LD   hl,0x0ff3
+00E1   18 07                  JR   0x00ea
+00E3   3E 67                  LD   a,0x67
+00E5   06 02                  LD   b,0x02
+00E7   21 F1 0F               LD   hl,0x0ff1
+00EA   32 F9 0F               LD   (0x0ff9),a
+00ED   D9                     EXX
+00EE   ED 5B F7 0F            LD   de,(0x0ff7)
+00F2   CD 02 01               CALL   0x0102
+00F5   1A                     LD   a,(de)
+00F6   CD 0E 01               CALL   0x010e
+00F9   D9                     EXX
+00FA   CB E6                  SET   4,(hl)
+00FC   23                     INC   hl
+00FD   10 FB                  DJNZ   0x00fa
+00FF   C3 6D 00               JP   0x006d
+0102   21 F3 0F               LD   hl,0x0ff3
+0105   7B                     LD   a,e
+0106   CD 15 01               CALL   0x0115
+0109   7A                     LD   a,d
+010A   CD 15 01               CALL   0x0115
+010D   C9                     RET
+010E   21 F1 0F               LD   hl,0x0ff1
+0111   CD 15 01               CALL   0x0115
+0114   C9                     RET
+0115   F5                     PUSH   af
+0116   CD 26 01               CALL   0x0126
+0119   77                     LD   (hl),a
+011A   23                     INC   hl
+011B   F1                     POP   af
+011C   0F                     RRCA
+011D   0F                     RRCA
+011E   0F                     RRCA
+011F   0F                     RRCA
+0120   CD 26 01               CALL   0x0126
+0123   77                     LD   (hl),a
+0124   23                     INC   hl
+0125   C9                     RET
+0126   E5                     PUSH   hl
+0127   21 5F 01               LD   hl,0x015f
+012A   E6 0F                  AND   0x0f
+012C   85                     ADD   a,l
+012D   6F                     LD   l,a
+012E   7E                     LD   a,(hl)
+012F   E1                     POP   hl
+0130   C9                     RET
+0131   3E FF                  LD   a,0xff
+0133   ED 47                  LD   i,a
+0135   CD 40 01               CALL   0x0140
+0138   ED 57                  LD   a,i
+013A   FE FF                  CP   0xff
+013C   C0                     RET   nz
+013D   C3 31 01               JP   0x0131
+0140   DD E5                  PUSH   ix
+0142   01 01 06               LD   bc,0x0601
+0145   DD 7E 00               LD   a,(ix+0)
+0148   D3 02                  OUT   (0x02),a
+014A   DD 23                  INC   ix
+014C   79                     LD   a,c
+014D   D3 01                  OUT   (0x01),a
+014F   CB 27                  SLA   a
+0151   4F                     LD   c,a
+0152   3E 0A                  LD   a,0x0a
+0154   3D                     DEC   a
+0155   C2 54 01               JP   nz,0x0154
+0158   D3 01                  OUT   (0x01),a
+015A   10 E9                  DJNZ   0x0145
+015C   DD E1                  POP   ix
+015E   C9                     RET
+015F   EB                     EX   de,hl
+0160   28 CD                  JR   z,0x012f
+0162   AD                     XOR   l
+0163   2E A7                  LD   l,0xa7
+0165   E7                     RST   0x20
+0166   29                     ADD   hl,hl
+0167   EF                     RST   0x28
+0168   2F                     CPL
+0169   6F                     LD   l,a
+016A   E6 C3                  AND   0xc3
+016C   EC C7 47               CALL   pe,0x47c7
+016F   CD 7B 01               CALL   0x017b
+0172   C0                     RET   nz
+0173   23                     INC   hl
+0174   3E 00                  LD   a,0x00
+0176   77                     LD   (hl),a
+0177   2B                     DEC   hl
+0178   ED 57                  LD   a,i
+017A   C9                     RET
+017B   ED 57                  LD   a,i
+017D   47                     LD   b,a
+017E   3A FA 0F               LD   a,(0x0ffa)
+0181   FE 00                  CP   0x00
+0183   78                     LD   a,b
+0184   C0                     RET   nz
+0185   AF                     XOR   a
+0186   77                     LD   (hl),a
+0187   3D                     DEC   a
+0188   32 FA 0F               LD   (0x0ffa),a
+018B   78                     LD   a,b
+018C   C9                     RET
+018D   00                     NOP
+018E   0E 0A                  LD   c,0x0a
+0190   21 50 00               LD   hl,0x0050
+0193   29                     ADD   hl,hl
+0194   11 01 00               LD   de,0x0001
+0197   AF                     XOR   a
+0198   D3 02                  OUT   (0x02),a
+019A   3D                     DEC   a
+019B   D3 01                  OUT   (0x01),a
+019D   41                     LD   b,c
+019E   10 FE                  DJNZ   0x019e
+01A0   EE 80                  XOR   0x80
+01A2   ED 52                  SBC   hl,de
+01A4   20 F5                  JR   nz,0x019b
+01A6   C9                     RET
+01A7   FF                     RST   0x38
+01A8   FF                     RST   0x38
+01A9   FF                     RST   0x38
+01AA   FF                     RST   0x38
+01AB   FF                     RST   0x38
+01AC   FF                     RST   0x38
+01AD   FF                     RST   0x38
+01AE   FF                     RST   0x38
+01AF   FF                     RST   0x38
+01B0   ED 5B 00 08            LD   de,(0x0800)
+01B4   1A                     LD   a,(de)
+01B5   E6 1F                  AND   0x1f
+01B7   FE 1F                  CP   0x1f
+01B9   C8                     RET   z
+01BA   00                     NOP
+01BB   00                     NOP
+01BC   FE 1E                  CP   0x1e
+01BE   CA B0 01               JP   z,0x01b0
+01C1   FE 00                  CP   0x00
+01C3   CA E9 01               JP   z,0x01e9
+01C6   47                     LD   b,a
+01C7   13                     INC   de
+01C8   D5                     PUSH   de
+01C9   21 F8 01               LD   hl,0x01f8
+01CC   CD E3 01               CALL   0x01e3
+01CF   F5                     PUSH   af
+01D0   78                     LD   a,b
+01D1   21 10 02               LD   hl,0x0210
+01D4   CD E3 01               CALL   0x01e3
+01D7   6F                     LD   l,a
+01D8   26 00                  LD   h,0x00
+01DA   F1                     POP   af
+01DB   4F                     LD   c,a
+01DC   CD 93 01               CALL   0x0193
+01DF   D1                     POP   de
+01E0   C3 B4 01               JP   0x01b4
+01E3   5F                     LD   e,a
+01E4   16 00                  LD   d,0x00
+01E6   19                     ADD   hl,de
+01E7   7E                     LD   a,(hl)
+01E8   C9                     RET
+01E9   D5                     PUSH   de
+01EA   11 00 10               LD   de,0x1000
+01ED   1B                     DEC   de
+01EE   7A                     LD   a,d
+01EF   B3                     OR   e
+01F0   C2 ED 01               JP   nz,0x01ed
+01F3   D1                     POP   de
+01F4   13                     INC   de
+01F5   C3 B4 01               JP   0x01b4
+01F8   8C                     ADC   a,h
+01F9   83                     ADD   a,e
+01FA   7C                     LD   a,h
+01FB   75                     LD   (hl),l
+01FC   70                     LD   (hl),b
+01FD   67                     LD   h,a
+01FE   62                     LD   h,d
+01FF   5C                     LD   e,h
+0200   57                     LD   d,a
+0201   52                     LD   d,d
+0202   4E                     LD   c,(hl)
+0203   48                     LD   c,b
+0204   45                     LD   b,l
+0205   41                     LD   b,c
+0206   3C                     INC   a
+0207   39                     ADD   hl,sp
+0208   36 32                  LD   (hl),0x32
+020A   2F                     CPL
+020B   2C                     INC   l
+020C   2A 27 25               LD   hl,(0x2527)
+020F   23                     INC   hl
+0210   19                     ADD   hl,de
+0211   1A                     LD   a,(de)
+0212   1C                     INC   e
+0213   1D                     DEC   e
+0214   1E 20                  LD   e,0x20
+0216   23                     INC   hl
+0217   25                     DEC   h
+0218   27                     DAA
+0219   29                     ADD   hl,hl
+021A   2C                     INC   l
+021B   2E 31                  LD   l,0x31
+021D   33                     INC   sp
+021E   37                     SCF
+021F   3A 3D 41               LD   a,(0x413d)
+0222   45                     LD   b,l
+0223   49                     LD   c,c
+0224   4D                     LD   c,l
+0225   52                     LD   d,d
+0226   57                     LD   d,a
+0227   5C                     LD   e,h
+0228   10 FF                  DJNZ   0x0229
+022A   FF                     RST   0x38
+022B   FF                     RST   0x38
+022C   FF                     RST   0x38
+022D   FF                     RST   0x38
+022E   FF                     RST   0x38
+022F   FF                     RST   0x38
+0230   06 06                  LD   b,0x06
+0232   0A                     LD   a,(bc)
+0233   0D                     DEC   c
+0234   06 0D                  LD   b,0x0d
+0236   0A                     LD   a,(bc)
+0237   0D                     DEC   c
+0238   12                     LD   (de),a
+0239   16 14                  LD   d,0x14
+023B   12                     LD   (de),a
+023C   0F                     RRCA
+023D   11 12 0F               LD   de,0x0f12
+0240   0D                     DEC   c
+0241   0D                     DEC   c
+0242   0D                     DEC   c
+0243   0A                     LD   a,(bc)
+0244   12                     LD   (de),a
+0245   0F                     RRCA
+0246   0D                     DEC   c
+0247   0A                     LD   a,(bc)
+0248   08                     EX   af,af'
+0249   06 08                  LD   b,0x08
+024B   0A                     LD   a,(bc)
+024C   0F                     RRCA
+024D   0A                     LD   a,(bc)
+024E   0D                     DEC   c
+024F   0F                     RRCA
+0250   06 06                  LD   b,0x06
+0252   0A                     LD   a,(bc)
+0253   0D                     DEC   c
+0254   06 0D                  LD   b,0x0d
+0256   0A                     LD   a,(bc)
+0257   0D                     DEC   c
+0258   12                     LD   (de),a
+0259   16 14                  LD   d,0x14
+025B   12                     LD   (de),a
+025C   0F                     RRCA
+025D   11 12 0F               LD   de,0x0f12
+0260   0D                     DEC   c
+0261   0D                     DEC   c
+0262   0D                     DEC   c
+0263   0A                     LD   a,(bc)
+0264   12                     LD   (de),a
+0265   0F                     RRCA
+0266   0D                     DEC   c
+0267   0A                     LD   a,(bc)
+0268   08                     EX   af,af'
+0269   06 08                  LD   b,0x08
+026B   0A                     LD   a,(bc)
+026C   06 12                  LD   b,0x12
+026E   00                     NOP
+026F   1E                     DB   0x1e
+0270   FD 2A 00 08            LD   iy,(0x0800)
+0274   DD 21 F1 0F            LD   ix,0x0ff1
+0278   06 06                  LD   b,0x06
+027A   21 F1 0F               LD   hl,0x0ff1
+027D   36 00                  LD   (hl),0x00
+027F   23                     INC   hl
+0280   10 FB                  DJNZ   0x027d
+0282   06 06                  LD   b,0x06
+0284   11 F7 0F               LD   de,0x0ff7
+0287   21 F6 0F               LD   hl,0x0ff6
+028A   7E                     LD   a,(hl)
+028B   12                     LD   (de),a
+028C   2B                     DEC   hl
+028D   1B                     DEC   de
+028E   10 FA                  DJNZ   0x028a
+0290   FD 7E 00               LD   a,(iy+0)
+0293   FD 23                  INC   iy
+0295   E6 1F                  AND   0x1f
+0297   FE 1F                  CP   0x1f
+0299   C8                     RET   z
+029A   FE 1E                  CP   0x1e
+029C   28 D2                  JR   z,0x0270
+029E   21 B3 02               LD   hl,0x02b3
+02A1   CD E3 01               CALL   0x01e3
+02A4   32 F1 0F               LD   (0x0ff1),a
+02A7   3E 80                  LD   a,0x80
+02A9   F5                     PUSH   af
+02AA   CD 40 01               CALL   0x0140
+02AD   F1                     POP   af
+02AE   3D                     DEC   a
+02AF   20 F8                  JR   nz,0x02a9
+02B1   18 CF                  JR   0x0282
+02B3   00                     NOP
+02B4   6F                     LD   l,a
+02B5   E6 C3                  AND   0xc3
+02B7   EC C7 47               CALL   pe,0x47c7
+02BA   E3                     EX   (sp),hl
+02BB   6E                     LD   l,(hl)
+02BC   28 E8                  JR   z,0x02a6
+02BE   CE C2                  ADC   a,0xc2
+02C0   6B                     LD   l,e
+02C1   EB                     EX   de,hl
+02C2   4F                     LD   c,a
+02C3   2F                     CPL
+02C4   43                     LD   b,e
+02C5   A7                     AND   a
+02C6   46                     LD   b,(hl)
+02C7   EA E0 AE               JP   pe,0xaee0
+02CA   CD 04 10               CALL   0x1004
+02CD   18 00                  JR   0x02cf
+02CF   00                     NOP
+02D0   00                     NOP
+02D1   08                     EX   af,af'
+02D2   05                     DEC   b
+02D3   0C                     INC   c
+02D4   0C                     INC   c
+02D5   0E 00                  LD   c,0x00
+02D7   13                     INC   de
+02D8   08                     EX   af,af'
+02D9   05                     DEC   b
+02DA   11 05 00               LD   de,0x0005
+02DD   13                     INC   de
+02DE   08                     EX   af,af'
+02DF   09                     ADD   hl,bc
+02E0   12                     LD   (de),a
+02E1   00                     NOP
+02E2   09                     ADD   hl,bc
+02E3   12                     LD   (de),a
+02E4   00                     NOP
+02E5   13                     INC   de
+02E6   08                     EX   af,af'
+02E7   05                     DEC   b
+02E8   00                     NOP
+02E9   13                     INC   de
+02EA   05                     DEC   b
+02EB   03                     INC   bc
+02EC   18 09                  JR   0x02f7
+02EE   19                     ADD   hl,de
+02EF   19                     ADD   hl,de
+02F0   19                     ADD   hl,de
+02F1   19                     ADD   hl,de
+02F2   04                     INC   b
+02F3   05                     DEC   b
+02F4   12                     LD   (de),a
+02F5   09                     ADD   hl,bc
+02F6   07                     RLCA
+02F7   0D                     DEC   c
+02F8   05                     DEC   b
+02F9   04                     INC   b
+02FA   00                     NOP
+02FB   02                     LD   (bc),a
+02FC   16 00                  LD   d,0x00
+02FE   0A                     LD   a,(bc)
+02FF   0E 08                  LD   c,0x08
+0301   0D                     DEC   c
+0302   00                     NOP
+0303   08                     EX   af,af'
+0304   01 11 04               LD   bc,0x0411
+0307   16 00                  LD   d,0x00
+0309   06 0E                  LD   b,0x0e
+030B   11 00 13               LD   de,0x1300
+030E   05                     DEC   b
+030F   1A                     LD   a,(de)
+0310   00                     NOP
+0311   00                     NOP
+0312   00                     NOP
+0313   00                     NOP
+0314   00                     NOP
+0315   00                     NOP
+0316   1E FF                  LD   e,0xff
+0318   FF                     RST   0x38
+0319   FF                     RST   0x38
+031A   FF                     RST   0x38
+031B   FF                     RST   0x38
+031C   FF                     RST   0x38
+031D   FF                     RST   0x38
+031E   FF                     RST   0x38
+031F   FF                     RST   0x38
+0320   DD 21 F1 0F            LD   ix,0x0ff1
+0324   AF                     XOR   a
+0325   32 FA 0F               LD   (0x0ffa),a
+0328   32 FB 0F               LD   (0x0ffb),a
+032B   06 06                  LD   b,0x06
+032D   21 F1 0F               LD   hl,0x0ff1
+0330   36 00                  LD   (hl),0x00
+0332   23                     INC   hl
+0333   10 FB                  DJNZ   0x0330
+0335   3A F5 0F               LD   a,(0x0ff5)
+0338   FE 00                  CP   0x00
+033A   20 37                  JR   nz,0x0373
+033C   11 F5 0F               LD   de,0x0ff5
+033F   21 F4 0F               LD   hl,0x0ff4
+0342   06 04                  LD   b,0x04
+0344   7E                     LD   a,(hl)
+0345   12                     LD   (de),a
+0346   2B                     DEC   hl
+0347   1B                     DEC   de
+0348   10 FA                  DJNZ   0x0344
+034A   ED 5F                  LD   a,r
+034C   CD B5 03               CALL   0x03b5
+034F   32 F1 0F               LD   (0x0ff1),a
+0352   3E 00                  LD   a,0x00
+0354   00                     NOP
+0355   F5                     PUSH   af
+0356   3E FF                  LD   a,0xff
+0358   ED 47                  LD   i,a
+035A   3A FB 0F               LD   a,(0x0ffb)
+035D   CD B5 03               CALL   0x03b5
+0360   32 F6 0F               LD   (0x0ff6),a
+0363   CD 40 01               CALL   0x0140
+0366   ED 57                  LD   a,i
+0368   FE FF                  CP   0xff
+036A   C4 8E 03               CALL   nz,0x038e
+036D   F1                     POP   af
+036E   3D                     DEC   a
+036F   20 E4                  JR   nz,0x0355
+0371   18 C2                  JR   0x0335
+0373   CD 8E 01               CALL   0x018e
+0376   06 06                  LD   b,0x06
+0378   21 F1 0F               LD   hl,0x0ff1
+037B   36 00                  LD   (hl),0x00
+037D   23                     INC   hl
+037E   10 FB                  DJNZ   0x037b
+0380   3A FA 0F               LD   a,(0x0ffa)
+0383   21 F3 0F               LD   hl,0x0ff3
+0386   CD 15 01               CALL   0x0115
+0389   CD 31 01               CALL   0x0131
+038C   18 92                  JR   0x0320
+038E   FE 10                  CP   0x10
+0390   20 08                  JR   nz,0x039a
+0392   3A FB 0F               LD   a,(0x0ffb)
+0395   3C                     INC   a
+0396   32 FB 0F               LD   (0x0ffb),a
+0399   C9                     RET
+039A   3A F6 0F               LD   a,(0x0ff6)
+039D   4F                     LD   c,a
+039E   21 F5 0F               LD   hl,0x0ff5
+03A1   06 05                  LD   b,0x05
+03A3   7E                     LD   a,(hl)
+03A4   B9                     CP   c
+03A5   20 0A                  JR   nz,0x03b1
+03A7   36 00                  LD   (hl),0x00
+03A9   3A FA 0F               LD   a,(0x0ffa)
+03AC   3C                     INC   a
+03AD   27                     DAA
+03AE   32 FA 0F               LD   (0x0ffa),a
+03B1   2B                     DEC   hl
+03B2   10 EF                  DJNZ   0x03a3
+03B4   C9                     RET
+03B5   E6 07                  AND   0x07
+03B7   CD 26 01               CALL   0x0126
+03BA   C9                     RET
+03BB   16 0E                  LD   d,0x0e
+03BD   14                     INC   d
+03BE   00                     NOP
+03BF   0C                     INC   c
+03C0   0E 12                  LD   c,0x12
+03C2   05                     DEC   b
+03C3   00                     NOP
+03C4   12                     LD   (de),a
+03C5   13                     INC   de
+03C6   14                     INC   d
+03C7   0F                     RRCA
+03C8   09                     ADD   hl,bc
+03C9   04                     INC   b
+03CA   1A                     LD   a,(de)
+03CB   1F                     RRA
+03CC   0E 08                  LD   c,0x08
+03CE   00                     NOP
+03CF   0D                     DEC   c
+03D0   0E 19                  LD   c,0x19
+03D2   19                     ADD   hl,de
+03D3   19                     ADD   hl,de
+03D4   09                     ADD   hl,bc
+03D5   00                     NOP
+03D6   0C                     INC   c
+03D7   0E 12                  LD   c,0x12
+03D9   13                     INC   de
+03DA   1A                     LD   a,(de)
+03DB   1F                     RRA
+03DC   FF                     RST   0x38
+03DD   FF                     RST   0x38
+03DE   FF                     RST   0x38
+03DF   FF                     RST   0x38
+03E0   DD 21 F1 0F            LD   ix,0x0ff1
+03E4   3E 23                  LD   a,0x23
+03E6   32 FA 0F               LD   (0x0ffa),a
+03E9   21 F1 0F               LD   hl,0x0ff1
+03EC   06 06                  LD   b,0x06
+03EE   36 00                  LD   (hl),0x00
+03F0   23                     INC   hl
+03F1   10 FB                  DJNZ   0x03ee
+03F3   1E 00                  LD   e,0x00
+03F5   CD 66 04               CALL   0x0466
+03F8   CD 31 01               CALL   0x0131
+03FB   ED 57                  LD   a,i
+03FD   FE 04                  CP   0x04
+03FF   30 F4                  JR   nc,0x03f5
+0401   FE 00                  CP   0x00
+0403   28 F0                  JR   z,0x03f5
+0405   5F                     LD   e,a
+0406   3A FA 0F               LD   a,(0x0ffa)
+0409   BB                     CP   e
+040A   28 44                  JR   z,0x0450
+040C   38 42                  JR   c,0x0450
+040E   93                     SUB   e
+040F   27                     DAA
+0410   32 FA 0F               LD   (0x0ffa),a
+0413   CD 66 04               CALL   0x0466
+0416   21 F6 0F               LD   hl,0x0ff6
+0419   36 AE                  LD   (hl),0xae
+041B   16 00                  LD   d,0x00
+041D   CD 40 01               CALL   0x0140
+0420   15                     DEC   d
+0421   20 FA                  JR   nz,0x041d
+0423   3A FA 0F               LD   a,(0x0ffa)
+0426   FE 01                  CP   0x01
+0428   28 2C                  JR   z,0x0456
+042A   3D                     DEC   a
+042B   27                     DAA
+042C   D6 04                  SUB   0x04
+042E   27                     DAA
+042F   30 FB                  JR   nc,0x042c
+0431   C6 04                  ADD   a,0x04
+0433   27                     DAA
+0434   FE 00                  CP   0x00
+0436   28 10                  JR   z,0x0448
+0438   5F                     LD   e,a
+0439   3A FA 0F               LD   a,(0x0ffa)
+043C   93                     SUB   e
+043D   27                     DAA
+043E   32 FA 0F               LD   (0x0ffa),a
+0441   21 F6 0F               LD   hl,0x0ff6
+0444   36 28                  LD   (hl),0x28
+0446   18 AD                  JR   0x03f5
+0448   ED 5F                  LD   a,r
+044A   E6 03                  AND   0x03
+044C   28 28                  JR   z,0x0476
+044E   18 E8                  JR   0x0438
+0450   11 BB 03               LD   de,0x03bb
+0453   C3 59 04               JP   0x0459
+0456   11 CC 03               LD   de,0x03cc
+0459   ED 53 00 08            LD   (0x0800),de
+045D   CD 70 02               CALL   0x0270
+0460   CD 31 01               CALL   0x0131
+0463   C3 E0 03               JP   0x03e0
+0466   21 F1 0F               LD   hl,0x0ff1
+0469   3A FA 0F               LD   a,(0x0ffa)
+046C   CD 15 01               CALL   0x0115
+046F   23                     INC   hl
+0470   7B                     LD   a,e
+0471   CD 26 01               CALL   0x0126
+0474   77                     LD   (hl),a
+0475   C9                     RET
+0476   3C                     INC   a
+0477   C3 38 04               JP   0x0438
+047A   FF                     RST   0x38
+047B   14                     INC   d
+047C   12                     LD   (de),a
+047D   14                     INC   d
+047E   17                     RLA
+047F   17                     RLA
+0480   12                     LD   (de),a
+0481   14                     INC   d
+0482   10 1F                  DJNZ   0x04a3
+0484   01 11 01               LD   bc,0x0111
+0487   11 01 11               LD   de,0x1101
+048A   1F                     RRA
+048B   FF                     RST   0x38
+048C   FF                     RST   0x38
+048D   FF                     RST   0x38
+048E   FF                     RST   0x38
+048F   FF                     RST   0x38
+0490   DD 21 F1 0F            LD   ix,0x0ff1
+0494   FD 21 00 08            LD   iy,0x0800
+0498   3E 50                  LD   a,0x50
+049A   FD 77 00               LD   (iy+0),a
+049D   3E 20                  LD   a,0x20
+049F   FD 77 01               LD   (iy+1),a
+04A2   AF                     XOR   a
+04A3   FD 77 02               LD   (iy+2),a
+04A6   21 F1 0F               LD   hl,0x0ff1
+04A9   06 06                  LD   b,0x06
+04AB   36 00                  LD   (hl),0x00
+04AD   23                     INC   hl
+04AE   10 FB                  DJNZ   0x04ab
+04B0   16 80                  LD   d,0x80
+04B2   FD 7E 01               LD   a,(iy+1)
+04B5   21 F1 0F               LD   hl,0x0ff1
+04B8   CD 15 01               CALL   0x0115
+04BB   23                     INC   hl
+04BC   23                     INC   hl
+04BD   FD 7E 00               LD   a,(iy+0)
+04C0   CD 15 01               CALL   0x0115
+04C3   3E FF                  LD   a,0xff
+04C5   ED 47                  LD   i,a
+04C7   CD 40 01               CALL   0x0140
+04CA   ED 57                  LD   a,i
+04CC   FE FF                  CP   0xff
+04CE   C4 F3 04               CALL   nz,0x04f3
+04D1   15                     DEC   d
+04D2   C2 B2 04               JP   nz,0x04b2
+04D5   FD 7E 02               LD   a,(iy+2)
+04D8   D6 01                  SUB   0x01
+04DA   27                     DAA
+04DB   FD 77 02               LD   (iy+2),a
+04DE   47                     LD   b,a
+04DF   FD 7E 00               LD   a,(iy+0)
+04E2   80                     ADD   a,b
+04E3   27                     DAA
+04E4   FE 00                  CP   0x00
+04E6   CA 11 05               JP   z,0x0511
+04E9   FE 60                  CP   0x60
+04EB   30 1B                  JR   nc,0x0508
+04ED   FD 77 00               LD   (iy+0),a
+04F0   C3 B0 04               JP   0x04b0
+04F3   FD 7E 01               LD   a,(iy+1)
+04F6   FE 00                  CP   0x00
+04F8   C8                     RET   z
+04F9   3D                     DEC   a
+04FA   27                     DAA
+04FB   FD 77 01               LD   (iy+1),a
+04FE   FD 7E 02               LD   a,(iy+2)
+0501   C6 02                  ADD   a,0x02
+0503   27                     DAA
+0504   FD 77 02               LD   (iy+2),a
+0507   C9                     RET
+0508   11 84 04               LD   de,0x0484
+050B   DD 21 00 00            LD   ix,0x0000
+050F   18 03                  JR   0x0514
+0511   11 7B 04               LD   de,0x047b
+0514   ED 53 00 08            LD   (0x0800),de
+0518   CD B0 01               CALL   0x01b0
+051B   CD 31 01               CALL   0x0131
+051E   C3 90 04               JP   0x0490
+0521   FF                     RST   0x38
+0522   FF                     RST   0x38
+0523   FF                     RST   0x38
+0524   FF                     RST   0x38
+0525   FF                     RST   0x38
+0526   FF                     RST   0x38
+0527   FF                     RST   0x38
+0528   FF                     RST   0x38
+0529   FF                     RST   0x38
+052A   FF                     RST   0x38
+052B   FF                     RST   0x38
+052C   FF                     RST   0x38
+052D   FF                     RST   0x38
+052E   FF                     RST   0x38
+052F   FF                     RST   0x38
+0530   0B                     DEC   bc
+0531   0A                     LD   a,(bc)
+0532   08                     EX   af,af'
+0533   0A                     LD   a,(bc)
+0534   0A                     LD   a,(bc)
+0535   0A                     LD   a,(bc)
+0536   06 06                  LD   b,0x06
+0538   06 0B                  LD   b,0x0b
+053A   0A                     LD   a,(bc)
+053B   08                     EX   af,af'
+053C   0A                     LD   a,(bc)
+053D   0A                     LD   a,(bc)
+053E   0A                     LD   a,(bc)
+053F   0A                     LD   a,(bc)
+0540   0A                     LD   a,(bc)
+0541   0A                     LD   a,(bc)
+0542   0B                     DEC   bc
+0543   0A                     LD   a,(bc)
+0544   08                     EX   af,af'
+0545   0A                     LD   a,(bc)
+0546   0A                     LD   a,(bc)
+0547   0A                     LD   a,(bc)
+0548   06 06                  LD   b,0x06
+054A   06 0A                  LD   b,0x0a
+054C   08                     EX   af,af'
+054D   0A                     LD   a,(bc)
+054E   0D                     DEC   c
+054F   0D                     DEC   c
+0550   0D                     DEC   c
+0551   0D                     DEC   c
+0552   0D                     DEC   c
+0553   00                     NOP
+0554   0D                     DEC   c
+0555   05                     DEC   b
+0556   08                     EX   af,af'
+0557   0B                     DEC   bc
+0558   0B                     DEC   bc
+0559   0B                     DEC   bc
+055A   06 06                  LD   b,0x06
+055C   06 0B                  LD   b,0x0b
+055E   0A                     LD   a,(bc)
+055F   08                     EX   af,af'
+0560   0A                     LD   a,(bc)
+0561   0A                     LD   a,(bc)
+0562   0A                     LD   a,(bc)
+0563   06 06                  LD   b,0x06
+0565   06 0B                  LD   b,0x0b
+0567   0A                     LD   a,(bc)
+0568   06 08                  LD   b,0x08
+056A   08                     EX   af,af'
+056B   08                     EX   af,af'
+056C   08                     EX   af,af'
+056D   08                     EX   af,af'
+056E   0A                     LD   a,(bc)
+056F   0B                     DEC   bc
+0570   0A                     LD   a,(bc)
+0571   08                     EX   af,af'
+0572   06 06                  LD   b,0x06
+0574   06 06                  LD   b,0x06
+0576   06 06                  LD   b,0x06
+0578   00                     NOP
+0579   00                     NOP
+057A   00                     NOP
+057B   1E FF                  LD   e,0xff
+057D   FF                     RST   0x38
+057E   FF                     RST   0x38
+057F   FF                     RST   0x38
+0580   21 00 08               LD   hl,0x0800
+0583   31 D0 0F               LD   sp,0x0fd0
+0586   DD 21 F1 0F            LD   ix,0x0ff1
+058A   22 F7 0F               LD   (0x0ff7),hl
+058D   AF                     XOR   a
+058E   32 F9 0F               LD   (0x0ff9),a
+0591   32 FA 0F               LD   (0x0ffa),a
+0594   0E 0A                  LD   c,0x0a
+0596   21 50 00               LD   hl,0x0050
+0599   CD 93 01               CALL   0x0193
+059C   0E 20                  LD   c,0x20
+059E   21 30 00               LD   hl,0x0030
+05A1   CD 93 01               CALL   0x0193
+05A4   C3 E3 00               JP   0x00e3
+05A7   FF                     RST   0x38
+05A8   FF                     RST   0x38
+05A9   FF                     RST   0x38
+05AA   FF                     RST   0x38
+05AB   FF                     RST   0x38
+05AC   FF                     RST   0x38
+05AD   FF                     RST   0x38
+05AE   FF                     RST   0x38
+05AF   FF                     RST   0x38
+05B0   21 00 08               LD   hl,0x0800
+05B3   11 00 0B               LD   de,0x0b00
+05B6   7E                     LD   a,(hl)
+05B7   FE FF                  CP   0xff
+05B9   C2 C2 05               JP   nz,0x05c2
+05BC   21 00 08               LD   hl,0x0800
+05BF   C3 B6 05               JP   0x05b6
+05C2   D3 03                  OUT   (0x03),a
+05C4   1A                     LD   a,(de)
+05C5   FE FF                  CP   0xff
+05C7   C2 D0 05               JP   nz,0x05d0
+05CA   11 00 0B               LD   de,0x0b00
+05CD   C3 C4 05               JP   0x05c4
+05D0   D3 04                  OUT   (0x04),a
+05D2   CD E1 05               CALL   0x05e1
+05D5   13                     INC   de
+05D6   1A                     LD   a,(de)
+05D7   D3 04                  OUT   (0x04),a
+05D9   CD E1 05               CALL   0x05e1
+05DC   13                     INC   de
+05DD   23                     INC   hl
+05DE   C3 B6 05               JP   0x05b6
+05E1   01 FF 03               LD   bc,0x03ff
+05E4   0B                     DEC   bc
+05E5   78                     LD   a,b
+05E6   B1                     OR   c
+05E7   C2 E4 05               JP   nz,0x05e4
+05EA   C9                     RET
+05EB   FF                     RST   0x38
+05EC   FF                     RST   0x38
+05ED   FF                     RST   0x38
+05EE   FF                     RST   0x38
+05EF   FF                     RST   0x38
+05F0   ED 73 D8 0F            LD   (0x0fd8),sp
+05F4   31 F0 0F               LD   sp,0x0ff0
+05F7   F5                     PUSH   af
+05F8   C5                     PUSH   bc
+05F9   D5                     PUSH   de
+05FA   E5                     PUSH   hl
+05FB   DD E5                  PUSH   ix
+05FD   FD E5                  PUSH   iy
+05FF   08                     EX   af,af'
+0600   D9                     EXX
+0601   F5                     PUSH   af
+0602   C5                     PUSH   bc
+0603   D5                     PUSH   de
+0604   E5                     PUSH   hl
+0605   ED 57                  LD   a,i
+0607   F5                     PUSH   af
+0608   C3 80 05               JP   0x0580
+060B   FF                     RST   0x38
+060C   FF                     RST   0x38
+060D   FF                     RST   0x38
+060E   FF                     RST   0x38
+060F   FF                     RST   0x38
+0610   FF                     RST   0x38
+0611   FF                     RST   0x38
+0612   FF                     RST   0x38
+0613   FF                     RST   0x38
+0614   FF                     RST   0x38
+0615   FF                     RST   0x38
+0616   FF                     RST   0x38
+0617   FF                     RST   0x38
+0618   FF                     RST   0x38
+0619   FF                     RST   0x38
+061A   FF                     RST   0x38
+061B   FF                     RST   0x38
+061C   FF                     RST   0x38
+061D   FF                     RST   0x38
+061E   FF                     RST   0x38
+061F   FF                     RST   0x38
+0620   FF                     RST   0x38
+0621   FF                     RST   0x38
+0622   FF                     RST   0x38
+0623   FF                     RST   0x38
+0624   FF                     RST   0x38
+0625   FF                     RST   0x38
+0626   FF                     RST   0x38
+0627   FF                     RST   0x38
+0628   FF                     RST   0x38
+0629   FF                     RST   0x38
+062A   FF                     RST   0x38
+062B   FF                     RST   0x38
+062C   FF                     RST   0x38
+062D   FF                     RST   0x38
+062E   FF                     RST   0x38
+062F   FF                     RST   0x38
+0630   FF                     RST   0x38
+0631   FF                     RST   0x38
+0632   FF                     RST   0x38
+0633   FF                     RST   0x38
+0634   FF                     RST   0x38
+0635   FF                     RST   0x38
+0636   FF                     RST   0x38
+0637   FF                     RST   0x38
+0638   FF                     RST   0x38
+0639   FF                     RST   0x38
+063A   FF                     RST   0x38
+063B   FF                     RST   0x38
+063C   FF                     RST   0x38
+063D   FF                     RST   0x38
+063E   FF                     RST   0x38
+063F   FF                     RST   0x38
+0640   FF                     RST   0x38
+0641   FF                     RST   0x38
+0642   FF                     RST   0x38
+0643   FF                     RST   0x38
+0644   FF                     RST   0x38
+0645   FF                     RST   0x38
+0646   FF                     RST   0x38
+0647   FF                     RST   0x38
+0648   FF                     RST   0x38
+0649   FF                     RST   0x38
+064A   FF                     RST   0x38
+064B   FF                     RST   0x38
+064C   FF                     RST   0x38
+064D   FF                     RST   0x38
+064E   FF                     RST   0x38
+064F   FF                     RST   0x38
+0650   FF                     RST   0x38
+0651   FF                     RST   0x38
+0652   FF                     RST   0x38
+0653   FF                     RST   0x38
+0654   FF                     RST   0x38
+0655   FF                     RST   0x38
+0656   FF                     RST   0x38
+0657   FF                     RST   0x38
+0658   FF                     RST   0x38
+0659   FF                     RST   0x38
+065A   FF                     RST   0x38
+065B   FF                     RST   0x38
+065C   FF                     RST   0x38
+065D   FF                     RST   0x38
+065E   FF                     RST   0x38
+065F   FF                     RST   0x38
+0660   FF                     RST   0x38
+0661   FF                     RST   0x38
+0662   FF                     RST   0x38
+0663   FF                     RST   0x38
+0664   FF                     RST   0x38
+0665   FF                     RST   0x38
+0666   FF                     RST   0x38
+0667   FF                     RST   0x38
+0668   FF                     RST   0x38
+0669   FF                     RST   0x38
+066A   FF                     RST   0x38
+066B   FF                     RST   0x38
+066C   FF                     RST   0x38
+066D   FF                     RST   0x38
+066E   FF                     RST   0x38
+066F   FF                     RST   0x38
+0670   FF                     RST   0x38
+0671   FF                     RST   0x38
+0672   FF                     RST   0x38
+0673   FF                     RST   0x38
+0674   FF                     RST   0x38
+0675   FF                     RST   0x38
+0676   FF                     RST   0x38
+0677   FF                     RST   0x38
+0678   FF                     RST   0x38
+0679   FF                     RST   0x38
+067A   FF                     RST   0x38
+067B   FF                     RST   0x38
+067C   FF                     RST   0x38
+067D   FF                     RST   0x38
+067E   FF                     RST   0x38
+067F   FF                     RST   0x38
+0680   FF                     RST   0x38
+0681   FF                     RST   0x38
+0682   FF                     RST   0x38
+0683   FF                     RST   0x38
+0684   FF                     RST   0x38
+0685   FF                     RST   0x38
+0686   FF                     RST   0x38
+0687   FF                     RST   0x38
+0688   FF                     RST   0x38
+0689   FF                     RST   0x38
+068A   FF                     RST   0x38
+068B   FF                     RST   0x38
+068C   FF                     RST   0x38
+068D   FF                     RST   0x38
+068E   FF                     RST   0x38
+068F   FF                     RST   0x38
+0690   FF                     RST   0x38
+0691   FF                     RST   0x38
+0692   FF                     RST   0x38
+0693   FF                     RST   0x38
+0694   FF                     RST   0x38
+0695   FF                     RST   0x38
+0696   FF                     RST   0x38
+0697   FF                     RST   0x38
+0698   FF                     RST   0x38
+0699   FF                     RST   0x38
+069A   FF                     RST   0x38
+069B   FF                     RST   0x38
+069C   FF                     RST   0x38
+069D   FF                     RST   0x38
+069E   FF                     RST   0x38
+069F   FF                     RST   0x38
+06A0   FF                     RST   0x38
+06A1   FF                     RST   0x38
+06A2   FF                     RST   0x38
+06A3   FF                     RST   0x38
+06A4   FF                     RST   0x38
+06A5   FF                     RST   0x38
+06A6   FF                     RST   0x38
+06A7   FF                     RST   0x38
+06A8   FF                     RST   0x38
+06A9   FF                     RST   0x38
+06AA   FF                     RST   0x38
+06AB   FF                     RST   0x38
+06AC   FF                     RST   0x38
+06AD   FF                     RST   0x38
+06AE   FF                     RST   0x38
+06AF   FF                     RST   0x38
+06B0   FF                     RST   0x38
+06B1   FF                     RST   0x38
+06B2   FF                     RST   0x38
+06B3   FF                     RST   0x38
+06B4   FF                     RST   0x38
+06B5   FF                     RST   0x38
+06B6   FF                     RST   0x38
+06B7   FF                     RST   0x38
+06B8   FF                     RST   0x38
+06B9   FF                     RST   0x38
+06BA   FF                     RST   0x38
+06BB   FF                     RST   0x38
+06BC   FF                     RST   0x38
+06BD   FF                     RST   0x38
+06BE   FF                     RST   0x38
+06BF   FF                     RST   0x38
+06C0   FF                     RST   0x38
+06C1   FF                     RST   0x38
+06C2   FF                     RST   0x38
+06C3   FF                     RST   0x38
+06C4   FF                     RST   0x38
+06C5   FF                     RST   0x38
+06C6   FF                     RST   0x38
+06C7   FF                     RST   0x38
+06C8   FF                     RST   0x38
+06C9   FF                     RST   0x38
+06CA   FF                     RST   0x38
+06CB   FF                     RST   0x38
+06CC   FF                     RST   0x38
+06CD   FF                     RST   0x38
+06CE   FF                     RST   0x38
+06CF   FF                     RST   0x38
+06D0   FF                     RST   0x38
+06D1   FF                     RST   0x38
+06D2   FF                     RST   0x38
+06D3   FF                     RST   0x38
+06D4   FF                     RST   0x38
+06D5   FF                     RST   0x38
+06D6   FF                     RST   0x38
+06D7   FF                     RST   0x38
+06D8   FF                     RST   0x38
+06D9   FF                     RST   0x38
+06DA   FF                     RST   0x38
+06DB   FF                     RST   0x38
+06DC   FF                     RST   0x38
+06DD   FF                     RST   0x38
+06DE   FF                     RST   0x38
+06DF   FF                     RST   0x38
+06E0   FF                     RST   0x38
+06E1   FF                     RST   0x38
+06E2   FF                     RST   0x38
+06E3   FF                     RST   0x38
+06E4   FF                     RST   0x38
+06E5   FF                     RST   0x38
+06E6   FF                     RST   0x38
+06E7   FF                     RST   0x38
+06E8   FF                     RST   0x38
+06E9   FF                     RST   0x38
+06EA   FF                     RST   0x38
+06EB   FF                     RST   0x38
+06EC   FF                     RST   0x38
+06ED   FF                     RST   0x38
+06EE   FF                     RST   0x38
+06EF   FF                     RST   0x38
+06F0   FF                     RST   0x38
+06F1   FF                     RST   0x38
+06F2   FF                     RST   0x38
+06F3   FF                     RST   0x38
+06F4   FF                     RST   0x38
+06F5   FF                     RST   0x38
+06F6   FF                     RST   0x38
+06F7   FF                     RST   0x38
+06F8   FF                     RST   0x38
+06F9   FF                     RST   0x38
+06FA   FF                     RST   0x38
+06FB   FF                     RST   0x38
+06FC   FF                     RST   0x38
+06FD   FF                     RST   0x38
+06FE   FF                     RST   0x38
+06FF   FF                     RST   0x38
+0700   FF                     RST   0x38
+0701   FF                     RST   0x38
+0702   FF                     RST   0x38
+0703   FF                     RST   0x38
+0704   FF                     RST   0x38
+0705   FF                     RST   0x38
+0706   FF                     RST   0x38
+0707   FF                     RST   0x38
+0708   FF                     RST   0x38
+0709   FF                     RST   0x38
+070A   FF                     RST   0x38
+070B   FF                     RST   0x38
+070C   FF                     RST   0x38
+070D   FF                     RST   0x38
+070E   FF                     RST   0x38
+070F   FF                     RST   0x38
+0710   FF                     RST   0x38
+0711   FF                     RST   0x38
+0712   FF                     RST   0x38
+0713   FF                     RST   0x38
+0714   FF                     RST   0x38
+0715   FF                     RST   0x38
+0716   FF                     RST   0x38
+0717   FF                     RST   0x38
+0718   FF                     RST   0x38
+0719   FF                     RST   0x38
+071A   FF                     RST   0x38
+071B   FF                     RST   0x38
+071C   FF                     RST   0x38
+071D   FF                     RST   0x38
+071E   FF                     RST   0x38
+071F   FF                     RST   0x38
+0720   FF                     RST   0x38
+0721   FF                     RST   0x38
+0722   FF                     RST   0x38
+0723   FF                     RST   0x38
+0724   FF                     RST   0x38
+0725   FF                     RST   0x38
+0726   FF                     RST   0x38
+0727   FF                     RST   0x38
+0728   FF                     RST   0x38
+0729   FF                     RST   0x38
+072A   FF                     RST   0x38
+072B   FF                     RST   0x38
+072C   FF                     RST   0x38
+072D   FF                     RST   0x38
+072E   FF                     RST   0x38
+072F   FF                     RST   0x38
+0730   FF                     RST   0x38
+0731   FF                     RST   0x38
+0732   FF                     RST   0x38
+0733   FF                     RST   0x38
+0734   FF                     RST   0x38
+0735   FF                     RST   0x38
+0736   FF                     RST   0x38
+0737   FF                     RST   0x38
+0738   FF                     RST   0x38
+0739   FF                     RST   0x38
+073A   FF                     RST   0x38
+073B   FF                     RST   0x38
+073C   FF                     RST   0x38
+073D   FF                     RST   0x38
+073E   FF                     RST   0x38
+073F   FF                     RST   0x38
+0740   FF                     RST   0x38
+0741   FF                     RST   0x38
+0742   FF                     RST   0x38
+0743   FF                     RST   0x38
+0744   FF                     RST   0x38
+0745   FF                     RST   0x38
+0746   FF                     RST   0x38
+0747   FF                     RST   0x38
+0748   FF                     RST   0x38
+0749   FF                     RST   0x38
+074A   FF                     RST   0x38
+074B   FF                     RST   0x38
+074C   FF                     RST   0x38
+074D   FF                     RST   0x38
+074E   FF                     RST   0x38
+074F   FF                     RST   0x38
+0750   FF                     RST   0x38
+0751   FF                     RST   0x38
+0752   FF                     RST   0x38
+0753   FF                     RST   0x38
+0754   FF                     RST   0x38
+0755   FF                     RST   0x38
+0756   FF                     RST   0x38
+0757   FF                     RST   0x38
+0758   FF                     RST   0x38
+0759   FF                     RST   0x38
+075A   FF                     RST   0x38
+075B   FF                     RST   0x38
+075C   FF                     RST   0x38
+075D   FF                     RST   0x38
+075E   FF                     RST   0x38
+075F   FF                     RST   0x38
+0760   FF                     RST   0x38
+0761   FF                     RST   0x38
+0762   FF                     RST   0x38
+0763   FF                     RST   0x38
+0764   FF                     RST   0x38
+0765   FF                     RST   0x38
+0766   FF                     RST   0x38
+0767   FF                     RST   0x38
+0768   FF                     RST   0x38
+0769   FF                     RST   0x38
+076A   FF                     RST   0x38
+076B   FF                     RST   0x38
+076C   FF                     RST   0x38
+076D   FF                     RST   0x38
+076E   FF                     RST   0x38
+076F   FF                     RST   0x38
+0770   FF                     RST   0x38
+0771   FF                     RST   0x38
+0772   FF                     RST   0x38
+0773   FF                     RST   0x38
+0774   FF                     RST   0x38
+0775   FF                     RST   0x38
+0776   FF                     RST   0x38
+0777   FF                     RST   0x38
+0778   FF                     RST   0x38
+0779   FF                     RST   0x38
+077A   FF                     RST   0x38
+077B   FF                     RST   0x38
+077C   FF                     RST   0x38
+077D   FF                     RST   0x38
+077E   FF                     RST   0x38
+077F   FF                     RST   0x38
+0780   FF                     RST   0x38
+0781   FF                     RST   0x38
+0782   FF                     RST   0x38
+0783   FF                     RST   0x38
+0784   FF                     RST   0x38
+0785   FF                     RST   0x38
+0786   FF                     RST   0x38
+0787   FF                     RST   0x38
+0788   FF                     RST   0x38
+0789   FF                     RST   0x38
+078A   FF                     RST   0x38
+078B   FF                     RST   0x38
+078C   FF                     RST   0x38
+078D   FF                     RST   0x38
+078E   FF                     RST   0x38
+078F   FF                     RST   0x38
+0790   FF                     RST   0x38
+0791   FF                     RST   0x38
+0792   FF                     RST   0x38
+0793   FF                     RST   0x38
+0794   FF                     RST   0x38
+0795   FF                     RST   0x38
+0796   FF                     RST   0x38
+0797   FF                     RST   0x38
+0798   FF                     RST   0x38
+0799   FF                     RST   0x38
+079A   FF                     RST   0x38
+079B   FF                     RST   0x38
+079C   FF                     RST   0x38
+079D   FF                     RST   0x38
+079E   FF                     RST   0x38
+079F   FF                     RST   0x38
+07A0   FF                     RST   0x38
+07A1   FF                     RST   0x38
+07A2   FF                     RST   0x38
+07A3   FF                     RST   0x38
+07A4   FF                     RST   0x38
+07A5   FF                     RST   0x38
+07A6   FF                     RST   0x38
+07A7   FF                     RST   0x38
+07A8   FF                     RST   0x38
+07A9   FF                     RST   0x38
+07AA   FF                     RST   0x38
+07AB   FF                     RST   0x38
+07AC   FF                     RST   0x38
+07AD   FF                     RST   0x38
+07AE   FF                     RST   0x38
+07AF   FF                     RST   0x38
+07B0   FF                     RST   0x38
+07B1   FF                     RST   0x38
+07B2   FF                     RST   0x38
+07B3   FF                     RST   0x38
+07B4   FF                     RST   0x38
+07B5   FF                     RST   0x38
+07B6   FF                     RST   0x38
+07B7   FF                     RST   0x38
+07B8   FF                     RST   0x38
+07B9   FF                     RST   0x38
+07BA   FF                     RST   0x38
+07BB   FF                     RST   0x38
+07BC   FF                     RST   0x38
+07BD   FF                     RST   0x38
+07BE   FF                     RST   0x38
+07BF   FF                     RST   0x38
+07C0   FF                     RST   0x38
+07C1   FF                     RST   0x38
+07C2   FF                     RST   0x38
+07C3   FF                     RST   0x38
+07C4   FF                     RST   0x38
+07C5   FF                     RST   0x38
+07C6   FF                     RST   0x38
+07C7   FF                     RST   0x38
+07C8   FF                     RST   0x38
+07C9   FF                     RST   0x38
+07CA   FF                     RST   0x38
+07CB   FF                     RST   0x38
+07CC   FF                     RST   0x38
+07CD   FF                     RST   0x38
+07CE   FF                     RST   0x38
+07CF   FF                     RST   0x38
+07D0   FF                     RST   0x38
+07D1   FF                     RST   0x38
+07D2   FF                     RST   0x38
+07D3   FF                     RST   0x38
+07D4   FF                     RST   0x38
+07D5   FF                     RST   0x38
+07D6   FF                     RST   0x38
+07D7   FF                     RST   0x38
+07D8   FF                     RST   0x38
+07D9   FF                     RST   0x38
+07DA   FF                     RST   0x38
+07DB   FF                     RST   0x38
+07DC   FF                     RST   0x38
+07DD   FF                     RST   0x38
+07DE   FF                     RST   0x38
+07DF   FF                     RST   0x38
+07E0   FF                     RST   0x38
+07E1   FF                     RST   0x38
+07E2   FF                     RST   0x38
+07E3   FF                     RST   0x38
+07E4   FF                     RST   0x38
+07E5   FF                     RST   0x38
+07E6   FF                     RST   0x38
+07E7   FF                     RST   0x38
+07E8   FF                     RST   0x38
+07E9   FF                     RST   0x38
+07EA   FF                     RST   0x38
+07EB   FF                     RST   0x38
+07EC   FF                     RST   0x38
+07ED   FF                     RST   0x38
+07EE   FF                     RST   0x38
+07EF   FF                     RST   0x38
+07F0   FF                     RST   0x38
+07F1   FF                     RST   0x38
+07F2   FF                     RST   0x38
+07F3   FF                     RST   0x38
+07F4   FF                     RST   0x38
+07F5   FF                     RST   0x38
+07F6   FF                     RST   0x38
+07F7   FF                     RST   0x38
+07F8   FF                     RST   0x38
+07F9   FF                     RST   0x38
+07FA   FF                     RST   0x38
+07FB   FF                     RST   0x38
+07FC   FF                     RST   0x38
+07FD   FF                     RST   0x38
+07FE   FF                     RST   0x38
+07FF   FF                     RST   0x38
+
+
