@@ -8,7 +8,7 @@ The best way to fix this is to mount the 330 Ohm resistor on the *underside* of 
 Insert the upper leg (closest to the LED) as normal but from the underside. And the other
 leg of the resistor should be soldered to Pin 20 of the 74HCT273, which is +5V.
 
-[Photo Coming Soon...]
+![Photo Coming Soon...](pictures/GPIO_SD-Card_v11_Errata.jpg)
 
 | File | Description | Version |
 |---|---|---|
@@ -19,8 +19,20 @@ leg of the resistor should be soldered to Pin 20 of the 74HCT273, which is +5V.
 | [Sample Programs](./Programs/) | Sample code and API reference | 1.0 |
 
 ## What Does it Do?
+This GPIO expansion can perform two functions, based on whether you have a Micro SD Card module attached to it, or not.
+1. With an SD Card module attached, it allows for the use of Micro SD cards to act as your "floppy disc" or "disk drive"
+of your TEC-1G.  No more hoping a Cassette Deck is going to be at the right volume. No huge disk drives that take up a lot of room.
+Running short of space on your current SD Card? Eject it and insert a new one. Format it for use on the TEC-1G and you are
+away with over 200 file capacity.
+
+2. Without an SD Card Module, you can use this board as a General Input & Output board to read switches,
+check on the status smoke detectors, output to a bank of relays to control water sprinklers.
+It really is up to you imagination as to what can be done with it.
 
 ## How Does It Work
+To use if as an SD Card interface as supported by MON3, the Port Selection jumper must be on $FD. 
+If using it as a General Input/Output controller, you have a choice of three (3) ports, which
+also means you can stack three of these cards on top of each other and have up
 
 ## Why Build It?
 
