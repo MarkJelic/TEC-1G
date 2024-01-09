@@ -12,7 +12,7 @@ leg of the resistor should be soldered to Pin 20 of the 74HCT273, which is +5V.
 
 | File | Description | Version |
 |---|---|---|
-| [Schematic](TEC-1G_GPIO_SD-Card_Schematic_v1-2) | It's a simple circuit, but it's honest storage. | 1.2 |
+| [Schematic](TEC-1G_GPIO_SD-Card_Schematic_v1-2.pdf) | It's a simple circuit, but it's honest storage. | 1.2 |
 | [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
 | [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
