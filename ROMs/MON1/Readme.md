@@ -8,7 +8,7 @@ MON-1 is the original monitor ROM for the TEC-1 It was written by John Hardy. �
 
 MON-1 comes with routines to control the 6 digit 7-segment display of the TEC-1 as well as the speaker and the hexadecimal keypad. It also contains a welcome message from the author, two tunes: Bealach An Doirín and Biking up the Strand and three games: Invaders, Lunar Lander and 23 Matches (incorrectly titled Nim in the magazine). 
 
-The code was written by hand and compiled without the aid of an assembler. It was then burned to an the EPROM and was then dropped into the TEC-1 prototype for testing. This process was repeated many, many times until all the code was fully tested and found to be working correctly.  
+The code was written by hand and compiled without the aid of an assembler. It was then burned to an EPROM and was then dropped into the TEC-1 prototype for testing. This process was repeated many, many times until all the code was fully tested and found to be working correctly.  
 
 MON-1 was developed in late 1982 and released along with Issue 10 of Talking Electronics magazine in February 1983.
 
