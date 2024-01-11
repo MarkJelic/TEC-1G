@@ -5,8 +5,8 @@
 |---|---|---|
 | 1 | PCB | TEC-1G GPIO SD-Card Printed Circuit Board |
 | 1 | 74HCT32 | Quad OR Gates |
-| 1 | 74HCT245 |  |
-| 1 | 74HCT273 |  |
+| 1 | 74HCT245 | Octal Buffer |
+| 1 | 74HCT273 | Octal D-Type Latch with Clear |
 | 1 | 100n | Capacitor |
 | 1 | 330R | Resistor |
 | 1 | LED | 3mm RED |
