@@ -8,7 +8,7 @@ The best way to fix this is to mount the 330 Ohm resistor on the *underside* of 
 Insert the upper leg (closest to the LED) as normal but from the underside. And the other
 leg of the resistor should be soldered to Pin 20 of the 74HCT273, which is +5V.
 
-![Photo Coming Soon...](pictures/GPIO_SD-Card_v11_Errata.jpg)
+![Errata 1](pictures/GPIO_SD-Card_v11_Errata.jpg)
 
 | File | Description | Version |
 |---|---|---|
