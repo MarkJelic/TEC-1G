@@ -45,9 +45,9 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-5 | Send "Connection OK" to Serial Port | 1.4 |
 | Fn-6 | TBA | TBA |
 | Fn-7 | TBA | TBA |
-| Fn-8 | TBA | TBA |
-| Fn-9 | TBA | TBA |
-| Fn-A | TBA | TBA |
+| Fn-8 | Runs program starting from User Configured address #1 (Stored in RTC) | TBA |
+| Fn-9 | Runs program starting from User Configured address #2 (Stored in RTC) | TBA |
+| Fn-A | Restore Backup (Performs reverse of Fn-B) | TBA |
 | Fn-B | Backup a block of memory from one location to another | 1.1 |
 | Fn-C | SmartCopy™ a block of code from one location to another  | 1.0 |
 | Fn-D | Dissassembly View | 1.0 |
