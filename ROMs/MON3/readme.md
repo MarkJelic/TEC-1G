@@ -18,7 +18,7 @@ Please download the **MON3 User Guide** linked in the File Links, below.
 | [MON3 User Guide](./MON3_User_Guide_v1.3.pdf) | MON3 User Guide in PDF format | 1.3 |
 | [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.3 |
 
-## A Brief Functional Despription
+## A Brief Functional Description
 The User Guide is a great resource that we recommend you print off and have at hand when writing
 any programs for the TEC-1G.  Below are a few "Quick Reference" points that could also help.
 
