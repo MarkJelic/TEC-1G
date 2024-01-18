@@ -95,6 +95,7 @@ During testing of the BETA boards, it was found that the current draw the 1G pul
 
 If you are to use the USB-B socket as a power delivery, remember there is NO SUPPORT for this method AND if you accidentally get the polarity of voltage wrong, there is NO PROTECTION for your components at all. You best know what you are doing!
 
+(EDIT: In the next release of the PCB, we have decided to remove the USB Socket and replace it with a generic terminal bock so the likes of the 8x8 can be powered from the motherboard. It is suggested to NOT install a USB Socket.)
 
 
 
