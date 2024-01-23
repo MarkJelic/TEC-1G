@@ -11,6 +11,7 @@ Question no more and pick your favourite design blow, download the STL file and 
 ## 1. Stands by James Elphick
 
 **Version 1 (Filename: JamesE_TEC-1G-Stands_v1.stl)**
+
   This design is Version 1 of a 3D printed PCB stand for the TEC-1G as a platform for display and general use.
   
   Design features:
