@@ -25,7 +25,7 @@ bit 5 of the hour register is a 1 if it is PM (12 hour mode), or part of the hou
 
 The Year register only supports 2 digits with value range of 00 too 99; hence only a 100 year span is available. This means that a 'base year' needs to be added to the Year value read from the RTC, to arrive at a Calendar year.
 
-TEC-1G designers have determined that 2023 will be the base year. Hence, **CalendarYear = 2023 + RTCYear**
+TEC-1G designers have determined that 2000 will be the base year. Hence, **CalendarYear = 2000 + RTCYear**
 
 | DS1302 Year | Calendar Year |
 | :--: | :----: |
