@@ -21,9 +21,9 @@ at this picture makes my face twitch and my brain hurt.
 
 ![Twisted Frames](Spinning_Tactiles.jpg)
 
-Thankfully, Charles has come up with a genius solution and is kind enough to share his design with the broader community.
+Thankfully, Charlie has come up with a genius solution and is kind enough to share his design with the broader community.
 Your keyboard ends up looking like this. Much better! I'm going to print mine with some black PLA to make the contrast between the keys
-really pop! I'll share pics in the FB forum. Thanks, Charles!!  [Download the STL file](./12mm_Matrix_Frame_v1-0.stl) onto a USB stick,
+really pop! I'll share pics in the FB forum. Thanks, Charlie!!  [Download the STL file](./12mm_Matrix_Frame_v1-0.stl) onto a USB stick,
 plug it into your 3D printer and you're off!
 
 ![The Framed Matrix](Framed_Tactiles.jpg)
