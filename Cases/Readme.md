@@ -9,8 +9,9 @@ Have a 3D printer that has you wondering what you can do with it?
 Question no more and pick your favourite design below, download the STL file and elevate your TEC-1G to the height it deserves!
 
 ## 1. Stands by James Elphick
+![James Frame](JamesE_TEC-1G-Stands_1.jpg)
 
-**VERSION 1 (Filename: JamesE_TEC-1G-Stands_v1.stl)**
+**VERSION 1: [JamesE_TEC-1G-Stands_v1.stl](./JamesE_TEC-1G-Stands_v1.stl)**
 
   This design is Version 1 of a 3D printed PCB stand for the TEC-1G as a platform for display and general use.
   
