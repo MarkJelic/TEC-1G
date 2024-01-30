@@ -11,7 +11,7 @@ Question no more and pick your favourite design below, download the STL file and
 ## Stands & Cases Links
 | File | Description | Preview |
 |---|---|---|
-| [Retex](./Retex/Readme.md) | The original case for the TEC-1 works on the TEC-1G and is still available! | [Retex](./Retex/Retex_Icon.jpg) |
+| [Retex](./Retex/Readme.md) | The original case for the TEC-1 works on the TEC-1G and is still available! | ![Retex](./Retex/Retex_Icon.jpg) |
 | [JamesE](./JamesE/Readme.md) | A pair of Stands to elevate your TEC-1G to new heights | ![JamesE](./JamesE/JamesE_Icon_v1.jpg) |
 
 
