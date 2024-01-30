@@ -26,3 +26,11 @@ Parts required for OPTIONAL stiffening brace:
 - 4 x M8 nuts (NOTE: 2 x nuts used for clamping stands rigidly in place on each side)
   
 Fully tested on the TEC-1G production PCB.
+
+![James Frame](JamesE_TEC-1G-Stands_2.jpg)
+
+![James Frame](JamesE_TEC-1G-Stands_3.jpg)
+
+![James Frame](JamesE_TEC-1G-Stands_4.jpg)
+
+![James Frame](JamesE_TEC-1G-Stands_5.jpg)
