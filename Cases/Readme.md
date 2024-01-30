@@ -9,9 +9,9 @@ Have a 3D printer that has you wondering what you can do with it?
 Question no more and pick your favourite design below, download the STL file and elevate your TEC-1G to the height it deserves!
 
 ## Stands & Cases Links
-| File | Description |
-|---|---|
-| [JamesE](./JamesE/Readme.md) | A pair of Stands to elevate your TEC-1G to new heights |
+| File | Description | Preview |
+|---|---|---|
+| [JamesE](./JamesE/Readme.md) | A pair of Stands to elevate your TEC-1G to new heights | ![JamesE](./JamesE/JamesE_Icon_v1.jpg) |
 | [Retex](./Retex/Readme.md) | The original case for the TEC-1 works on the TEC-1G and is still available! |
 
 If you have the superior brain-power required to create 3D models (I most certainly do NOT)
