@@ -13,10 +13,10 @@ Please download the **MON3 User Guide** linked in the File Links, below.
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](./MON3-1G_BC24-14.bin) | Download and burn to a 16k ROM | 1.3 |
-| [MON3 Change Log](./release_notes.md) | MON3 Change Log and Release Notes | 1.3 |
-| [MON3 User Guide](./MON3_User_Guide_v1.4.pdf) | MON3 User Guide in PDF format | 1.3 |
-| [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.3 |
+| [MON3 for TEC-1G](./MON3-1G_BC24-14.bin) | Download and burn to a 16k ROM | 1.4 |
+| [MON3 Change Log](./release_notes.md) | MON3 Change Log and Release Notes | 1.4 |
+| [MON3 User Guide](./MON3_User_Guide_v1.4.pdf) | MON3 User Guide in PDF format | 1.4 |
+| [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.4 |
 
 ## A Brief Functional Description
 The User Guide is a great resource that we recommend you print off and have at hand when writing
@@ -42,7 +42,7 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-2 | QuickJump™ to Location 2 | 1.3 |
 | Fn-3 | QuickJump™ to Location 3 | 1.3 |
 | Fn-4 | Initiate Intel HEX Load | 1.2 |
-| Fn-5 | Send "Connection OK" to Serial Port | 1.4 |
+| Fn-5 | Send "Connection OK" to Serial Port | TBA |
 | Fn-6 | TBA | TBA |
 | Fn-7 | TBA | TBA |
 | Fn-8 | Runs program starting from User Configured address #1 (Stored in RTC) | TBA |
