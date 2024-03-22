@@ -6,7 +6,7 @@ The supplied HEX file loads the program at $4000 (Use the Intel HEX Load functio
 ## Program Features
 The program uses the clock in either 12 or 24 hour mode, which is user-switchable at any time by pressing '2' on the hexpad.
 
-Both the 7-seg and the LCD display informtion - the 7-seg being limited to the time only.
+Both the 7-seg and the LCD display information - the 7-seg being limited to the time only.
 
 In 12 hour mode, PM is indicated by the '.' being lit on the minutes digit of the 7-seg display.
 
@@ -16,7 +16,7 @@ In 12 hour mode, PM is indicated by the '.' being lit on the minutes digit of th
 **D** Dumps the 31 bytes of RTC memory to the LCD - use + and - to scroll through, ADDR to return to normal clock.
 
 **F**
-If the F key is pressed on the hexpad, the TEC will HALT - the HALT LED will light, the 7-seg displys will cease updating and the LCD display will stop on the time that HALT occurred. Pressing any key resumes normal operation. Note that if you HALT the TEC for several seconds (or more), the updated time will be displayed upon resuming, proving that the DS1302 is working independently even if the TEC itself is HALTed.
+If the F key is pressed on the hexpad, the TEC will HALT - the HALT LED will light, the 7-seg displays will cease updating and the LCD display will stop on the time that HALT occurred. Pressing any key resumes normal operation. Note that if you HALT the TEC for several seconds (or more), the updated time will be displayed upon resuming, proving that the DS1302 is working independently even if the TEC itself is HALTed.
 
 ## Setting the Time
 \+ increments the Hour (and rolls over AM/PM, if 12 hour mode, sets 00-23 if 24 hour mode)

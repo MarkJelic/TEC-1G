@@ -1,55 +1,101 @@
 APINames:
-_softwareID       .equ 0
-_versionID        .equ 1
-_preInit          .equ 2
-_beep             .equ 3
-_convAToSeg       .equ 4
-_regAToASCII      .equ 5
-_ASCIItoSegment   .equ 6
-_stringCompare    .equ 7
-_HLToString       .equ 8
-_AToString        .equ 9
-_scanSegments     .equ 10
-_displayError     .equ 11
-_LCDBusy          .equ 12
-_stringToLCD      .equ 13
-_charToLCD        .equ 14
-_commandToLCD     .equ 15
-_scanKeys         .equ 16
-_scanKeysWait     .equ 17
-_matrixScan       .equ 18
-_joystickScan     .equ 19
-_serialEnable     .equ 20
-_serialDisable    .equ 21
-_txByte           .equ 22
-_rxByte           .equ 23
-_intelHexLoad     .equ 24
-_sendToSerial     .equ 25
-_receiveFromSerial .equ 26
-_sendAssembly     .equ 27
-_sendHex          .equ 28
-_genDataDump      .equ 29
-_checkStartEnd    .equ 30
-_menuDriver       .equ 31
-_paramDriver      .equ 32
-_timeDelay        .equ 33
-_playNote         .equ 34
-_playTune         .equ 35
-_playTuneMenu     .equ 36
-_getCaps          .equ 37
-_getShadow        .equ 38
-_getProtect       .equ 39
-_getExpand        .equ 40
-_setCaps          .equ 41
-_setShadow        .equ 42
-_setProtect       .equ 43
-_setExpand        .equ 44
-_toggleCaps       .equ 45
-_toggleShadow     .equ 46
-_toggleProtect    .equ 47
-_toggleExpand     .equ 48
-_random           .equ 49
-_setDisStart		.equ 50
-_getDisNext		.equ 51
-_getDisassembly		.equ 52
-_matrixScanASCII	.equ 53
+softwareID_       .equ 0
+versionID_        .equ 1
+preInit_          .equ 2
+beep_             .equ 3
+convAToSeg_       .equ 4
+regAToASCII_      .equ 5
+ASCIIToSegment_   .equ 6
+stringCompare_    .equ 7
+HLToString_       .equ 8
+AToString_        .equ 9
+scanSegments_     .equ 10
+displayError_     .equ 11
+LCDBusy_          .equ 12
+stringToLCD_      .equ 13
+charToLCD_        .equ 14
+commandToLCD_     .equ 15
+scanKeys_         .equ 16
+scanKeysWait_     .equ 17
+matrixScan_       .equ 18
+joystickScan_     .equ 19
+serialEnable_     .equ 20
+serialDisable_    .equ 21
+txByte_           .equ 22
+rxByte_           .equ 23
+intelHexLoad_     .equ 24
+sendToSerial_     .equ 25
+receiveFromSerial_ .equ 26
+sendAssembly_     .equ 27
+sendHex_          .equ 28
+genDataDump_      .equ 29
+checkStartEnd_    .equ 30
+menuDriver_       .equ 31
+paramDriver_      .equ 32
+timeDelay_        .equ 33
+playNote_         .equ 34
+playTune_         .equ 35
+playTuneMenu_     .equ 36
+getCaps_          .equ 37
+getShadow_        .equ 38
+getProtect_       .equ 39
+getExpand_        .equ 40
+setCaps_          .equ 41
+setShadow_        .equ 42
+setProtect_       .equ 43
+setExpand_        .equ 44
+stringToSerial_   .equ 45
+RTCAPI_           .equ 46
+menuPop_          .equ 47
+spare2_           .equ 48
+random_           .equ 49
+setDisStart_      .equ 50
+getDisNext_       .equ 51
+getDisassembly_   .equ 52
+matrixScanASCII_  .equ 53
+
+APINames2:
+initLCD_          .equ 0  ;Initalise the LCD
+clearGBUF_        .equ 1  ;Clear the Graphics Buffer
+clearGrLCD_       .equ 2  ;Clear the Graphics LCD Screen
+clearTxtLCD_      .equ 3  ;Clear the Text LCD Screen
+setGrMode_        .equ 4  ;Set Graphics Mode
+setTxtMode_       .equ 5  ;Set Text Mode
+drawBox_          .equ 6  ;Draw a rectangle between two points
+drawLine_         .equ 7  ;Draw a line between two points
+drawCircle_       .equ 8  ;Draw a circle from Mid X,Y to Radius
+drawPixel_        .equ 9  ;Draw one pixel at X,Y
+fillBox_          .equ 10 ;Draw a filled rectangle between two points
+fillCircle_       .equ 11 ;Draw a filled circle from Mid X,Y to Radius
+plotToLCD_        .equ 12 ;Display the Graphics Buffer to the LCD Screen
+printString_      .equ 13 ;Print Text on the screen in a given row
+printChars_       .equ 14 ;Print Characters on the screen in a given row and column
+delayUS_          .equ 15 ;Microsecond delay for LCD updates
+delayMS_          .equ 16 ;Millisecond delay for LCD updates
+setBufClear_      .equ 17 ;Clear the Graphics buffer on after Plotting to the screen
+setBufNoClear_    .equ 18 ;Retain the Graphics buffer on after Plotting to the screen
+clearPixel_       .equ 19 ;Remove a Pixel at X,Y
+flipPixel_        .equ 20 ;Flip a Pixel On/Off at X,Y
+
+
+RTCAPINames:                    ; B register value for RTCAPI call
+checkDS1302_      .equ 00
+resetDS1302_      .equ 01
+getTime_          .equ 02
+setTime_          .equ 03
+getDate_          .equ 04
+setDate_          .equ 05
+getDay_           .equ 06
+setDay_           .equ 07
+get1224Mode_      .equ 08
+set12HrMode_      .equ 09
+set24HrMode_      .equ 10
+readRTCByte_      .equ 11
+writeRTCByte_     .equ 12
+burstRTCRead_     .equ 13
+bcdToBin_         .equ 14
+binToBcd_         .equ 15
+formatTime_       .equ 16
+formatDate_       .equ 17
+RTCSetup_         .equ 18
+

@@ -1,7 +1,7 @@
 ; ----------------------------------------------------------------------------
 ; Simple DS1302 demo for the TEC-1G
 ; By Craig Hart, January 2024
-; Version 1.3
+; Version 1.4 - uses APIs
 ;
 ; Setting time:
 ;               + sets hours
@@ -18,25 +18,29 @@
 ;
 ; Special Keys:
 ;
-; A - Reset the DS1302 to 01/01/2024, 01:00.00am & 12hr mode
+; A - Reset the DS1302 to 01/01/2000, 01:00.00am & 12hr mode
 ; D - DUMPs the RTC RAM to LCD (Addr to exit dump mode)
 ; F - HALTs the TEC; any key to resume
 ;
 ; ----------------------------------------------------------------------------
-		.org 4000h
-
-; setup RTC chip
-
-	ld de,8e00h		; clear write protect bit
-	call rtc_wr
-	ld de,9000h		; clear trickle charge bits
-	call rtc_wr
+		.org 04000h
 
 ; clear the LCD
-
 	ld b,01
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
+
+; setup RTC chip
+	ld c,RTCAPI_
+	ld b,00			; checkDS1302Present
+	rst 10h
+	jr nc,clock
+
+	ld hl,noRTC		; message & exit if not fitted
+	ld c,stringToLCD_
+	rst 10h
+	halt
+	ret
 
 ; ----------------------------------------------------------------------------
 ; Main Loop
@@ -45,26 +49,37 @@ clock:
 
 ; read clock and setup 7-seg buffer
  
-	ld d,81h		; read seconds
-	call rtc_rd
+	ld c,RTCAPI_
+	ld b,02			; getTime - HL=h:m, D = secs
+	rst 10h
+
+	ld a,d
 	ld (secs),a
 	ld de,dispbuf+4
-	ld c,_convAToSeg
+	ld c,convAToSeg_
 	rst 10h
 
-	ld d,83h		; read minutes
-	call rtc_rd
+	ld a,l
 	ld (mins),a
 	ld de,dispbuf+2
-	ld c,_convAToSeg
+	ld c,convAToSeg_
+	rst 10h
+	ld a,h
+	ld (hours),a
+
+	ld c,RTCAPI_
+	ld b,08			; get 1224
 	rst 10h
 
-	ld d,85h		; read hours
-	call rtc_rd
+	ld b,a
+	ld a,(hours)
+	or b
 	ld (hours),a
+
 	bit 7,a			; 1 = 12 hour
 	jr z, is24a
 
+	ld a,(hours)
 	bit 5,a
 	jr z,notpm
 
@@ -78,196 +93,104 @@ notpm:	and 1fh
 
 is24a:	and 3fh
 	ld de,dispbuf
-	ld c,_convAToSeg
+	ld c,convAToSeg_
 	rst 10h
 
-; scan the 7-seg with our results
-
-	ld c,_scanSegments	 ; disply on 7-seg displays
+; scan 7-seg displays
+	ld c,scanSegments_	 ; disply on 7-seg displays
 	ld de,dispbuf
 	rst 10h
 
-	ld c,_scanSegments	 ; disply on 7-seg displays
-	ld de,dispbuf
-	rst 10h
+; LCD section, time
 
-; LCD section
+	ld a,(oldSecs)		; did seconds change? if so refresh lcd
+	ld b,a
+	ld a,(secs)
+	cp b
+	jr z,keys
 
-	ld de,lcdbuff		; buffer start
-	ld a,(hours)		; get hours
-	bit 7,a			; 1 = 12 hour
-	jr z, is24
-	and 1fh
-
-is24:	and 3fh
-	ld c,_AToString
-	rst 10h
-
-	ld a,':'		; add deliminator
-	ld (de),a
-	inc de
-
-	ld a,(mins)		; get minutes
-	ld c,_AToString
-	rst 10h
-
-	ld a,'.'		; add deliminator
-	ld (de),a
-	inc de
-
-	ld a,(secs)		; set seconds
-	ld c,_AToString
-	rst 10h
-
-	ld a,' '		; add space
-	ld (de),a
-	inc de
-
-	ld a,(hours)		; work out if AM or PM, or 24 hour mode
-	bit 7,a
-	jr z,noampm		; skip AM/PM if 24 hour mode
-
-	ld b,'A'
-
-	and 20h
-	jr z,isam
-
-	ld b,'P'
- 
-isam:   ld a,b			; copy 2 bytes AM or PM to buffer
-	ld (de),a
-	inc de
-	ld a,'M'
-	ld (de),a
-	inc de
-	jr nullt
-
-noampm:	ld a,' '		; add space
-	ld (de),a
-	inc de
-	ld a,' '		; add space
-	ld (de),a
-	inc de
-
-nullt:	xor a			; null terminate string
-	ld (de),a
+	ld (oldSecs),a		; update value
 
 	ld b,2
-	ld c,_commandToLCD	; B 1 (cls) or 2 (home)
+	ld c,commandToLCD_	; Cursor home
+	rst 10h
+
+	ld c,RTCAPI_
+	ld b,08			; get 12/24
+	rst 10h
+	push af
+
+	ld c,RTCAPI_
+	ld b,02
+	rst 10h
+
+	pop af			; add in 12/24 hour flag
+	add a,h
+	ld h,a
+
+	ld iy,lcdbuff		; format it
+	ld c,RTCAPI_
+	ld b,16
 	rst 10h
 
 	ld hl,lcdbuff		; display message on LCD
-	ld c,_stringToLCD
+	ld c,stringToLCD_
 	rst 10h
 
-; calendar
+; LCD section, calendar
 	ld b,0c0h		; Cursor to row 2
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 
-	ld d,8bh		; read day, 1-Monday
-	call rtc_rd
-	ld (dayofweek),a
+	ld c,RTCAPI_		; get day
+	ld b,06
+	rst 10h
+	ld c,stringToLCD_	; display day
+	rst 10h
 
-	ld hl,days
-	ld de,lcdbuff
+	ld iy,lcdbuff
+	ld a,20h		; add space
+	ld (iy),a
+	inc iy
 
-	dec a
-	ld b,a
+	ld c,RTCAPI_		; get date
+	ld b,04
+	rst 10h
 
-dlop:	cp 0
-	jr z,gotday
-
-skipp:	ld a,(hl)
-	inc hl
-	cp 0
-	jr nz,skipp
-
-	dec b
-	ld a,b
-	jr dlop
-
-gotday:
-	ld a,(hl)
-	cp 0
-	jr z,doneday
-
-	ld (de),a
-	inc hl
-	inc de
-	jr gotday
-
-doneday:
-	ld a,' '
-	ld (de),a
-	inc de
-
-	push de
-	ld d,87h		; read date
-	call rtc_rd
+	ld a,h
 	ld (date),a
-	pop de
-
-;	ld de,lcdbuff
-
-	ld c,_AToString
-	rst 10h
-
-	ld a,'/'
-	ld (de),a
-	inc de
-
-	push de
-	ld d,89h		; read month
-	call rtc_rd
+	ld a,l
 	ld (month),a
-	pop de
-	ld c,_AToString
+	ld (year),de
+
+	ld c,RTCAPI_		; format date as string
+	ld b,17
 	rst 10h
-	ld a,'/'
-	ld (de),a
-	inc de
 
-	push de
-	ld d,8dh		; read year
-	call rtc_rd
-	ld (year),a
-	call bcdToBin
-
-	pop ix
-	ld b,0
-	ld c,a
-	ld hl,2023
-	add hl,bc
-
-	call decimal
-
-	xor a
-	ld (ix),a
-
-	ld hl,lcdbuff		; display message on LCD
-	ld c,_stringToLCD
+	ld hl,lcdbuff		; display date on LCD
+	ld c,stringToLCD_
 	rst 10h
 
 ; keystroke handling section
-
-	ld c,_scanKeys
+keys:
+	ld c,scanKeys_
 	rst 10h
-	jp nc,nokey
+	jp nc,clock
 
 trya:	cp 0ah			; A = reset clock
 	jr nz,tryf
-	call resetDS1302
+	ld c,RTCAPI_
+	ld b,01
+	rst 10h
 	jp clock
 
 tryf:	cp 0fh			; HALT ?
 	jr nz, tryplu
 	halt
-	jp nokey
+	jp clock
 
 tryplu:	cp 10h			; HOURS ADJUST ?
 	jr nz,tryzro
-
 	ld a,(hours)
 	bit 7,a
 	jr nz,set12
@@ -276,28 +199,23 @@ set24:	inc a			; set clock in 24 hour mode
 	daa
 	cp 24h
 	jr nz,setit
-
 	xor a
 	jr setit
-
 
 set12:	ld c,a			; backup A
 	and 0a0h		; the bits we want are 7 and 5
 	ld d,a			; d contains needed bits
 	ld a,c			; restore A
-
 	and 1fh			; mask off junk bits
 	inc a
 	daa
 	cp 13h
 	jr nz,notwrong
-
 	ld a,1			; wrap around to 1 (there is no 0 in hours)
 
 notwrong:
 	cp 12h			; AM/PM toggles at 12, not at 1.
 	jr nz,noflip
-
 	ld c,a			; backup A
 	ld a,d			; toggle AM/PM bit
 	xor 20h
@@ -305,119 +223,92 @@ notwrong:
 	ld a,c			; restore A
 
 noflip:	or d			; add in the control bits
-setit:	ld d,84h
-	ld e,a
-	call rtc_wr
-	jr nokey
+
+setit:	ld h,a
+	ld a,(mins)
+	ld l,a
+	ld a,(secs)
+	ld d,a
 
 
+stTime:	ld c,RTCAPI_
+	ld b,03
+	rst 10h
+	jp clock
 
-
-
-tryzro:	cp 0			; MINUTES ADJUST ?
+tryzro:	or a			; MINUTES ADJUST ?
 	jr nz, tryone
-
-	ld d,83h		; read minutes
-	call rtc_rd
-
+	ld c,RTCAPI_
+	ld b,02
+	rst 10h
+	ld a,l
 	inc a
-	or a
 	daa
 	cp 60h
 	jr nz,notoverflow
 	xor a
 
 notoverflow:
-	ld e,a
-	ld d,82h
-	call rtc_wr
-	jr nokey
+	ld l,a
+	jr stTime
 
 tryone:	cp 1			; SECONDS TO 00 ?
 	jr nz, trytwo
-
-	ld de,8000h		; reset seconds to zero
-	call rtc_wr
-	jr nokey
+	ld c,RTCAPI_
+	ld b,02
+	rst 10h
+	ld d,0			; reset seconds
+	jr stTime
 
 trytwo:	cp 2
 	jr nz, tryminus
+
+	ld b,01			; clear screen to fix up AM/PM sign
+	ld c,commandToLCD_
+	rst 10h
 
 	ld a,(hours)
 	bit 7,a
 	jr nz,to24
 
-; ----------------
+to12:	ld c,RTCAPI_
+	ld b,09
+	rst 10h
+	jp clock
 
-to12:	and 3fh		; 24 hour to 12 hour
-	cp 00h
-	jr nz,notmidnight
-	ld a,92h	; 12am + 12 hour flag
-	jr sethour
+to24:	ld c,RTCAPI_
+	ld b,10
+	rst 10h
+	jp clock
 
-notmidnight:
-	cp 12h
-	jr z,setpm	; 12pm exactly?
-	jr nc,ispm	; >12 ?
-	or 80h		; <12, so hours same, set 12 hour flag
-	jr sethour
 
-ispm:	sub 12h		; convert to 12 hr time
-	daa
-setpm:	or 0a0h		; set 12 hour flag + PM fag
-	jr sethour
-
-; -------------------
-
-to24:	and 3fh		; strip bits 7 and 6 to set 24h mode
-	bit 5,a		; was it pm?
-	
-	jr z,fixt	; am? if so am is same as 24hr
-
-	and 1fh		; clear PM flag
-	cp 12h		; is it 12pm? no change
-	jr z,sethour
-	add a,12h	; adjust by adding 12 hours
-	daa		; in BCD
-	jr sethour
-
-fixt:	cp 12h		; 12am = 00 hours
-	jr nz,nofix
-	xor a
-
-nofix:	and 1fh		; clear PM flag
-
-sethour:
-	ld e,a		; set clock
-	ld d,84h
-	call rtc_wr
-
-nokey:	jp clock
 
 tryminus:
 	cp 11h
 	jr nz,tryfour
-	ld a,(dayofweek)
+
+	ld b,06				; get day
+	ld c,RTCAPI_
+	rst 10h
+	ld a,d
 	inc a
 	cp 8
 	jr nz,loadday
 	ld a,1
 loadday:
-	ld e,a
-	ld d,08ah
-	call rtc_wr
-
-refrsh:	ld b,01				; clear screen to clean up
-	ld c,_commandToLCD
+	ld d,a
+	ld b,07
+	ld c,RTCAPI_
 	rst 10h
 
-	jr nokey
-
+refrsh:	ld b,01				; clear screen to clean up
+	ld c,commandToLCD_
+	rst 10h
+	jp clock
 
 tryfour:
 	cp 4
 	jr nz, tryfive
-
 	ld a,(date)
 	inc a
 	daa
@@ -425,11 +316,11 @@ tryfour:
 	jr nz, loaddate
 	ld a,1
 loaddate:
-	ld e,a
-	ld d,86h
-	call rtc_wr
-	jr refrsh
-
+	ld h,a
+	ld a,(month)
+	ld l,a
+	ld de,(year)
+	jr setYear
 
 tryfive:
 	cp 5
@@ -442,31 +333,39 @@ tryfive:
 	jr nz, loadmonth
 	ld a,1
 loadmonth:
-	ld e,a
-	ld d,88h
-	call rtc_wr
-	jr refrsh
+	ld l,a
+	ld a,(date)
+	ld h,a
+	ld de,(year)
+	jr setYear
 
 trysix:	cp 6
 	jr nz, tryd
-	
-	ld a,(year)
+
+	ld de,(year)		; BCD add
+	ld a,e
 	inc a
 	daa
-loadyear:
 	ld e,a
-	ld d,8ch
-	call rtc_wr
-	jr refrsh
+	ld (year),de
+
+
+loadyear:
+	ld a,(date)
+	ld h,a
+	ld a,(month)
+	ld l,a
+
+setYear:
+	ld b,05
+	ld c,RTCAPI_
+	rst 10h
+	jp clock
 
 tryd:	cp 0dh
-	jr nz, nokey
+	jp nz, clock
 	call dumpram
-	jr nokey
-
-
-; -------
-
+	jp clock
 
 
 ; ----------------------------------------------------------------------------
@@ -474,38 +373,13 @@ tryd:	cp 0dh
 ; ----------------------------------------------------------------------------
 
 ; ----------------------------------------------------------------------------
-; Reset the DS1302 fully
-; ----------------------------------------------------------------------------
-
-resetDS1302:
-	ld de,8e00h		; clear write protect bit
-	call rtc_wr
-	ld de,9000h		; clear trickle charge bits
-	call rtc_wr
-
-	ld de, 8000h		; seconds 00
-	call rtc_wr
-	ld de, 8200h		; minutes 00
-	call rtc_wr
-	ld de, 8490h		; hours 01, 12 hour mode
-	call rtc_wr
-
-	ld de,8601h		; date 01
-	call rtc_wr
-	ld de,8801h		; month 01
-	call rtc_wr
-	ld de,8a01h		; day 01 (Monday)
-	call rtc_wr
-	ld de,8c01h		; year 01 (2024)
-	call rtc_wr
-
-	ret
-
-; ----------------------------------------------------------------------------
 ; display the RTC RAM bytes (31 bytes)
 ; ----------------------------------------------------------------------------
 dumpram:
-	call rtcram_rd		; get the bytes
+	ld hl,rtcram
+	ld b,13
+	ld c,RTCAPI_
+	rst 10h
 
 	ld hl,rambuff		; fill LCD buffer with spaces
 	ld de,rambuff+1
@@ -522,7 +396,7 @@ dumpram:
 
 fillBuff:
 	ld a,(bcount)		; fill LCD buffer with the data
-	ld c,_AToString
+	ld c,AToString_
 	rst 10h
 	ld a,':'
 	ld (de),a
@@ -540,7 +414,7 @@ fillBuff:
 
 writeLine:
 	ld a,(hl)
-	ld c,_AToString
+	ld c,AToString_
 	rst 10h
 	ld a,' '
 	ld (de),a
@@ -563,7 +437,7 @@ writeLine:
 ; ---- ok now buffer is ready. paint it to LCD & do scrolling etc.
 
 	ld b,01				; clear LCD
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 
 	ld hl,rambuff			; setup defaults
@@ -575,19 +449,19 @@ writeLine:
 dbuff:	ld hl,(rambuffPtr)		; send buffer to LCD
 	call blatline
  	ld b,0c0h
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 	call blatline
  	ld b,94h
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 	call blatline
  	ld b,0d4h
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 	call blatline
 
-	ld c,_scanKeysWait
+	ld c,scanKeysWait_
 	rst 10h
 	
 	cp 10h				; plus
@@ -615,7 +489,7 @@ tryaddr:
 	jr nz,dbuff
 
 	ld b,01				; clear LCD before exit
-	ld c,_commandToLCD
+	ld c,commandToLCD_
 	rst 10h
 	ret
 
@@ -638,218 +512,42 @@ blatline:
 	ld b,20
 fillLcd:
 	ld a,(hl)
-	ld c,_charToLCD
+	ld c,charToLCD_
 	rst 10h
 	inc hl
 	djnz fillLcd
 	ret
 
 ; ----------------------------------------------------------------------------
-; Conversion routine - BCD to true Binary
-; input:  A = BCD value
-; output: A = binary value
-; ----------------------------------------------------------------------------
-bcdToBin:
-	push bc
-	ld c,a
-	and 0f0h
-	srl a
-	ld b,a
-	srl a
-	srl a
-	add a,b
-	ld b,a
-	ld a,c
-	and 0fh
-	add a,b
-	pop bc
-	ret
-
-; -----------------------------------------------------------------------------
-; DECIMAL - HL to decimal
-; IX = memory location to store result
-; trashes a, bc, de
-; -----------------------------------------------------------------------------
-decimal:
-	ld e,1				; 1 = don't print a digit
-
-	ld	bc,-10000
-	call	Num1
-	ld	bc,-1000
-	call	Num1
-	ld	bc,-100
-	call	Num1
-	ld	c,-10
-	call	Num1
-	ld	c,-1
-
-Num1:	ld	a,'0'-1
-
-Num2:	inc	a
-	add	hl,bc
-	jr	c,Num2
-	sbc	hl,bc
-
-	ld d,a				; backup a
-	ld a,e
-	or a
-	ld a,d				; restore it in case
-	jr z,prout			; if E flag 0, all ok, print any value
-
-	cp '0'				; no test if <>0
-	ret z				; if a 0, do nothing (leading zero)
-
-	ld e,0				; clear flag & print it
-
-prout:
-	ld (ix),a
-	inc ix
-	ret
-
-; ----------------------------------------------------------------------------
-; Write cycle. Writes 2 bytes
-; D = command/register
-; E = data byte
-; ----------------------------------------------------------------------------
-rtc_wr:
-	push af
-
-	ld c,RTCport
-	ld a,10h		; raise CS, enable data in
-	out (c),a
-  
-	call bytelpW		; write D to select the register
-	ld d,e
-	call bytelpW		; write E - the data
-
-	xor a			; drop CS
-	out (c),a
-
-	pop af
-	ret
-
-; ----------------------------------------------------------------------------
-; Read cycle. Writes command and reads result
-; D = command/register needed
-; A = result
-; ----------------------------------------------------------------------------
-rtc_rd:
-	ld c,RTCport
-	ld a,10h		; raise CS, enable data out
-	out (c),a
-  
-	call bytelpW		; write D to select the register
-	call bytelpR		; read value (into D)
-
-	xor a			; drop CS
-	out (c),a
-
-	ld a,d			; return value in A
-	ret
-
-; ----------------------------------------------------------------------------
-; Read cycle. Writes command and reads result into memory using burst mode
-; ----------------------------------------------------------------------------
-rtcram_rd:
-	ld c,RTCport
-	ld a,10h		; raise CS, enable data out
-	out (c),a
-  
-	ld d,0ffh		; ram burst
-	call bytelpW		; write D to select the register
-
-	ld b,31
-	ld hl,rtcram
-
-bRead:	call bytelpR		; read value (into D)
-	ld (hl),d
-	inc hl
-	djnz bRead
-
-	xor a			; drop CS
-	out (c),a
-
-	ret
-
-; ----------------------------------------------------------------------------
-; write one byte to the DS1302
-; byte in D
-; ----------------------------------------------------------------------------
-bytelpW:
-	push bc
-	ld b,8
- 
-blp:    srl d			; data bit 0 to carry
-	ld a,20h
-	rra			; carry to data bit 7
-	out (c),a		; setup bus - drops clock
-	or 40h			; raise CLK
-	out (c),a
-	djnz blp
-	pop bc
-	ret
-
-; ----------------------------------------------------------------------------
-; Read one byte from the DS1302
-; byte read is returned in D
-; ----------------------------------------------------------------------------
-bytelpR:
-	push bc
-	ld b,8
-	ld d,0
-
-blp2:
-	ld a,30h
-	or 40h			; raise CLK
-	out (c),a
-	and 0bfh		; drop CLK
-	out (c),a
-	in e,(c)		; read value
-
-	srl e
-	rr d
-	djnz blp2
-	pop bc
-	ret
-
-; ----------------------------------------------------------------------------
 ; constants
 ; ----------------------------------------------------------------------------
 
-#include "mon3_includes.asm"	; include TEC-1G API calls
+noRTC:		.db "RTC Module not found",0
 
-RTCport:	.equ 0fch
-
-days:		.db "Monday",0
-		.db "Tuesday",0
-		.db "Wednesday",0
-		.db "Thursday",0
-		.db "Friday",0
-		.db "Saturday",0
-		.db "Sunday",0
+.include "mon3_includes.asm"	; include TEC-1G API calls
 
 ; ----------------------------------------------------------------------------
 ; Variables
 ; ----------------------------------------------------------------------------
-		.org 1000h
+		.org 3800h
 
-dispbuf:	.block 6
-hours:		.block 1
-mins:		.block 1
-secs:		.block 1
-dayofweek	.block 1
-date:		.block 1
-month:		.block 1
-year:		.block 1
+dispbuf:	ds 6
+hours:		ds 1
+mins:		ds 1
+secs:		ds 1
+date:		ds 1
+month:		ds 1
+year:		ds 2
+oldSecs:	ds 1
 
-lcdbuff: 	.block 20
+lcdbuff: 	ds 20
 
-rtcram:		.block 31
+rtcram:		ds 31
 
-rambuff:	.block 160
-rambuffPtr:	.block 2
-rambuffPage:	.block 1
-bcount:		.block 1
+rambuff:	ds 160
+rambuffPtr:	ds 2
+rambuffPage:	ds 1
+bcount:		ds 1
 
 
 		.end

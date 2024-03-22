@@ -13,9 +13,9 @@ Please download the **MON3 User Guide** linked in the File Links, below.
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](./MON3-1G_BC23-13.bin) | Download and burn to a 16k ROM | 1.3 |
+| [MON3 for TEC-1G](./MON3-1G_BC24-14.bin) | Download and burn to a 16k ROM | 1.3 |
 | [MON3 Change Log](./release_notes.md) | MON3 Change Log and Release Notes | 1.3 |
-| [MON3 User Guide](./MON3_User_Guide_v1.3.pdf) | MON3 User Guide in PDF format | 1.3 |
+| [MON3 User Guide](./MON3_User_Guide_v1.4.pdf) | MON3 User Guide in PDF format | 1.3 |
 | [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.3 |
 
 ## A Brief Functional Description

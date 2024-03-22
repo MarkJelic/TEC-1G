@@ -5,7 +5,7 @@ preInit_          .equ 2
 beep_             .equ 3
 convAToSeg_       .equ 4
 regAToASCII_      .equ 5
-ASCIItoSegment_   .equ 6
+ASCIIToSegment_   .equ 6
 stringCompare_    .equ 7
 HLToString_       .equ 8
 AToString_        .equ 9
@@ -44,10 +44,10 @@ setCaps_          .equ 41
 setShadow_        .equ 42
 setProtect_       .equ 43
 setExpand_        .equ 44
-toggleCaps_       .equ 45
-toggleShadow_     .equ 46
-toggleProtect_    .equ 47
-toggleExpand_     .equ 48
+stringToSerial_   .equ 45
+RTCAPI_           .equ 46
+menuPop_          .equ 47
+spare2_           .equ 48
 random_           .equ 49
 setDisStart_      .equ 50
 getDisNext_       .equ 51
@@ -76,3 +76,26 @@ setBufClear_      .equ 17 ;Clear the Graphics buffer on after Plotting to the sc
 setBufNoClear_    .equ 18 ;Retain the Graphics buffer on after Plotting to the screen
 clearPixel_       .equ 19 ;Remove a Pixel at X,Y
 flipPixel_        .equ 20 ;Flip a Pixel On/Off at X,Y
+
+
+RTCAPINames:                    ; B register value for RTCAPI call
+checkDS1302_      .equ 00
+resetDS1302_      .equ 01
+getTime_          .equ 02
+setTime_          .equ 03
+getDate_          .equ 04
+setDate_          .equ 05
+getDay_           .equ 06
+setDay_           .equ 07
+get1224Mode_      .equ 08
+set12HrMode_      .equ 09
+set24HrMode_      .equ 10
+readRTCByte_      .equ 11
+writeRTCByte_     .equ 12
+burstRTCRead_     .equ 13
+bcdToBin_         .equ 14
+binToBcd_         .equ 15
+formatTime_       .equ 16
+formatDate_       .equ 17
+RTCSetup_         .equ 18
+

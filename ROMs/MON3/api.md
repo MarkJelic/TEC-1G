@@ -1,5 +1,7 @@
 # MON-3 API guide
 
+### Please view the User Guide for updated API calls.  This document will not be maintained by the mon3 author.
+
 ## General Conventions
 C register - holds API Call number.
 
@@ -12,7 +14,7 @@ Executing an RST 10H opcode calls the API.
 
 - Results are returned in various registers and/or by altering memory as shown within each call.
 
-Note: if a register is maked as destroyed - that means the value of the register is altered in an undefined manner by the API call, and thus should not be relied upon to contain any specific value after the API call runs.
+Note: if a register is marked as destroyed - that means the value of the register is altered in an undefined manner by the API call, and thus should not be relied upon to contain any specific value after the API call runs.
 ```
     Some Examples:
 

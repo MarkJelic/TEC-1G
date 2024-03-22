@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Monitor 3](./MON3/) | The new main Monitor for the TEC-1G written by Brian Chiha| 1.3 |
+| [Monitor 3](./MON3/) | The new main Monitor for the TEC-1G written by Brian Chiha| 1.4 |
 | [Diagnostics](./DIAGs/) | Test the functionality of your TEC-1G, by Craig Hart | 1.1 |
 | [BMON](./BMON/) | Run the first monitor that Brian Chiha adapted for the TEC-1 | 1.3 |
 | [MON-1B](./MON1/) | The original, hand-coded monitor for the TEC-1 by John Hardy | 16K |
@@ -12,7 +12,7 @@ The file list above gives you links to the individual monitors that you can quic
 and pop them into the TEC-1G, without having to play around with the ROM size switches.
 
 You can also download the "combined images" that include:
- - 32k has MON3 and DIAGs
+ - 32k has MON-3 and DIAGs
  - 64k has MON-3, DIAGs, BMON and MON-1B
 
 

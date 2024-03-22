@@ -49,8 +49,8 @@ It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 ![TEC-1G GPIO RTC](pictures/TEC-1G_GPIO_RTC-Board.jpg)
 
 ## How Do You Use It?
-The clever people at <b>TEC-1 Inc.</b> will soon release an API as part of MON3.
+The clever people at <b>TEC-1 Inc.</b> have released an API as part of MON3.
 This will allow you to set the current time, read the current time, save and read bytes out of the battery backed RAM.
 All this and more, <b>Coming Soon®...</b>
 
-While you're waiting, take a read of the [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) sheet to get a handle on what commands you can send it.
+Take a read of the [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) sheet to get a handle on what commands you can send it.

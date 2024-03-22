@@ -1,6 +1,6 @@
 # DS1302 Clock, Calendar and PRAM notes for Programmers
 
-The DS1302 register set presents sertain ambiguous choices, which this document seeks to clarify, as well as to document the format of the PRAM area.
+The DS1302 register set presents certain ambiguous choices, which this document seeks to clarify, as well as to document the format of the PRAM area.
 
 ## RTC Clock and Calendar
 
@@ -55,7 +55,7 @@ Day 7 = Sunday
 
 The DS1302 has 31 bytes of static RAM, which the TEC-1G Designers have named the **P**aramemter **RAM**, or PRAM for short.
 
-Part of the PRAM is set aside for MON3's use. User Bytes are free for software authors to put to any use they see fit.
+Part of the PRAM is set aside for MON3's use. 14 User Bytes are free for software authors to put to any use they see fit.
 
 | PRAM Byte | Purpose |
 | :--: | ----- |
@@ -65,16 +65,16 @@ Part of the PRAM is set aside for MON3's use. User Bytes are free for software a
 |07| Quick Backup - Start address |
 |09| Quick Backup - End address |
 |11| Quick Backup - Destination address |
-|13| -- |
-|14| -- |
-|15| -- |
-|16| -- |
-|17| -- |
-|28| -- |
-|29| -- |
-|20| -- |
-|21| -- |
-|22| -- |
+|13| Mon3 Reserved |
+|14| Mon3 Reserved |
+|15| Mon3 Reserved |
+|16| Mon3 Reserved |
+|17| User Byte |
+|18| User Byte |
+|19| User Byte |
+|20| User Byte |
+|21| User Byte |
+|22| User Byte |
 |23| User Byte |
 |24| User Byte |
 |25| User Byte |

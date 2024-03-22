@@ -40,14 +40,22 @@ CAPSLOCK:   .equ    80H         ;Caps lock for Keyboard
 ;      Bit 3 = LCD=H/Segment=L mode
 ;      Bit 4 = Disassembler View=H/Data Entry View=L mode (for segment mode only)
 ;      Bit 5 = Menu=L/Parameter=H Format for Menu handler (for LCD mode only)
+;      Bit 6 = RTC Add-On Present=H
+;      Bit 7 = SD Card Add-On Present=H (not implemented yet)
 MCB_AD_DATA .equ    04H         ;Address=H/Data=L mode
 MCB_LCD_SEG .equ    08H         ;LCD=H/Segment=L mode
 MCB_DIS_DE  .equ    10H         ;Disassembler View=H/Data Entry View=L mode
 MCB_MEN_PAR .equ    20H         ;Menu=L/Parameter=H Format for Menu handler
+MCB_RTC     .equ    40H         ;RTC Add-On Present=H
+MCB_SD_CARD .equ    80H         ;SD Card Add-On Present=H
 
-; Serial Baud Delay
+; Serial Constants Delay
 BAUD:       .equ    1BH         ;BAUD 4800 Delay
 ;BAUD:       .equ    0BH         ;BAUD 9600 Delay
+CR:         .equ    0DH         ;Carriage Return
+LF:         .equ    0AH         ;Line Feed
+SPACE:      .equ    " "         ;Space
+COLON:      .equ    ":"         ;Colon
 
 ; Keyboard reference
 K_FN:       .equ    02H         ;Fn key on Keyboard Matrix
@@ -91,9 +99,9 @@ USER_INT:   .equ    STACK_TOP+18    ;User defined INT routine
 USER_NMI:   .equ    STACK_TOP+20    ;User defined NMI routine
 MENU_POS:   .equ    STACK_TOP+22    ;Menu listing position
 MENU_SEL:   .equ    STACK_TOP+23    ;Menu pointer seletion
-MENU_CNT:   .equ    STACK_TOP+24    ;Menu listing position
-MENU_CFG:   .equ    STACK_TOP+25    ;Menu pointer seletion
-SPARE:      .equ    STACK_TOP+27    ;Spare
+MENU_CNT:   .equ    STACK_TOP+24    ;Menu listing count
+MENU_CFG:   .equ    STACK_TOP+25    ;Menu configuration address
+MENU_IDX:   .equ    STACK_TOP+27    ;Menu depth index
 CAPS_LOCK:  .equ    STACK_TOP+28    ;Caps Lock Flag
 SYS_MODE:   .equ    STACK_TOP+29    ;SYS_CTRL current monitor state
 PROT_MODE:  .equ    STACK_TOP+30    ;Use Protect at GO
@@ -111,6 +119,9 @@ DATA_ROW:   .equ    DATA_BASE+96    ;Start of ASCII data entry string (0900H)
 
 ; Current Editing Location Quick Jump locations
 CEL_QJMP:   .equ    MON_FRAM+2      ;Location 1,2, and 3 (08A2H,08A4H,08A6H)
+
+; Menu depth pointers to remember nested menus
+MENU_CFG_D: .equ    MON_FRAM+8      ;Menu Config. depth (08A8H,08AAH,08ACH,08AEH) 
 
 ; Breakpoint regsiter save area.
 BP_BASE_SP: .equ    MON_FRAM+96     ;Start of Register save area (0900H)   
@@ -132,9 +143,9 @@ COPY_CORR:  .equ    COPY_START+10   ;Correction
 DATA_FROM:  .equ    PARAM_DATA      ;From (08C0H)
 DATA_TO:    .equ    DATA_FROM+2     ;To
 
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
 ; CODE start here, with code running at 0000H
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
 
         .org BASE_ADDR
 boot:
@@ -262,9 +273,9 @@ NMIHandler:
         retn                ;Exit cleanly
 
 
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
 ; CODE running in ROM proper, at C000H upwards
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
 
         .org BASE_ADDR+100H
 
@@ -275,6 +286,8 @@ preInit:
         xor a               ;Blank the 8x8 display to prevent LED burnout
         out (LED8X8H),a        
         out (LED8X8V),a
+        ld a,05h            ;Set SD Card to Idle; turns off activity LED
+        out (0fdh),a
         in a,(SYS_INPUT)    ;Check for CART presence
         ld b,a
         and CART            ;Check bit 4
@@ -320,9 +333,9 @@ skipMatrix:
         ;Look for hard reset flag
         ld hl,SOFTWARE
         ld de,ROMSIG
-        ld b,10h
+        ld b,10H
         call stringCompare
-        jr z,softBoot       ;Yes, just softboot
+        jr z,preSoftBoot     ;Yes, just softboot
 hardInit:
         ;Honour Expand
         in a,(SYS_INPUT)    ;read simp buffer for real expand bit
@@ -333,18 +346,30 @@ hardInit:
         ;Copy ROMSTR into RAM - warm boot flag
         ld hl,SOFTWARE
         ld de,ROMSIG
-        ld bc,10h
+        ld bc,10H
         ldir
         ;Default monitor RAM variables
         ld hl,defaults      ;Start from MCB
         ld de,CEL           ;Set to CEL and onwards in RAM
         ld bc,defaultsSize  ;Load defaultsSize bytes
         ldir
+        ;Check if RTC Add-On is installed
+        call checkDS1302Present ;Carry set = No RTC
+        jr c,skipRTC        ;skip RTC config as no RTC Add-on found
+        ld hl,MCB           ;set MCB
+        set 6,(hl)          ;bit 6 RTC present
+        call checkRTCchecksum ;check if PRAM is not corrupt
+        jr z,$+5            ;all good, skip resetting PRAM
+        call resetRTCPRAM   ;reset RTC PRAM
+        call RTCFillRAM     ;fill RTC PRAM to Mon3 RAM
+        jr LCDinit
+skipRTC:
         ;Default CEL Jump Table
         ld hl,USER_ADDR     ;default to intial CEL
         ld (CEL_QJMP),hl
         ld (CEL_QJMP+2),hl
         ld (CEL_QJMP+4),hl
+LCDinit:
         ;LCD initialise
         ld bc,400H+LCD_INST ;4 instructions, LCD Instruction port
         ld hl,LCDInitTable  ;LCD instructions table
@@ -358,6 +383,9 @@ hardInit:
         ;Display Welcome Message
         ld hl,hardResetMessage
         call stringToLCD    ;print line to LCD
+        ;send a welcome message to the Serial Terminal if connected
+        ld hl,serialStartup
+        call stringToSerial
         ;play a tone...
         ld de,hardResetTune ;Set DE to tune data
         call playTune
@@ -369,13 +397,19 @@ hardInit:
         ld (RNG_SEED),a     ;save it
         ;TODO add more here...
 
+preSoftBoot:
+        ;set up initial menu if RESET is pressed
+        ld hl,mainMenuCFG   ;set up 1G Menu
+        call menuReset      ;clear menu flags
+        ld a,0FFH           ;reset menu index
+        ld (MENU_IDX),a     ;save it
+        call menuInit
+
 ;Soft Reset call and fallthrough for Hard Reset and GO return address
 softBoot:
         ld sp,STACK_TOP     ;Set the Hardware Stack to top of stack in RAM
         ld a,(SYS_MODE)     ;reset hardware to MONitor mode
         out (SYS_CTRL),a
-        ld hl,mainMenuCFG   ;set up 1G Menu
-        call menuInit
         ;reset MCB
         ld a,(MCB)          ;Get MCB
 resetMCB:
@@ -458,6 +492,8 @@ runRoutine:
         ld a,(PROT_MODE)    ;enable PROTECT if configured
         or b
         out (SYS_CTRL),a
+        ld a,0FFH
+        ld (KEY_BUFF),a     ;remove GO from key Buffer to avoid GO held
         ld de,softBoot      ;get return address
         push de             ;put return address on stack
         jp (hl)             ;jump to CEL and execute it
@@ -495,8 +531,7 @@ updateAddress:
         rld                 ;shift key into lower byte of CEL
         inc hl              ;move to upper byte
         rld                 ;shift carry nibble into upper byte
-        ld hl,(CEL)
-        ld (DATA_BASE),hl
+        call setDataBase    ;set the DATA_BASE variable
         jp setDispBuffer    ;jump back to main loop
         ;function key handler
 keyFn:
@@ -550,7 +585,9 @@ fnMinus:
         ld (hl),00H         ;put zero in High RAM
         jp setDispBuffer    ;jump back to main loop
 fnAd:
-        ;return back to menu
+        ;display main menu
+        ld hl,mainMenuCFG   ;set up 1G Menu
+        call menuInit
         call switchMode
         jp setDispBuffer
 
@@ -596,23 +633,42 @@ keyMinusLCD:
 keyGoLCD:
         cp K_GO             ;is it the GO key
         jr nz,keyAddressLCD ;no, try AD
-        bit 5,(hl)          ;check MCB
-        jp nz,switchMode    ;in Parameter mode, switch out and exit back to calling routine
+        bit 5,(hl)          ;check MCB for Parameter Entry
+        jr z,menuGo         ;if Zero, it must be a menu
+        ;Parameter GO needs to pop menu and just return
+        jp menuPop          ;restore to the previous menu and return back
+menuGo:
         ld a,(MENU_SEL)     ;get current menu selection
         call menuIndex      ;set HL to menu config at index A
-        ld a,(hl)           ;skip menu label
-        inc hl          
-        or a                ;is it zero
-        jr nz,$-3           ;repeat until zero found
+        ld b,01H            ;clear LCD instruction
+        call commandToLCD   ;update LCD
+        call stringToLCD    ;Display Message on LCD
+        ;HL is now at address to jump to
         ld a,(hl)           ;fix HL
         inc hl              ;for executing
-        ld h,(hl)
+        ld h,(hl)           ;and displaying
         ld l,a
+        push hl             ;save HL
+        ld b,0D6H           ;set cursor to Row 4,Col 3
+        call commandToLCD   ;update LCD
+        ld hl,menuGoText    ;display "  Running at: 1234  "
+        call stringToLCD    ;write text
+        pop hl              ;restore HL
+        push hl             ;save HL
+        push de             ;save DE
+        ld de,DATA_ROW      ;tmp memory storage
+        call HLToString     ;convert HL to ASCII string in (DE)
+        xor a               ;set A = 0
+        ld (de),a           ;terminate string with zero
+        ld hl,DATA_ROW      ;set HL to text address
+        call stringToLCD    ;write text
+        pop de              ;restore DE
+        pop hl              ;restore HL to address
         jp runRoutine       ;execute it safely
 keyAddressLCD:
         cp K_ADDR           ;is key AD?
         jp nz, keyHexLCD    ;no, try Hex key
-        call switchMode     ;exit out of LCD mode
+        call menuPop        ;restore to previous menu
         jp softBoot         ;and return
 keyHexLCD:
         ;only applicable in Parameter mode
@@ -633,6 +689,21 @@ keyHexLCD:
         rld                 ;shift key into lower byte of CEL
         inc hl              ;move to upper byte
         rld                 ;shift carry nibble into upper byte
+        ;check if HL=COPY_START/END/DEST for RTC update
+        ld a,(MCB)          ;check if RTC installed
+        and MCB_RTC         ;is bit 6 set
+        jp z,setDispBuffer  ;no, just exit back
+        dec hl              ;move HL back to original address
+        ld a,08H
+        sub h               ;is address 08?
+        jp nz,setDispBuffer
+        ld a,l
+        sub 0C0H            ;is address C0-C4?
+        cp 05H              ;is it > 4
+        jp nc,setDispBuffer
+        ;all good to update RTC
+        add a,06H           ;index A for RTC slot
+        call RTCSetPRAM     ;save it 
         jp setDispBuffer    ;exit
 
 ; Check for Fn key pressed.
@@ -658,35 +729,14 @@ updateLCD:
         call commandToLCD   ;update LCD
         ld hl,MCB           ;get the MCB
         bit 3,(hl)          ;is bit 3 set? LCD/Segment
-        jp nz,LCDMenu       ;LCD menu mode is set
+        jp nz,menuDraw      ;LCD menu mode is set, draw the menu and return
         bit 4,(hl)          ;is bit 4 set? Disassembly / Data view
         jp nz,LCDDisView    ;display Disassembly View
 LCDDataView:
-        ;get difference between CEL and DATA_BASE
-        ;if > 4 then move DATA_BASE = CEL
-        ;if < 0 then move DATA_BASE = CEL-4
-        ld de,(CEL)         ;set HL to CEL
-        ld hl,(DATA_BASE)   ;set DE to DATA_BASE
-        ex de,hl            ;swap them
-        or a                ;clear carry
-        sbc hl,de           ;get the difference
-        ex de,hl            ;swap them so HL=DATA_BASE
-        ld bc,0FFFCH        ;set BC to -4
-        jr c,adjBase        ;its negative
-        ld a,e              ;check out difference
-        cp 5                ;is it 5 or more?
-        jr c,skipAdjBase    ;no, skip adjust base
-        ld bc,0000H         ;set BC to 5
-adjBase:
-        ld hl,(CEL)         ;load HL with CEL
-        add hl,bc           ;modify HL with offset
-        ld (DATA_BASE),hl   ;update base address
-skipAdjBase:
-        ;adjust base
-        ld bc,0005          ;set BC = 5 five byte to display
-        or a                ;clear carry
-        sbc hl,bc           ;set HL = HL - 5 move 5 back
-        ld b,3              ;three lines
+        call setDataBase    ;set the DATA_BASE variable
+        ld de,0FFFCH        ;set DE to -4
+        add hl,de           ;set HL = HL - 4
+        ld bc,0304H         ;three lines, four bytes
         ld de,LCDBaseRows   ;set de to first row
 LCDDataRow:
         push bc             ;save BC
@@ -704,7 +754,7 @@ LCDDataRow:
         pop hl              ;get current address
         pop de              ;restore row table
         pop bc              ;restore BC
-        djnz LCDDataRow     ;do for all four rows
+        djnz LCDDataRow     ;do for all three rows
 
         ;draw disassembly line
         ld a,(de)           ;get row value
@@ -715,8 +765,44 @@ LCDDataRow:
         ld (DISFROM),hl     ;user DIS_ADDR as start address for disassembler
         call drawDisRow     ;Draw the Disassembly line
 
+        ;draw state information
+        ld b,091H           ;move cursor
+        call commandToLCD   ;to top right
+        ld a,'|'
+        call charToLCD
+        ld a,(MCB)
+        ld c,a
+        ld a,'d'
+        ld b,05h            ;special flip bit xor 'a' <-> 'd'
+        bit 2,c             ;is in Data or Address mode?
+        jr z,$+3
+        xor b
+        call charToLCD      ;Display the byte
+        xor b               ;flip it back to a or d
+        call charToLCD      ;Display the byte
+
+        ld b,0D1H           ;move cursor
+        call commandToLCD   ;to far right
+        ld a,'|'
+        call charToLCD
+        ld a,' '
+        call charToLCD
+        ld hl,(CEL)         ;get current byte
+        ld a,(HL)           ;get byte
+        call charToLCD      ;Display the byte
+
+        ld b,0A5H           ;move cursor
+        call commandToLCD   ;to far right
+        ld a,'|'
+        call charToLCD
+        ld a,'n'
+        call charToLCD      ;Display the byte
+        ld a,c              ;mask out lower MCB
+        and 03H
+        add a,'0'           ;convert binary to ascii value
+        call charToLCD      ;display the byte count
+
         ;set cursor
-        ld hl,(CEL)         ;load HL with CEL
         ld bc,(DATA_BASE)   ;load BC with DATA_BASE
         or a                ;reset carry
         sbc hl,bc           ;get difference between HL and BC
@@ -747,21 +833,6 @@ LCDDisRow:
         pop bc              ;restore BC
         djnz LCDDisRow      ;do for all four rows
         ret
-LCDMenu:
-        ;Draw the menu
-        call menuDraw       ;display menu items
-        ;set segment text
-        ld hl,menuSegmentData
-        ld de,DISP_BUFF
-        ld b,6
-LCDSegLoop:
-        ld a,(hl)
-        call ASCIItoSegment ;convert A to segment code
-        ld (de),a
-        inc hl
-        inc de
-        djnz LCDSegLoop
-        ret
 
 ; Update LCD with Disassembly Line: 
 ; Input: DISFROM is to be be set, IE , ld (DISFROM),hl
@@ -771,9 +842,9 @@ drawDisRow:
         push de             ;save row table
         call disStart       ;Generate disassembly from command after CEL
         ld hl,DISLINE1      ;Point to first line
-        ld a,":"            ;load A with colon
+        ld a,COLON          ;load A with colon
         ld (DISLINE1+4),a   ;place colon after address
-        ld a," "            ;load A with space
+        ld a,SPACE          ;load A with space
         ld (DISLINE1+5),a   ;just display address
         xor a               ;zero A
         ld (DISLINE1+6),a   ;just display address
@@ -782,6 +853,18 @@ drawDisRow:
         call stringZeroSpace ;Place 0 at actual end of stirng
         call stringToLCD    ;update LCD
         pop de              ;restore row table
+        ret
+
+; Set the DATA_BASE varaible with the CEL rounded down to base hex value
+; Input: none
+; Output: DATA_BASE set
+; Destroy: HL
+setDataBase:
+        ld hl,(CEL)         ;get CEL
+        ld a,l              ;get lower byte
+        and 0FCH            ;mask out two lowest bits
+        ld l,a              ;store it back to get read base adderss
+        ld (DATA_BASE),hl   ;store new Base
         ret
 
 ; Monitor routines
@@ -904,6 +987,19 @@ stringToLCD:
         rst 28H             ;wait until LCD is not busy
         out (LCD_DATA),a    ;send ASCII to LCD Data port
         jr stringToLCD      ;repeat
+
+; ASCII string to Serial.  Writes a string to the FTDI serial port 
+; Inputs: HL = ASCII string terminated with zero byte
+; Destroys: A, HL (moves to end of list)
+stringToSerial:
+        call readyToTransmit ;set up serial for transmit
+strSerialLoop:
+        ld a,(hl)           ;get ASCII character
+        inc hl              ;move to next ASCII character
+        or a                ;is it zero?
+        ret z               ;yes, exit
+        call txByte         ;send ASCII to serial port
+        jr strSerialLoop    ;repeat
 
 ; ASCII character to LCD.  Writes one character to the LCD as the current curso locaiton
 ; Inputs: A = ASCII character
@@ -1126,6 +1222,7 @@ txByte:
         ;transmit the start bit
         xor a               ;clear A
         out (DIGITS),a      ;pull D6 low
+        out (SEGS),a        ;output to disco leds
         call timeDelay      ;do a baud delay
         ;transmit the byte
         ld b,8              ;eight bits to send
@@ -1135,11 +1232,13 @@ sendBit:
         ld a,c              ;load byte in A
         and 40H             ;mask out all bits except 6
         out (DIGITS),a      ;output the bit
+        out (SEGS),a        ;output to disco leds
         call timeDelay      ;do a baud delay
         djnz sendBit        ;send next bit
         ;transmit stop bits
         ld a,40H            ;set bit
         out (DIGITS),a      ;output the bit
+        out (SEGS),a        ;output to disco leds
         call timeDelay      ;do a baud delay
         call timeDelay      ;do a baud delay x2 (two stop bits)
         pop hl              ;restore HL
@@ -1207,10 +1306,6 @@ timeDelay:
 ; Output: nothing
 ; Destroy: HL,DE,BC,A
 intelHexLoad:
-        ld b,01H            ;clear LCD instruction
-        call commandToLCD   ;update LCD
-        ld hl,intelLabel    ;point to text
-        call stringToLCD    ;Display Message on LCD
         ld a,(SYS_MODE)     ;reset hardware to MONitor mode
         ld b,a
         ld a,PROTECT        ;Disable PROTECT during load
@@ -1349,6 +1444,7 @@ getToFrom:
 
 dataRangeParams:        
         .db 2                           ;Three parameters
+        .db "Enter "                    ;7seg Text
         .db "= Enter Parameters =",0    ;Parameter title
         .db "From Address:",0           ;Text and Address
         .dw DATA_FROM
@@ -1373,9 +1469,9 @@ assemblyLoop:
         call txByte         ;transmit it to FTDI
         inc hl              ;move to next location
         djnz $-5            ;repeat 38 times
-        ld a,0DH            ;carriage return
+        ld a,CR             ;carriage return
         call txByte         ;send CR
-        ld a,0AH            ;line feed
+        ld a,LF             ;line feed
         call txByte         ;send LF
         ld hl,(DISFROM)     ;get current start
         ld de,(DATA_TO)     ;get end address
@@ -1426,9 +1522,9 @@ hexTextloop:
         call txByte         ;send byte to serial
         jr hexTextloop      ;repeat
 skipHex:
-        ld a,0DH            ;carriage return
+        ld a,CR             ;carriage return
         call txByte         ;send CR
-        ld a,0AH            ;line feed
+        ld a,LF             ;line feed
         call txByte         ;send LF
         pop de              ;restore next start address
         pop bc              ;restore bytes remaining
@@ -1492,7 +1588,7 @@ stringCompare:
 
 ; Defaults to check for double ASCII space
 stringZeroSpace:
-        ld a," "            ;Space and fall through.         
+        ld a,SPACE          ;Space and fall through.         
 ; Place a zero at then end of a string.  Routine checks for two bytes
 ; in a row that are the same and when found, will place a zero in the first 
 ; byte found.  If no byte found within 20 characters then exit with no update
@@ -1534,7 +1630,7 @@ strSpLoop:
         pop bc              ;restore BC
         ret                 ;exit
 strSpCheck:
-        cp " "              ;is it a space
+        cp SPACE            ;is it a space
         inc hl              ;move to next address
         jr nz,strSpLoop     ;loop again if not space
         inc c               ;increase space counter
@@ -1605,11 +1701,11 @@ nibble2ASCII:
 genDataDump:
         push bc             ;save BC
         call HLToString     ;convert HL to address in ASCII
-        ld a,":"            ;set A = colon
+        ld a,COLON          ;set A = colon
         ld (de),a           ;write a colon after address
         inc de
 dataDumpLoop:
-        ld a," "            ;set A = space
+        ld a,SPACE          ;set A = space
         ld (de),a           ;write a space
         inc de
         ld a,(hl)           ;get byte at HL
@@ -1652,7 +1748,7 @@ checkStartEnd:
 blockMove:
         ld hl,COPY_START    ;get start location
         call checkStartEnd  ;check start < end
-        jp c,displayERROR   ;if carry is set exit and error
+        jp c,displayError   ;if carry is set exit and error
         ld de,(COPY_DEST)   ;load DE with destination address
         sbc hl,de           ;see if destination is < or > than start
         jr nc,mvup          ;jump if start > destination
@@ -1671,6 +1767,7 @@ mvup:
         ret                 ;move done
 blockMoveParams:        
         .db 3                           ;Three parameters
+        .db "Enter "                    ;7seg Text
         .db "= Enter Parameters =",0    ;Parameter title
         .db "Start Address:",0          ;Text and Address
         .dw COPY_START
@@ -1921,11 +2018,13 @@ dumbCopy:
 
 ; Display ERROR/PASS on the 7Segs and wait for key press
 displayError:
-        or a                ;clear carry
         ld hl,errorText     ;error text
         jp display7Segs     ;display on 7Segs and exit when key is pressed
 displayPass:
         ld hl,passText      ;pass text
+        jp display7Segs     ;display on 7Segs and exit when key is pressed
+displayNoFn:
+        ld hl,noFnText      ;no function text
         jp display7Segs     ;display on 7Segs and exit when key is pressed
 
 ; Key scan routine for the Matrix Keyboard.  This routine detects up to
@@ -2053,11 +2152,15 @@ bpFlagCol:
 bpQuery:
         ld de,breakText     ;set display buffer to Breakpoint display
         call scanSegments   ;Multiplex the seven segments
+        in a,(SYS_INPUT)    ;Get System input
+        and 20H             ;check if GIMP is set
+        jr nz,bpNoStop      ;simulate GO pressed
         call scanKeys       ;Scan for key press
         jr nz,bpQuery       ;Repeat scan until key pressed
         jr nc,bpQuery       ;Skip if not new key
         cp K_GO             ;is key GO
         jr nz,$+9           ;No, check if AD key pressed
+bpNoStop:
         call restoreLCD     ;restore content of LCD from RAM
         call restoreRegisters ;clean up stack and exit back to code execution
         ret                 ;return back to last execution location
@@ -2220,7 +2323,7 @@ printCELRow:
         ld a,c              ;get location value
         add a,30H           ;adjust for ascii
         call charToLCD      ;send character to LCD
-        ld a,":"
+        ld a,COLON
         call charToLCD      ;send character to LCD
         ld b,2              ;two nibbles
 printHL:
@@ -2253,6 +2356,16 @@ QJmpToCEL:
         ld e,a
         ld bc,2             ;two bytes
         ldir
+; Check for RTC installed
+        ld a,(MCB)          ;get MCB
+        and MCB_RTC         ;is bit 6 set?
+        ret z               ;no just exit
+        dec de
+        dec de
+        ex de,hl            ;reset QJMP address and make it HL
+        ld a,l
+        sub 0A2H            ;take base off to get RTC slot
+        call RTCSetPRAM     ;save it to RTC
         ret
 
 getCELQuickJump:
@@ -2269,8 +2382,7 @@ getCELQuickJump:
         ld h,(hl)
         ld l,a
         ld (CEL),hl
-        ld (DATA_BASE),hl   ;update base address
-        ret
+        jp setDataBase    ;set the DATA_BASE variable
 
 ; Serial Enable.  Sets the TX line to high ready for serial transfer
 ; Input: none
@@ -2291,17 +2403,158 @@ serialDisable:
         out (SEGS),a        ;Clear segment leds
         ret
 
+; Real Time Clock (RTC) Routines
+; ------------------------------
+RTCQuestion:
+        .db "Press <GO> to Reset!",0
+; Nicely reset RTC PRAM by asking the question first!
+RTCReset:
+        ld hl,RTCQuestion
+        ld b,01H            ;clear LCD instruction
+        call commandToLCD   ;update LCD
+        call stringToLCD    ;Display Message on LCD
+        rst 08H             ;get key and wait
+        cp K_GO             ;is it GO?
+        ret nz              ;no, just exit
+        ;fall through to next routine
+
+; Reset Mon3 RTC PRAM data to default values.
+; Input: none
+; Destroys: none
+resetRTCPRAM:
+        ld bc,0800H         ;B=eight 2 byte addresses, C=slot 0
+        ld hl,USER_ADDR     ;default to 4000H
+RTCResetLoop1:
+        ld d,c              ;load slot
+        ld e,l              ;load LSB
+        call writeRTCByte   ;
+        inc c               ;next slot
+        ld d,c              ;load slot
+        ld e,h              ;load MSB
+        call writeRTCByte   ;
+        inc c               ;next slot
+        ld a,0CH            ;are we on the last 4 slots?
+        sub c
+        jr nz,$+4           ;no, ignore
+        ld h,00H            ;yes, set H=0
+        djnz RTCResetLoop1
+        call RTCfillRAM     ;fill RTC PRAM to Mon3 Ram
+
+        ;get checksum
+RTCSaveChecksum:
+        call getRTCChecksum ;get new checksum
+        ld d,30             ;load slot 30
+        ld e,a              ;load with new checksum
+        jp writeRTCByte     ;save checksum
+
+; Get two byte value from PRAM
+; Input: A = first slot value
+; Output: HL = two byte value where L=slot, H=slot+1
+RTCGetPRAM:
+        push af
+        ld d,a
+        call readRTCByte
+        ld l,a
+        pop af
+        inc a
+        ld d,a
+        call readRTCByte
+        ld h,a
+        ret
+
+; Set two byte value to PRAM
+; Input: A = first slot value
+;        HL = address of value to write to
+RTCSetPRAM:
+        push af
+        ld d,a
+        ld e,(hl)
+        call writeRTCByte
+        pop af
+        inc hl
+        inc a
+        ld d,a
+        ld e,(hl)
+        call writeRTCByte
+        jp RTCSaveChecksum
+
+; Copy the RTC PRAM to Mon3 RAM locations
+RTCFillRAM:
+        ;Set CEL Jump Table from PRAM (Ugly code here!!)
+        ld a,0              ;get 1st slot
+        call RTCGetPRAM
+        ld (CEL_QJMP),hl
+        ld a,2              ;get 3rd slot
+        call RTCGetPRAM
+        ld (CEL_QJMP+2),hl
+        ld a,4              ;get 5th slot
+        call RTCGetPRAM
+        ld (CEL_QJMP+4),hl
+        ;Set Copy/To/Dest from PRAM
+        ld a,6              ;get 7th slot
+        call RTCGetPRAM
+        ld (COPY_START),hl
+        ld a,8              ;get 9th slot
+        call RTCGetPRAM
+        ld (COPY_END),hl
+        ld a,10              ;get 11th slot
+        call RTCGetPRAM
+        ld (COPY_DEST),hl
+        ret
+
 ; Menu Initialise.  Set a custom user menu on the LCD. 
 ; Input: HL = Pointer to Menu configuration.
 ; Destroys: A, HL
 menuInit:
+        call menuReset      ;reset menu variables
+        push de             ;store DE
+        ld a,(MENU_IDX)     ;get menu index
+        inc a               ;move to next index
+        and 03H             ;reset to 0 if 4
+        ld (MENU_IDX),a     ;save it
+        add a,a             ;double it
+        ld de,MENU_CFG_D    ;get config depth table
+        add a,e             ;index table
+        ld e,a              ;to index postion
+        ld a,l              ;(DE) = HL
+        ld (de),a
+        inc de
+        ld a,h
+        ld (de),a
+        pop de              ;restore DE
+        ret
+
+; Reset the menu variables for setting up a new menu
+; Input: HL = Pointer to Menu configuration.
+; Destroys: A
+menuReset:
         xor a               ;clear A
         ld (MENU_POS),a     ;set menu position to first
         ld (MENU_SEL),a     ;set first item to be selected
         ld a,(hl)           ;get menu count
         ld (MENU_CNT),a     ;save menu count
+        ld (MENU_CFG),hl    ;store new menu configuration
+        ret
+
+; Revert the menu to the previous one if any.
+; Input: none
+; Destroy: A
+menuPop:
+        ld a,(MENU_IDX)     ;get current menu index
+        dec a               ;reduce by one
+        ld (MENU_IDX),a     ;save it back
+        jp m,switchMode     ;if a < 0, switch to Data mode and return
+        add a,a             ;double it
+        push hl             ;save HL
+        ld hl,MENU_CFG_D    ;get config depth table
+        add a,l             ;index table
+        ld l,a              ;to index postion
+        ld a,(hl)           ;get low byte
         inc hl
-        ld (MENU_CFG),hl    ;store menu configuration
+        ld h,(hl)           ;get high byte
+        ld l,a              ;make HL = (HL)
+        call menuReset      ;reset menu to new menu
+        pop hl              ;restore HL
         ret
 
 ; Menu Draw routine.  Title, then menu items from MENU_POS
@@ -2309,6 +2562,18 @@ menuDraw:
         ld b,01H            ;clear LCD instruction
         call commandToLCD   ;update LCD
         ld hl,(MENU_CFG)    ;load menu config
+        inc hl              ;move to seven segment text
+        ;set segment text
+        ld de,DISP_BUFF     ;store in Monitor 7seg Buffer
+        ld b,6
+LCDSegLoop:
+        ld a,(hl)
+        call ASCIItoSegment ;convert A to segment code
+        ld (de),a
+        inc hl
+        inc de
+        djnz LCDSegLoop
+        ;HL is now at menu title
         call stringToLCD    ;send Title to LCD
         ld a,(MENU_POS)     ;get current menu selection
         call menuIndex      ;set HL to menu config at index A
@@ -2376,7 +2641,7 @@ drawHLSkip:
 menuIndex:
         ld b,a              ;save index
         ld hl,(MENU_CFG)    ;get configuration
-        ld a,(hl)           ;skip menu title
+        ld a,(hl)           ;skip menu title and 7seg/count data (can't be zero)
         inc hl          
         or a                ;is it zero
         jr nz,$-3           ;repeat until zero found
@@ -2398,8 +2663,10 @@ indexLoop:
 ; Input: HL = Pointer to Menu configuration. (See Note)
 ; Destroys: A, HL
 ; Note: Menu configuration is as follows.  All strings are ZERO terminated!
-; <Menu Entries>, <Menu Text Title>, [<Menu Text Label>, <Menu Routine Address>]+
+; <Menu Entries>, <7Seg Text>, <Menu Text Title>,
+;        [<Menu Text Label>, <Menu Routine Address>]+
 ; EG: .db 2             ;Two menu items
+;     .db "Games "      ;7Seg Text
 ;     .db "Games",0     ;Menu title
 ;     .db "TEC Invaders",0  ;Text and Routine
 ;     .dw invaders
@@ -2419,8 +2686,10 @@ menuDriver:
 ; Input: HL = Pointer to Parameter configuration. (See Note)
 ; Note: Parameter configuration is as follows.  All strings are ZERO terminated!
 ; Parameter text can be no longer than 14 characters
-; <No. of Entries>, <Parameter Title Text>, [<Param Text Label>, <Param RAM Address>]+
+; <No. of Entries>, <7Seg Text>, <Parameter Title Text>,
+;      [<Param Text Label>, <Param RAM Address>]+
 ; EG: .db 3             ;Three parameters
+;     .db "Params"      ;7seg text
 ;     .db "= Enter Parameters =",0     ;Parameter title
 ;     .db "Start Address:",0  ;Text and Address
 ;     .dw COPY_START
@@ -2519,39 +2788,6 @@ setExpand:
         and -EXPAND-1       ; clear bit
         jr updateMode       ; set mode and exit
 
-; Toggle Caps Lock
-; Input: none
-; Destroy: A
-toggleCaps:
-        ld a,(CAPS_LOCK)    ; get caps lock mode status
-        xor CAPSLOCK        ; toggle bit
-        ld (CAPS_LOCK),a    ; return it back
-        ld a,(SYS_MODE)     ; get current state
-        xor CAPSLOCK        ; toggle bit
-updateCTL:
-        out (SYS_CTRL),a    ; update latch
-        ld (SYS_MODE),a     ; save state
-        ret
-
-; Toggle SHADOW
-; Input: none
-; Destroy: A
-toggleShadow:
-        ld a,(SYS_MODE)     ; get current state
-        xor SHADOW          ; toggle bit
-        jr updateCTL        ; update control
-
-; Toggle PROTECT
-; Input: none
-; Destroy: A
-toggleProtect:
-        ld a,(PROT_MODE)    ; get protect mode status
-        xor PROTECT         ; toggle bit
-        ld (PROT_MODE),a    ; return it back
-        ld a,(SYS_MODE)     ; get current state
-        xor PROTECT         ; toggle bit
-        jr updateCTL        ; update control
-
 ; Toggle EXPAND
 ; Input: none
 ; Destroy: A
@@ -2561,7 +2797,9 @@ toggleExpand:
         ld (XPND_MODE),a    ; return it back
         ld a,(SYS_MODE)     ; get current state
         xor EXPAND          ; toggle bit
-        jr updateCTL        ; update control
+        out (SYS_CTRL),a    ; update latch
+        ld (SYS_MODE),a     ; save state
+        ret
 
 ; Toggle Key Press Beep
 ; Input: none
@@ -2709,9 +2947,9 @@ kAlpEnd:
         ld a,b              ;save correct key
         ret                 ;exit
 
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
 ; Strings, Constants, JP tables etc.
-; ----------------------------------------------------------------------------------------------------------------
+; -----------------------------------------------------------------------------
         .org BASE_ADDR+1000H
 ;Initial defaults on Hard Boot (Copied to RAM)
 ;MCB = Bits 0,1 = Data Nibbles Entered
@@ -2719,6 +2957,8 @@ kAlpEnd:
 ;      Bit 3 = LCD=H/Segment=L mode
 ;      Bit 4 = Disassembler View=H/Data Entry View=L mode (for segment mode only)
 ;      Bit 5 = Menu=L/Parameter=H Format for Menu handler (for LCD mode only)
+;      Bit 6 = RTC Add-On Present=H
+;      Bit 7 = SD Card Add-On Present=H (not implemented yet)
 defaults:
         .dw USER_ADDR       ;Initial Editing Location
         .db 08H             ;Monitor Control Byte (Default LCD Menu Mode)
@@ -2730,13 +2970,13 @@ defaults:
         .db 00H             ;Matrix Second Key Buffer
         .db 00H             ;Byte Count
         .dw USER_ADDR       ;Disassembler/Editor Starting Location
-        .dw INTHandler      ;INT User jump routine (default RET)
-        .dw NMIHandler      ;NMI User jump routine (default RET)
+        .dw INTHandler      ;INT User jump routine (default RETI)
+        .dw NMIHandler      ;NMI User jump routine (default RETI)
         .db 00H             ;Menu postion
         .db 00H             ;Menu selection
         .db 00H             ;Menu count
         .dw mainMenuCFG     ;Menu configuration
-        .db 00H             ;Spare
+        .db 0FFH            ;Menu configuration depth index
 defaultsSize:    .equ $-defaults
 
 ;LCD Initiliastion codes
@@ -2762,17 +3002,17 @@ functionJumpTable:
         .dw getCELQuickJump ;2 = Get CEL Quick Jump 2
         .dw getCELQuickJump ;3 = Get CEL Quick Jump 3
         .dw intelHexLoad    ;4 = Intel Hex File Loader
-        .dw displayError    ;5 = Unused
-        .dw displayError    ;6 = Unused
-        .dw displayError    ;7 = Unused
-        .dw displayError    ;8 = Unused
-        .dw displayError    ;9 = Unused
-        .dw displayError    ;A = Unused
+        .dw displayNoFn     ;5 = Unused
+        .dw displayNoFn     ;6 = Unused
+        .dw displayNoFn     ;7 = Unused
+        .dw displayNoFn     ;8 = Unused
+        .dw displayNoFn     ;9 = Unused
+        .dw displayNoFn     ;A = Unused
         .dw dumbCopy        ;B = Block Backup
         .dw smartCopy       ;C = Smart Copy
         .dw switchView      ;D = Switch between Hex and Disassembly view
         .dw toggleExpand    ;E = Toggle Expand
-        .dw displayError    ;F = Unused
+        .dw displayNoFn     ;F = Unused
 
 ASCIISegTable:
         .db 00H,18H,0AH,0EEH,0A7H,5CH,2CH,02H       ;  ! " # $ % & '
@@ -2792,6 +3032,8 @@ passText:
         .db 4FH,6FH,0A7H,0A7H,00H,00H               ;PASS
 errorText:
         .db 0C7H,4BH,4BH,0EBH,4BH,00H               ;ERROR
+noFnText:
+        .db 6BH,0E4H,47H,64H,00H,00H                ;NoFn
 breakText:
         .db 0C3H,4FH,0EAH,00H,0E6H,4FH              ;CPU bP
 
@@ -2811,9 +3053,17 @@ CELJumpText:
 CELHelpText:
         .db "Press 1,2,3",0
 
+;Menu Go text
+menuGoText:
+        .db "Running at: ",0
+
+;Serial startup text if connected on Hard boot
+serialStartup:
+        .db "TEC-1G Connected",CR,LF,0
+
 ;Hard Reset Tune
 hardResetTune:
-        .db 01H,01H,00H,00H,12H,12H,17H,17H
+        .db 01H,01H,00H,00H,12H,12H,17H,17H         ;Funky Town!
         .db 16H,16H,12H,12H,00H,00H,00H,1FH
 ;Hard Reset Message
 hardResetMessage:
@@ -2825,6 +3075,7 @@ hardResetMessage:
 ;Main Menu Configuration
 mainMenuCFG:
         .db 13   ;thirteen entries
+        .db "TEC-1G"    ;7segment Text
            ;"                   " <- Max LCD entry width
         .db "= TEC-1G Main Menu =",0
 intelLabel:
@@ -2848,49 +3099,52 @@ intelLabel:
         .dw tmon
         .db "Music Routine",0
         .dw playTuneMenu
-        .db "Setting",0
+        .db "Settings",0
         .dw displaySettings
         .db "Credits",0
         .dw displayCredits
         .db " Version: ",REL_TXT,0
-        .dw 0000H
-
-menuSegmentData:
-        .db "TEC-1G"
+        .dw softBoot
 
 ;Settings Menu
 settingsCFG:
-        .db 3
+        .db 5
+        .db "Config"    ;7segment Text
            ;"                   " <- Max LCD entry width
         .db "=  TEC-1G Settings =",0
         .db "Toggle Key Beep",0
         .dw toggleBeep
         .db "Toggle Address Inc",0
         .dw toggleAutoAddress
+        .db "Configure RTC",0
+        .dw RTCSetup
+        .db "Reset RTC PRAM",0
+        .dw RTCReset
         .db "Toggle EXPAND",0
         .dw toggleExpand
 
 ;Credits Menu
 creditsCFG:
         .db 8   ;eight entries
+        .db "Credit"    ;7segment Text
            ;"                   " <- Max LCD entry width
         .db "=  TEC-1G Credits  =",0
         .db "Mark Jelic - Design",0
-        .dw 0000H
+        .dw softBoot
         .db "Brian Chiha - Coder",0
-        .dw 0000H
+        .dw softBoot
         .db "Craig Hart - TECGuy",0
-        .dw 0000H
+        .dw softBoot
         .db "Ian McLean - Tester",0
-        .dw 0000H
+        .dw softBoot
         .db "James Elphick - ^^^",0
-        .dw 0000H
+        .dw softBoot
         .db "- Original Design -",0
-        .dw 0000H
+        .dw softBoot
         .db "   by John Hardy   ",0
-        .dw 0000H
+        .dw softBoot
         .db "   and Ken Stone   ",0
-        .dw 0000H
+        .dw softBoot
 
         .org BASE_ADDR+1400H
 APITable:
@@ -2939,15 +3193,17 @@ APITable:
         .dw setShadow
         .dw setProtect
         .dw setExpand
-        .dw toggleCaps
-        .dw toggleShadow
-        .dw toggleProtect
-        .dw toggleExpand
+        .dw stringToSerial
+        .dw RTCAPI
+        .dw menuPop
+        .dw beepAlways  ;spare
         .dw random
         .dw setDisStart
         .dw getDisNext
         .dw getDisassembly
         .dw matrixScanASCII
+
+
 API_COUNT:  .equ    $-APITable  ;Total number of API functions
 
         .org BASE_ADDR+1500H
@@ -2984,11 +3240,11 @@ API_COUNT2:  .equ    $-APITable2  ;Total number of GLCD API functions
 
         .org BASE_ADDR+3FECH    ; 16k
 
-RELMAJOR:   .dw 07E7h	; 2023 - for the API
-RELMINOR:   .dw 0013h
+RELMAJOR:   .dw 07E8h	; 2024 - for the API
+RELMINOR:   .dw 0014h
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "2023.13"
+REL_TXT:    .equ "2024.14"
 
         .end
 

@@ -114,6 +114,7 @@ FREQ_TABLE:
 
 tuneParams:        
         .db 1                           ;Three parameters
+        .db "TUNE  "                    ;7seg text
         .db "= Enter Parameters =",0    ;Parameter title
         .db "Start Address:",0          ;Text and Address
         .dw DATA_FROM
