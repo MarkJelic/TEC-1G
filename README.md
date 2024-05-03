@@ -14,7 +14,7 @@
 
 ## News & Developments
 
-We have added a new section to the GitHub that agregates all the news and new items for the TEC-1G. [Follow this link]([https://github.com/MarkJelic/TEC-1G/News) for all the latest info.
+We have added a new section to the GitHub that agregates all the news and new items for the TEC-1G. [Follow this link](https://github.com/MarkJelic/TEC-1G/News) for all the latest info.
 
 # TEC-1G Introduction
 
