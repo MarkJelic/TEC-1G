@@ -8,13 +8,13 @@
 | [BOM Sourcing](/files/TEC-1G_BOM_v1.5.xlsx) | Bill of Materials with Sources  | 1.5 |
 | [Schematic](TEC-1G_Schematic_v1-13.pdf) | See what makes the TEC-1G tick | 1.13 |
 | [PCB Gerbers](/TEC-1G_Gerbers_OS_1-10.zip) | Gerbers of the PCB so you can print your own! | 1.10 |
-| [Monitors / ROMs](./ROMs/) | Download and burn the ROMs for your TEC-1G from this link! | 1.3 |
+| [Monitors / ROMs](./ROMs/) | Download and burn the ROMs for your TEC-1G from this link! | 1.4 |
 | [Graphical LCD](https://github.com/MarkJelic/TEC-1G/tree/main/TEC-Deck/Graphical_LCD) | The GLCD brings graphics capabilities to the TEC-1G! | 1.2 |
 | [GPIO Modules](./GPIO/) | See what modules can be attached to the GPIO connector on the LHS of the TEC-1G | 1.0 |
 
 ## News & Developments
 
-We have added a new section to the GitHub that agregates all the news and new items for the TEC-1G. [Follow this link](https://github.com/MarkJelic/TEC-1G/News) for all the latest info.
+We have added a new section to the GitHub that agregates all the news and new items for the TEC-1G. [Follow this link]([https://github.com/MarkJelic/TEC-1G/News) for all the latest info.
 
 # TEC-1G Introduction
 
