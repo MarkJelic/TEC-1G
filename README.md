@@ -12,7 +12,9 @@
 | [Graphical LCD](https://github.com/MarkJelic/TEC-1G/tree/main/TEC-Deck/Graphical_LCD) | The GLCD brings graphics capabilities to the TEC-1G! | 1.2 |
 | [GPIO Modules](./GPIO/) | See what modules can be attached to the GPIO connector on the LHS of the TEC-1G | 1.0 |
 
+## News & Developments
 
+We have added a new section to the GitHub that agregates all the news and new items for the TEC-1G. [Follow this link](https://github.com/MarkJelic/TEC-1G/News) for all the latest info.
 
 # TEC-1G Introduction
 
