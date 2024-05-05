@@ -1,5 +1,12 @@
 # Errata
 
+## TEC-1G Full Kit - FTDI Module
+5/May/2024: The FTDI Module, that provides serial via USB connection to your personal computer, is able to be used in both 3.3v and 5v systems with just a simple change of jumper settings on the module. It has come to light that these are by default jumpered to 3.3v and if installed on the TEC-1G in 3.3v mode, communications will be garbled and could damege the FTDI module. Please chnage those jumpers over to the 5v option before attaching it to the TEC-1.
+
+I recommend you hard-solder the module into place by first desoldering the installed RA pins, then soldering a new set of straight through pins on the underside, then attaching it to the TEC-1G main board. I also recommend hard-coupling the 5v option with little jumper wires. See the photo below for clarity. You should also cut off the 6 pins that allow programming of the FTDI module, to ensure clearance from any GPIO board installed above it.
+![FTDI_Module-Installed](https://github.com/MarkJelic/TEC-1G/assets/13119623/e6274ab8-48a5-4dfd-b4b8-a8880055fb49)
+
+
 ## (1) Anniversary (Blue, Purple and Black) & Open Source (v1.01 Green) Editions
 1/Nov/2023: Unfortunately a mistaken connection in the schematic (from v1.09 to v1.12) has made its way through to the PCBs which will stop the LCD from being operable. This was found by Tony Leff which I appreciate him finding it so quickly.
 
