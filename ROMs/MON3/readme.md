@@ -34,7 +34,7 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 |---|---|---|
 | Fn-RESET | Cold Boot the TEC-1G as if you just turned the Power On | 1.0 |
 | Fn-AD (ESC) | Main Menu | 1.0 |
-| Fn-GO (Enter) | TBA | TBA |
+| Fn-GO (Enter) | Help Menu for Shortcut Fn- Keys | TBA |
 | Fn-Minus (Left) | Delete current byte and SmartCopy™ RAM down | 1.0 |
 | Fn-Plus (Right) | Insert a $00 byte and SmartCopy™ RAM up | 1.0 |
 | Fn-0 | Configure QuickJump™ Locations | 1.3 |
@@ -42,7 +42,7 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-2 | QuickJump™ to Location 2 | 1.3 |
 | Fn-3 | QuickJump™ to Location 3 | 1.3 |
 | Fn-4 | Initiate Intel HEX Load | 1.2 |
-| Fn-5 | Send "Connection OK" to Serial Port | TBA |
+| Fn-5 | Set default Terminal Screen | TBA |
 | Fn-6 | TBA | TBA |
 | Fn-7 | TBA | TBA |
 | Fn-8 | Runs program starting from User Configured address #1 (Stored in RTC) | TBA |
