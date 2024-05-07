@@ -38,15 +38,15 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-Minus (Left) | Delete current byte and SmartCopy™ RAM down | 1.0 |
 | Fn-Plus (Right) | Insert a $00 byte and SmartCopy™ RAM up | 1.0 |
 | Fn-0 | Configure QuickJump™ Locations | 1.3 |
-| Fn-1 | QuickJump™ to Location 1 (Default is $4000 | 1.3 |
-| Fn-2 | QuickJump™ to Location 2 | 1.3 |
-| Fn-3 | QuickJump™ to Location 3 | 1.3 |
+| Fn-1 | QuickJump™ to Location 1 (Default is $4000. Stored in RTC) | 1.3 |
+| Fn-2 | QuickJump™ to Location 2 (Stored in RTC) | 1.3 |
+| Fn-3 | QuickJump™ to Location 3 (Stored in RTC) | 1.3 |
 | Fn-4 | Initiate Intel HEX Load | 1.2 |
-| Fn-5 | Set default Terminal Screen | TBA |
-| Fn-6 | TBA | TBA |
-| Fn-7 | TBA | TBA |
-| Fn-8 | Runs program starting from User Configured address #1 (Stored in RTC) | TBA |
-| Fn-9 | Runs program starting from User Configured address #2 (Stored in RTC) | TBA |
+| Fn-5 | Set default Terminal Output device. | TBA |
+| Fn-6 | | TBA |
+| Fn-7 | | TBA |
+| Fn-8 | | TBA |
+| Fn-9 | | TBA |
 | Fn-A | Restore Backup (Performs reverse of Fn-B) | TBA |
 | Fn-B | Backup a block of memory from one location to another | 1.1 |
 | Fn-C | SmartCopy™ a block of code from one location to another  | 1.0 |
