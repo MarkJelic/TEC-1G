@@ -45,7 +45,7 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-5 | Set default Terminal Output device. | TBA |
 | Fn-6 | | TBA |
 | Fn-7 | | TBA |
-| Fn-8 | | TBA |
+| Fn-8 | Block Fill (Start, End, Value) | TBA |
 | Fn-9 | | TBA |
 | Fn-A | Restore Backup (Performs reverse of Fn-B) | TBA |
 | Fn-B | Backup a block of memory from one location to another | 1.1 |
