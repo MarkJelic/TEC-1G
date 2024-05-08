@@ -20,5 +20,5 @@ The most critcal part of any circuit is stable power, so this is the next part w
 
 
 
-## 13. [Jumpers & Switches](./jumpers+switches.md)
+## 13. [Jumpers & Switches](../jumpers+switches.md)
 Skipping ahead a little... You've finished soldering it all up, and you want to power it on... But what do all the Jumpers and Switches do?
