@@ -8,7 +8,7 @@ The parts are all readily available through many suppliers as detailed in the Bi
 ## 1. [Required and Suggested Tools and Materials](./Tools.md)
 This part is obvious and you probably have everything you need if you have an interest in this kind of hobby.
 
-## 2. [Compononents 7 Identifiers](./Components.md)
+## 2. [Compononents & Identifiers](./Components.md)
 Some components can be hard to identify, and most are critical in the orientation required to install them. Here is a quick overview.
 
 ## 3. [The Fullisik Keyboard](./Fullisik.md)
