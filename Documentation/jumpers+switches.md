@@ -22,6 +22,7 @@ You CANNOT have both the SPEED switch and the Max4544 chip installed.<br>
 
 ## Speaker Jumper & LEDs<br>
 No need to place a shunt on the Groundwalker jumper, unless you have cut the track on the bottom of the PCB.<br>
+You CANNOT have a 10Bar LED for the Status LEDs, and have the individual Speaker and Halt LEDs installed. It's one or the other. If you want the individual LEDs, use the 8Bar provided in the kit, or use a 10Bar and cut the legs off the outside ones.<br>
 ![Speaker](images/Jumpers_SPKR.jpg)<br>
 
 ## Config Switch
