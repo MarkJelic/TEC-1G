@@ -14,4 +14,4 @@ The leg with the DOT above it is pin 1. The numbers after it give you the resist
 
 ## Diodes
 Diodes of all kinds have a solid band printed around one end. This indicates the Cathode. (I think of the band as the upright of the letter K)<br>
-![EPROM ZIF Socket](images/diode400x.jpg)<br>
+![EPROM ZIF Socket](images/diode_400x.jpg)<br>
