@@ -65,10 +65,11 @@ Part of the PRAM is set aside for MON3's use. 14 User Bytes are free for softwar
 |07| Quick Backup - Start address |
 |09| Quick Backup - End address |
 |11| Quick Backup - Destination address |
+|12| Mon3 Reserved |
 |13| Mon3 Reserved |
 |14| Mon3 Reserved |
 |15| Mon3 Reserved |
-|16| Mon3 Reserved |
+|16| User Byte |
 |17| User Byte |
 |18| User Byte |
 |19| User Byte |
