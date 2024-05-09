@@ -49,4 +49,8 @@ Print your own PCB by using the Gerber file in this folder at your favourite PCB
 
 RV1 Vertical Trimpot is optional, and R1 can range from 0 Ohms (wire link) to 470 Ohms to adjust backlight brightness.
 
+## GLCD Kit
 
+If you want the easiest solution of getting a GLCD for your TEC-1G, you can purchase the entire kit or just the PCB from Tindie!
+
+<a href="https://www.tindie.com/stores/tec1/?ref=offsite_badges&utm_source=sellers_mjelic&utm_medium=badges&utm_campaign=badge_large"><img src="https://d2ss6ovg47m0r5.cloudfront.net/badges/tindie-larges.png" alt="I sell on Tindie" width="200" height="104"></a>
