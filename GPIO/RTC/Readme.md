@@ -49,8 +49,6 @@ It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 ![TEC-1G GPIO RTC](pictures/TEC-1G_GPIO_RTC-Board.jpg)
 
 ## How Do You Use It?
-The clever people at <b>TEC-1 Inc.</b> have released an API as part of MON3.
-This will allow you to set the current time, read the current time, save and read bytes out of the battery backed RAM.
-All this and more, <b>Coming Soon®...</b>
+Version 1.4 of MON3 has some new APIs included that allow you to set and retreive the time, as we as set and retreive the battery backed bytes in the DS1302 chip. Brian has also modified the main menu, so that under the Settings Menu, there is an option to configure the Real Time Clock.
 
-Take a read of the [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) sheet to get a handle on what commands you can send it.
+Here is the data sheet if you're interested to find out exactly how it works: [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) 
