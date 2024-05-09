@@ -20,5 +20,5 @@ If you have opted for the pedestrian-level keyboard using the 12mm Tactiles, the
 The most critcal part of any circuit is stable power, so this is the next part we fopcus on so that all the subsequesnt soldering you do can be tested for shorts and the like.
 
 
-## 13. [Jumpers & Switches](../jumpers+switches.md)
+## 13. [Jumpers & Switches](./Jumpers+Switches.md)
 Skipping ahead a little... You've finished soldering it all up, and you want to power it on... But what do all the Jumpers and Switches do?
