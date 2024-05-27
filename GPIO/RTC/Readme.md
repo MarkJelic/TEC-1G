@@ -3,10 +3,13 @@
 |---|---|---|
 | [Schematic](TEC-1G_GPIO_RTC_Schematic_v1-0.pdf) | It's a simple circuit, but it's honest timekeeping. | 1.0 |
 | [Parts List](./Partslist.md) | What you need to buy (and comes in the Kit) | 1.0 |
-| [Assembly Instructions](./Assembly.md) | Coming Soon... | 1.0 |
+| [Assembly Instructions](./Assembly.md) | Watch the Build Video! | 1.0 |
 | [PCB Gerbers]() | Coming Soon... | 1.0 |
 | [Sample Programs](./Programs/) | Sample code and API reference | 1.0 |
 | [RTC_Programming_notes](./RTC_Programming_notes.md) | Programmers notes | 1.0 |
+
+## Build Video on YouTube!
+Watch Mark build the Real Time Clock and come across a problem! https://www.youtube.com/watch?v=rAuSyqJuico
 
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
