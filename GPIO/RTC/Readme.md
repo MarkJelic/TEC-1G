@@ -9,7 +9,9 @@
 | [RTC_Programming_notes](./RTC_Programming_notes.md) | Programmers notes | 1.0 |
 
 ## Build Video on YouTube!
-Watch Mark build the Real Time Clock and come across a problem! https://www.youtube.com/watch?v=rAuSyqJuico
+Watch Mark build the Real Time Clock and come across a problem! https://www.youtube.com/watch?v=rAuSyqJuico<br>
+The last 5 minutes of the video are crucial to watch, as there is some code you have to run, after installing the battery, to make the RTC initialise correctly.
+
 
 ## What Does it Do?
 It keeps accurate real time, once set, and is battery backed. So even after you switch your TEC-1G off, 
@@ -53,5 +55,7 @@ It can be a CLOCK! That's what is can do! Now stop picking on my hobby! ;)
 
 ## How Do You Use It?
 Version 1.4 of MON3 has some new APIs included that allow you to set and retreive the time, as we as set and retreive the battery backed bytes in the DS1302 chip. Brian has also modified the main menu, so that under the Settings Menu, there is an option to configure the Real Time Clock.
+
+<b>Please watch the Last 5 minutes of the video linked above to see the code required to activate the RTC.</b>
 
 Here is the data sheet if you're interested to find out exactly how it works: [DS1302 Spec Sheet](./DS1302_RTC_Timekeeper.pdf) 
