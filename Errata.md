@@ -1,5 +1,15 @@
 # Errata
 
+## TEC-1G Full Kit - Z80Bus Headers
+2/Jun/2024: We have had a rethink on the right-most Z80Bus connector, found on the right edge of the PCB. I used to supply a right-angled version of that connector, allowing you to plug in directly any Z80Bus cards and have them parallel to the main PCB... Which is fine if you keep the TEC-1G flat on a table. But with the advent of cases being 3D printed to elevate and ange the PCB to face you, having a Z80Bus card floating out to the right, unsupported, was not a good idea. Hence, we changed it to a Vertical style of IDC connector. This still allows you to plug in a Z80Bus card directly, without the strain of gravity on the pins. Also, if you are using an X4 Board, then you can easily use an IDC cable to connect the two PCBs, and have the X4 lay flat on the table.
+
+Also, the Z80Bus connector set next to the Z80 does not need to be an IDC socket as such, but the outer edge one *does*, to ensure firm connections of cards or cables. The inner one is only used for TEC Deck cards which use simple pin headers. Hence, please install the 40 pin headers supplied in the kit, as pictured below.
+
+The silkscreen on the board will be updated in future print runs of the PCB.
+
+![Z80Bus Headers](/pictures/Z80Bus_Headers.jpg)
+
+
 ## TEC-1G Full Kit - FTDI Module
 5/May/2024: The FTDI Module that provides serial via USB connection to your personal computer, is able to be used in both 3.3v and 5v systems with just a simple change of jumper settings on the module. It has come to light that these are by default jumpered to 3.3v and if installed on the TEC-1G in 3.3v mode, communications will be garbled and could damege the FTDI module. Please change those jumpers over to the 5v option before attaching it to the TEC-1G.
 
