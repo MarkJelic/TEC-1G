@@ -6,7 +6,7 @@
 ; Written by Craig Hart and released under the GPL v3 license
 ;
 ; -----------------------------------------------------------------------------
-
+        .org 8000H
 ; setup system
 tmon:
         ld c,beep_          ; make a beep

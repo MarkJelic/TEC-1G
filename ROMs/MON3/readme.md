@@ -13,10 +13,10 @@ Please download the **MON3 User Guide** linked in the File Links, below.
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [MON3 for TEC-1G](./MON3-1G_BC24-14.bin) | Download and burn to a 16k ROM | 1.4 |
-| [MON3 Change Log](./release_notes.md) | MON3 Change Log and Release Notes | 1.4 |
-| [MON3 User Guide](./MON3_User_Guide_v1.4.pdf) | MON3 User Guide in PDF format | 1.4 |
-| [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.4 |
+| [MON3 for TEC-1G](./MON3-1G_BC24-15.bin) | Download and burn to a 16k ROM | 1.5 |
+| [MON3 Change Log](./release_notes.md) | MON3 Change Log and Release Notes | 1.5 |
+| [MON3 User Guide](./MON3_User_Guide_v1.5.pdf) | MON3 User Guide in PDF format | 1.5 |
+| [MON3 API Guide](./api.md) | A summary of the APIs available in MON3 | 1.5 |
 
 ## A Brief Functional Description
 The User Guide is a great resource that we recommend you print off and have at hand when writing
@@ -42,15 +42,15 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-2 | QuickJump™ to Location 2 (Stored in RTC) | 1.3 |
 | Fn-3 | QuickJump™ to Location 3 (Stored in RTC) | 1.3 |
 | Fn-4 | Initiate Intel HEX Load | 1.2 |
-| Fn-5 | Set default Terminal Output device. | TBA |
+| Fn-5 | Toggle Terminal Output to GLCD. | 1.5 |
 | Fn-6 | | TBA |
 | Fn-7 | | TBA |
-| Fn-8 | Block Fill (Start, End, Value) | TBA |
+| Fn-8 | NOP Block Fill (Start, End, Value) | 1.5 |
 | Fn-9 | | TBA |
-| Fn-A | Restore Backup (Performs reverse of Fn-B) | TBA |
+| Fn-A | Restore Backup (Performs reverse of Fn-B) | 1.5 |
 | Fn-B | Backup a block of memory from one location to another | 1.1 |
 | Fn-C | SmartCopy™ a block of code from one location to another  | 1.0 |
-| Fn-D | Dissassembly View | 1.0 |
+| Fn-D | Disassembly View | 1.0 |
 | Fn-E | Expand flag toggled (Bank 2, Pages 0 & 1)  | 1.1 |
 | Fn-F | File Manager (SD Card) | TBA |
 

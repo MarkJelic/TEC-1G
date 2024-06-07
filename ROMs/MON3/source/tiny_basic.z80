@@ -70,7 +70,7 @@ ESC:             .equ     1BH             ; Escape
 DEL:             .equ     7FH             ; Delete
 
 ;LOCAL VARIABLES
-OCSW:            .equ     0900H           ;SWITCH FOR OUTPUT
+OCSW:            .equ     17C0H           ;SWITCH FOR OUTPUT
 CURRNT:          .equ     OCSW+1          ;POINTS FOR OUTPUT
 STKGOS:          .equ     OCSW+3          ;SAVES SP IN 'GOSUB'
 VARNXT:          .equ     OCSW+5          ;TEMP STORAGE
@@ -83,14 +83,14 @@ LOPPT:           .equ     OCSW+17         ;TEXT POINTER
 RANPNT:          .equ     OCSW+19         ;RANDOM NUMBER POINTER
 TXTUNF:          .equ     OCSW+21         ;->UNFILLED TEXT AREA
 TXTBGN:          .equ     OCSW+23         ;TEXT SAVE AREA BEGINS
-TXTEND:          .equ     1E00H           ;TEXT SAVE AREA ENDS
+TXTEND:          .equ     3E00H           ;TEXT SAVE AREA ENDS
 
 ;STACK, VARIABLES AND INPUT BUFFER
-VARBGN:          .equ     1E00H           ;VARIABLE LOCATION (SIZE OF 55)
-BUFFER:          .equ     1E37H           ;INPUT BUFFER (SIZE OF 80)
-BUFEND:          .equ     1E87H           ;BUFFER END
-STKLMT:          .equ     1E88H           ;TOP LIMIT FOR STACK
-STACK:           .equ     1EFFH           ;STACK
+VARBGN:          .equ     3E00H           ;VARIABLE LOCATION (SIZE OF 55)
+BUFFER:          .equ     3E37H           ;INPUT BUFFER (SIZE OF 80)
+BUFEND:          .equ     3E87H           ;BUFFER END
+STKLMT:          .equ     3E88H           ;TOP LIMIT FOR STACK
+STACK:           .equ     3EFFH           ;STACK
 
 ;*************************************************************
 ; *** ZERO PAGE SUBROUTINES ***
@@ -1154,6 +1154,9 @@ CHKSGN:
         RET P
 CHGSGN:
         LD A,H                          ;*** CHGSGN ***
+        OR L
+        RET Z
+        LD A,H
         PUSH AF
         CPL                             ;CHANGE SIGN OF HL
         LD H,A
@@ -1333,13 +1336,13 @@ GL3:
         CP BUFFER & 0FFH                ;BUT DO WE HAVE ANY?
         JR Z,GL4                        ;NO, REDO WHOLE LINE
         DEC DE                          ;YES, BACKUP POINTER
-        LD A,5CH                        ;AND ECHO A BACK-SLASH
+        LD A,BKSP                       ;AND ECHO A BACK SPACE
         CALL RST10TB
         JR GL1                          ;GO GET NEXT INPUT
 GL4:
         CALL CRLF                       ;REDO ENTIRE LINE
-        LD A,VT                         ;CR, LF AND UP-ARROW
-        CALL RST10TB
+        ; LD A,VT                         ;CR, LF AND UP-ARROW
+        ; CALL RST10TB
         LD A,">"
         JR GETLN
 FNDLN:
@@ -1382,7 +1385,7 @@ FNDSKP:
 ; 'PRTSTG' PRINTS A STRING POINTED BY DE.  IT STOPS PRINTING
 ; AND RETURNS TO CALLER WHEN EITHER A CR IS PRINTED OR WHEN
 ; THE NEXT BYTE IS THE SAME AS WHAT WAS IN A (GIVEN BY THE
-; CALLER).  OLD A IS STORED IN B, OLD B IS LOST.
+; CALLER).  OLD A IS STORED IN C, OLD C IS LOST.
 ;
 ; 'QTSTG' LOOKS FOR A UNDERSCORE, SINGLE QUOTE, OR DOUBLE
 ; QUOTE.  IF NONE OF THESE, RETURN TO CALLER.  IF UNDERSCORE,
@@ -1412,6 +1415,25 @@ FNDSKP:
 
 PRTSTG:
         LD B,A                          ;*** PRTSTG ***
+        CALL getGLCDTerm
+        OR A                            ;CHECK VALUE
+        JR Z,PS1
+        PUSH BC
+        LD C,B                          ;*** PRTSTG ***
+        PUSH DE
+        PUSH HL
+        CALL sendStringToLCD            ;SEND TO GLCD TERMINAL
+        POP HL
+        POP DE
+        POP BC
+PS0:
+        LD A,(DE)                       ;ADJUST DE (UGGHH)
+        INC DE
+        CP B
+        RET Z
+        CP CR
+        JR NZ,PS0
+        RET
 PS1:
         LD A,(DE)                       ;GET A CHARACTER
         INC DE                          ;BUMP POINTER
@@ -1515,7 +1537,7 @@ PRTLN:
         JP PRTSTG
 PRTCHR:
         LD A,L                          ;GET THE NUMBER
-        AND DEL                         ;ONLY LOOK AT 0-128
+        ;AND DEL                         ;ONLY LOOK AT 0-128
 PC1:
         JP RST10TB                        ;PRINT VALUE IN A
 PRTASC:
@@ -1753,8 +1775,8 @@ CI2:
         RST 00H                         ;RESTART MONITOR AND EXIT
 
 
-MSG1:   .db   CS,'Z80 TINY BASIC 2.2b',CR       ;CLEAR SCREEN AND BOOT MESSAGE
-MSG2:   .db   'TEC-1G VERSION BY B CHIHA, 2023',CR
+MSG1:   .db   'TEC-1G TINY BASIC ',CR       ;CLEAR SCREEN AND BOOT MESSAGE
+MSG2:   .db   'CRACKED BY B CHIHA ',23,CR
 
 ;*************************************************************
 ;
@@ -1942,9 +1964,21 @@ TX_RDY:
     ; This routine sends the character to the output port.  Port is always
     ; ready as init and last part sets output port to high for two stop bits
 
-        PUSH AF   
+        PUSH AF
         PUSH BC   
-        PUSH HL   
+        PUSH HL 
+        PUSH DE 
+        PUSH AF   
+        CALL getGLCDTerm                ;CHECK OUTPUT
+        OR A                            ;CHECK VALUE
+        JR Z,SERIAL
+GLCD:
+        POP AF
+        LD C,A
+        CALL sendCharToLCD
+        JR TXEXIT
+SERIAL:
+        POP AF
         LD HL,BAUD                      ;HL HOLDS THE BIT TIME DELAY
         LD C,A                          ;STORE CHRACTER IN C FOR BIT SENDING   
         XOR A                           ;TRANSMIT THE START BIT 
@@ -1963,6 +1997,8 @@ NXTBIT:
         OUT (DIGITS),A                              
         call timeDelay
         call timeDelay
+TXEXIT:
+        POP DE
         POP HL   
         POP BC   
         POP AF   
@@ -1979,12 +2015,23 @@ RX_RDY:
 
         PUSH BC   
         PUSH HL
+        PUSH DE
+        CALL getGLCDTerm                ;CHECK INPUT
+        OR A                            ;CHECK VALUE
+        JR Z,SERIALI
+GLCDI:
+        CALL matrixScan                 ;READ MATRIX KEYBOARD
+        CALL parseMatrixScan            ;PARSE KEY PRESS
+        JR NC,NOCHAR
+        JR RX_EXIT                      ;EXIT
+SERIALI:
         LD B,20H                        ;CHECK FOR START BIT 20H TIMES BEFORE EXITING
 LSTARTBIT:      
         IN A,(SYS_INPUT)   
         BIT 7,A   
         JR Z,GETCHAR                    ;START BIT FOUND, GET CHARACTER
         DJNZ LSTARTBIT                   ;KEEP CHECKING FOR START BIT
+NOCHAR:
         XOR A                           ;SET ZERO FLAG
         JR RX_EXIT                      ;EXIT
 
@@ -2008,11 +2055,11 @@ GETBITS:
         LD A,C   
         OR A                            ;CLEAR CARRY FLAG AND RESET ZERO FLAG
 RX_EXIT:
+        POP DE
         POP HL   
         POP BC
         RET
 
-        ds 07H                         ;FILL TO MAKE EVEN
 ;-------------------------------------------------------------------------------
 
 ;///////////////////////////////////////////////////////////////////////////////

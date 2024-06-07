@@ -38,6 +38,7 @@
 ;
 ;
         
+        
 ; Modifiable values.  Thse three values can be modified to suit your own set up
 ; GLCD_INST and GLCD_DATA are the output ports to send an Instruction or Data value.
 ; V_DELAY_US is the minimum delay needed for a command to be processed by the
@@ -45,9 +46,13 @@
         
 ;Port 7 on TEC is connected to LCD Enable (Pin 6)
 ;A7 is connected to Register select (Pin 4).  (A7=0 for Instruction, A7=1 for Data)
-V_DELAY_US: EQU 000AH   ;Delay for 76us on your system
+V_DELAY_US: .equ 000AH   ;Delay for 76us on your system
 
 ; Dont need to modify anything else below.
+UP:     .equ 05H                 ; Up Arrow
+DN:     .equ 06H                 ; Down Arrow
+FF:     .equ 0CH                 ; Form Feed
+CURSOR: .equ 8FH                 ; Cursor
         
 ; Initialise LCD
 initLCD:
@@ -62,12 +67,16 @@ NEXT_CMD:
         LD DE, 0140H            ;1.6 ms
         CALL delayMS
         
+        LD HL,GBUF              ;Set viewport
+        LD (VPORT),HL           ;to GBUF
+
         CALL clearGrLCD
         
 ; Clears the Graphics Memory Buffer
 clearGBUF:
-        LD HL, GBUF
-        LD DE, GBUF + 1
+        LD HL, (VPORT)
+        LD DE, (VPORT)
+        INC DE
         XOR A
         LD (HL), A
         LD BC, 03FFH
@@ -122,7 +131,7 @@ setGrMode:
         LD A, 36H
         OUT (GLCD_INST), A
         JP delayUS
-
+        
 ; Set Text Mode
 setTxtMode:
         LD A, 30H
@@ -573,7 +582,8 @@ SET_GBUF:
         ADD HL, HL
         ADD HL, HL
         ADD HL, HL
-        LD DE, GBUF - 1
+        LD DE, (VPORT)
+        DEC DE
         ADD HL, DE
         
         LD A, B
@@ -596,7 +606,7 @@ SHIFT_BIT:
 ;Main draw routine.  Moves GBUF to LCD and clears buffer
 ;Destroys all
 plotToLCD:
-        LD HL, GBUF
+        LD HL, (VPORT)
         LD C, 80H
 PLOT_ROW:
         LD A, C
@@ -627,11 +637,11 @@ PLOT_COLUMN:
         
 ; Print ASCII text on a given row
 ; Inputs: C = 0 to 3 Row Number
-;         DB "String" on next line, terminate with 0
+;         .db "String" on next line, terminate with 0
 ; EG:
 ;   LD C,2
 ;   CALL printString
-;   DB "This Text",0
+;   .db "This Text",0
 ;
 printString:
         LD B, C
@@ -707,16 +717,390 @@ setBufNoClear:
         LD (CLRBUF), A
         RET
 
-;Serial/Paralled Communication routines
-;Send information to the LCD screen via SERIAL or PARALLEL connection.  Parallel is straight
-;forward.  Just send the Byte in the Accumilator to the relevante Instruction or Data port.
-;Then call a delay for that byte to be processed by the LCD.
-;For Serial communication, three Bytes are to be sent using the SPI protocol.
-;The first byte is a synchronise/configuration byte.  This sets
-;the Data/Instruction register bit.  The second and third bytes is the actual data to send.
-;It is split into two bytes with 4 bits of data set at the upper nibble and zeros for the rest.
-;A maximum of 256 Bytes of Data information can be send with only one Synchronise Byte.  The
-;LCD Data routine doesn't send the sync byte.  
+;Initialise the GLCD Terminal
+;Clears the GBUF, sets cursor to top left and displays cursor.
+;This must be called prior to any Terminal routine.  This routine
+;will as call INIT_LCD.
+initTerminal:
+        CALL initLCD            ;Clear LCD GBUF
+        CALL setGrMode          ;Graphics mode
+        CALL setBufNoClear      ;Retain screen
+        LD HL,TGBUF             ;Reset VPORT and BUFF_TOP to TGBUF
+        LD (VPORT),HL           ;to GBUF
+        LD (TBUF),HL
+        CALL clearGBUF
+        XOR A                   ;Clear A
+        LD (CURSOR_ON),A        ;Cursor ON
+        LD (INVERSE),A          ;Inverse OFF
+        LD BC,0000H
+        CALL setCursor          ;Move cursor to top left
+        JR DRAW_CURSOR          ;Draw Cursor and exit
+
+;Send or handle ASCII characters to the GLCD screen.  This routines displays
+;ASCII charcters to the GLCD screen and handles some special control characters
+;It also handles srolling history of 10 lines.  Characters are drawn at the 
+;current cursor position.  Cursor increments if characger is drawn.
+;       CR / 0DH = will move the cursor down and reset it column
+;       LF / 0AH = is ignored
+;       FF / 0CH = clears the terminal (restarts)
+;       BS / 08H = will delete the character at the cursor and move cursor back one
+;       HT / 09H = will TAB 4 spaces
+;       UP / 05H = will scroll up one line if any
+;       DN / 06H = will scroll down one line if any
+;Input: C = ASCII charcter to send to the GLCD screen.
+;       C = 0  cursor drawn only
+sendCharToLCD:
+        ;Check for special characters
+        LD A,C
+        OR A                    ;Zero?
+        JR Z,DRAW_CURSOR
+DO_SCRL_UP:
+        CP UP                   ;Up Arrow
+        JR NZ,DO_SCRL_DN
+        XOR A
+        CALL MOVE_VPORT
+        JP plotToLCD
+DO_SCRL_DN:
+        CP DN                   ;Down Arrow
+        JR NZ,DO_CR
+        LD A,1
+        JR $-12                 ;Move VPORT above
+DO_CR:
+        ;Key is now a drawing character, reset VPORT first
+        LD HL,TGBUF
+        LD (VPORT),HL
+        CP LF      ;LF
+        RET Z
+        CP CR      ;CR
+        JR NZ,DO_FF
+        LD D,SPACE              ;Clear Cursor
+        CALL drawGraphic
+        CALL INC_ROW
+        LD (CURSOR_YS),A        ;Save start row
+        JR DRAW_CURSOR
+DO_FF:
+        CP FF                   ;Form Feed / Clear Screen
+        JR Z,initTerminal       ;Reset All.
+DO_BS:
+        CP BKSP                 ;Backspace
+        JR NZ,DO_TAB
+        LD D,SPACE              ;Space
+        CALL drawGraphic
+        CALL DEC_CURSOR
+        JR DRAW_CURSOR
+DO_TAB:
+        CP TAB                  ;Horizontal Tab
+        JR NZ,DO_CHAR
+        LD D,SPACE              ;Space
+        CALL drawGraphic
+        CALL INC_CURSOR
+        CALL INC_CURSOR
+        CALL INC_CURSOR
+        CALL INC_CURSOR
+        JR DRAW_CURSOR
+DO_CHAR:
+        LD D,A                  ;get character
+        CALL drawGraphic
+        CALL INC_CURSOR
+DRAW_CURSOR:
+        LD A,(CURSOR_ON)
+        OR A
+        LD D,SPACE              ;Space
+        JR NZ,$+4               ;Skip cursor draw
+        LD D,CURSOR             ;Cursor
+        CALL drawGraphic
+        JP plotToLCD          ;Plot screen and exit
+
+;Send a string of characters to the GLCD.  Prints a string pointed 
+;by DE.  It stops printing and returns when either a CR is printed or
+;when the next byte is the same as what is in register C
+;Inputs: DE = address of string to print
+;        C = character to stop printing.
+;Destroy: All
+sendStringToLCD:
+        LD B,C                  ;Save cp in B
+NEXT_CHAR:
+        LD A,(DE)               ;Get character
+        INC DE                  ;Move pointer
+        CP B                    ;Same as B?
+        JR Z,DRAW_CURSOR        ;Yes exit and plot LCD screen
+        CP CR                   ;Is it a CR?
+        JR Z,DO_CR              ;Yes do a CR and plot LCD screen and exit
+        CP FF                   ;Is it a FF?
+        JR Z,DO_FF              ;Yes do a Form Feed and plot LCD screen and exit
+        EXX                     ;Save bulk registers
+        LD D,A                  ;Get Character
+        CALL drawGraphic        ;Draw the character
+        CALL INC_CURSOR         ;Move cursor by one
+        EXX                     ;Restore bulk registers
+        JR NEXT_CHAR            ;Repeat for next character
+        RET     
+
+;Display a register in ASCII on the GLCD
+;Input: C = value to convert and display
+sendRegToLCD:
+        LD A,C
+        CALL DRAW_A             ;Do the conversion
+        JR DRAW_CURSOR          ;exit and plot LCD screen
+DRAW_A:
+        PUSH AF                 ;Save AF
+        RRCA                    ;move high
+        RRCA                    ;nibble to low nibble
+        RRCA
+        RRCA
+        CALL NIBBLE_TO_LCD      ;Convert and display
+        POP AF                  ;Restore AF
+NIBBLE_TO_LCD:
+        AND 0FH                 ;mask out high nibble
+        ADD A,90H               ;convert to 
+        DAA                     ;ASCII
+        ADC A,40H               ;using this
+        DAA                     ;amazing routine
+        LD D,A                  ;get character
+        CALL drawGraphic       ;Draw the character
+        CALL INC_CURSOR         ;Move cursor by one
+        RET
+
+;Display the register HL in ASCII on the GLCD
+;Input: HL = value to convert and display
+sendHLToLCD:
+        PUSH HL                 ;Save HL
+        LD A,H                  ;get H
+        CALL DRAW_A             ;Do the conversion
+        POP HL
+        LD A,L                  ;get L
+        CALL DRAW_A             ;Do the conversion
+        JR DRAW_CURSOR          ;exit and plot LCD screen
+
+;Set the Graphic cursor position
+;Inputs: BC = X,Y where X = 0..127, Y = 0..63
+;Ignores update if one of the X,Y values are out of range
+;Destroys: A
+setCursor:
+        ;Check range. Exit if X,Y out of range
+        LD A, C
+        CP 40H
+        RET NC
+        LD A, B
+        CP 80H
+        RET NC
+        ;Set Cursor and initial start row
+        LD (CURSOR_XY),BC       ;Save cursor
+        LD A,C
+        LD (CURSOR_YS),A        ;And initial Y Start
+        RET
+
+;Increment the cursor by one font character
+;A Font Character is 6x6 Pixels.  Move column 6 across until it can't then reset
+;column back to 0 and move 6 down.
+;If can't go down any further then keep on last row but move column back to 0
+;Font Characters maximum 20 across and 10 down
+;Output: Carry Set = No screen overflow
+;Destroys: A
+INC_CURSOR:
+        LD A,(CURSOR_X)         ;Get X
+        ADD A,6                 ;Add 6
+        CP 126                  ;Is it >= 126?
+        JR NC,INC_ROW           ;Yes, reset column and increment row
+        LD (CURSOR_X),A         ;Save new column
+        RET
+INC_ROW:
+        XOR A
+        LD (CURSOR_X),A         ;reset column to 0
+        LD A,(CURSOR_Y)         ;get row
+        ADD A,6                 ;Add 6
+        CP 60                   ;Is it >= 60
+        JR C,SAVE_ROW           ;No, save new row
+        PUSH AF
+        CALL SHIFT_BUFFER       ;Shift buffer up one row
+        POP AF
+        SUB 6                   ;overflow, just leave the same
+SAVE_ROW:
+        LD (CURSOR_Y),A         ;Save new row
+        RET
+
+;Shift the graphics buffer (GBUF) into the scroll buffer (SBUF) by
+;one row (6 lines).  Move the top buffer address to the new top of 
+;the scroll buffer
+SHIFT_BUFFER:
+        ;Check if anymore buffer left
+        LD HL,(TBUF)        ;Get top buffer address
+        LD DE,TGBUF-SBUF    ;Get scroll buffer address
+        OR A                ;Clear carry
+        SBC HL,DE           ;TBUF-SBUF
+        JR Z,SKIP_TBUF
+        ADD HL,DE           ;restore HL
+        LD DE,16*6          ;Six pixel rows
+        SBC HL,DE           ;Move TBUF down by 6 rows
+        LD (TBUF),HL        ;Save new TBUF
+SKIP_TBUF:
+        LD HL,TGBUF-SBUF+(16*6) ;Top of scroll buffer less one row
+        LD DE,TGBUF-SBUF    ;Top of scroll buffer
+        LD BC,16*6*19       ;19 rows
+        LDIR
+        LD HL,TGBUF+0360H   ;clear last row (9*16)
+        LD DE,TGBUF+0361H
+        LD BC,5FH
+        XOR A
+        LD (HL),A
+        LDIR
+        ;Move Y Start up one row
+        LD A,(CURSOR_YS)    ;Get Y Start row
+        SUB 6
+        RET C               ;Ignore if less than zero
+        LD (CURSOR_YS),A    
+        RET
+
+;Move the VPORT vertically between TBUF and end of GBUB.  VPORT will be 
+;shifted by a standard termial row of 6 lines.
+;input: A = 0 shift up else shift down
+MOVE_VPORT:
+        LD HL,(VPORT)       ;get viewport
+        EX DE,HL
+        OR A                ;check move
+        JR NZ,MOVE_DOWN     ;shift down
+MOVE_UP:
+        LD HL,(TBUF)        ;get top of buffer
+        SBC HL,DE           ;
+        RET Z               ;if the same, then at top already
+        LD HL,0-60H         ;one row up
+SAVE_VPORT:
+        ADD HL,DE           ;get new VPORT value
+        LD (VPORT),HL
+        RET
+MOVE_DOWN:
+        LD HL,TGBUF         ;get top of graphics buffer
+        SBC HL,DE           ;
+        RET Z               ;if the same, then at top already
+        LD HL,60H           ;one row down
+        JR SAVE_VPORT
+
+;Decrement the cursor by one font character up to the current row start
+;Used to help with Backspace character or left arrow?
+;Destroys: A
+DEC_CURSOR:
+        LD A,(CURSOR_X)         ;Get X
+        SUB 6                   ;subract 6
+SAVE_COL:
+        LD (CURSOR_X),A         ;Save new column
+        ;if < 0 then just make 0 or 20 depending on Y Start
+        RET NC
+        PUSH BC
+        LD A,(CURSOR_YS)        ;Get Y Start
+        LD B,A
+        LD A,(CURSOR_Y)         ;Get Y
+        SUB B
+        POP BC
+        LD A,0                  ;reset to 0
+        JR Z,SAVE_COL
+        LD A,6*20               ;last column
+        LD (CURSOR_X),A         ;Save new column
+        LD A,(CURSOR_Y)
+        SUB 6                   ;move row one line up
+        LD (CURSOR_Y),A         ;Save new row
+        RET
+
+;Get cursor position
+;Outputs: BC = X,Y where X = 0..127, Y = 0..63
+getCursor:
+        LD BC,(CURSOR_XY)
+        RET
+
+;Display Cursor
+;Input: C = 0, Turn cursor on, C = non zero, Turn cursor off
+;Default is Cursor ON
+displayCursor:
+        LD A,C
+        LD (CURSOR_ON),A
+        JP DRAW_CURSOR
+
+;Inverse Graphic Drawing
+;Initial state is normal.  Calling this routine will TOGGLE the inverse drawing flag
+;Destroys: A
+invGraphic:
+        LD A,(INVERSE)
+        CPL                 ;flip bits
+        LD (INVERSE),A
+        RET
+
+;Draw Graphic at the current cursor.  Draw either an ASCII character or
+;a custom sprite/picture
+;Input: D = ASCII number or 
+;    if D=0 Then 
+;       HL = Address of graphic data
+;       B = width of graphic in pixels (1-128)
+;       C = height of graphic in pixels (1-64)
+;Destroys: All
+drawGraphic:
+        LD A,D
+        OR A                ;is A=0
+        JR Z,PLOT_GRAPHIC   ;yes, use data pointing to HL
+        ;Use internal font table and index it to value in A
+        DEC A               ;fix for A = 0..255
+        LD H,0
+        LD L,A
+        ADD HL,HL           ;Multipy A by 2
+        LD D,H
+        LD E,L              ;Save in DE
+        ADD HL,HL           ;Multipy A by 4
+        ADD HL,DE           ;Multiply by 6
+        LD DE,FONT_DATA     ;Font Table
+        ADD HL,DE           ;Add index (A*8) to HL
+        LD BC,0606H         ;Six pixels across, Six pixels down
+PLOT_GRAPHIC:
+        LD D,B              ;D=Column pixel count
+        LD A,D
+        LD (PIXEL_X),A      ;Save original pixel length
+        LD E,C              ;E=Row pixel count
+        LD BC,(CURSOR_XY)   ;Get graphics cursor position
+PLOT_BYTE:
+        LD A,D              ;Get column bit count
+        SUB 8
+        LD D,A
+        PUSH DE        
+        LD D,8
+        LD E,(HL)           ;get pixel data
+        JR NC,INV_BIT
+        ADD A,D             ;Restore column bit count
+        LD D,A
+        LD A,D
+        ;D = Rotate adjust count
+        RRC E               ;rotate it to get first bit in bit 7
+        DEC D
+        JR NZ,$-3
+        LD D,A              ;reset D to actual bit count
+INV_BIT:
+        LD A,(INVERSE)      ;check inverse flag
+        XOR E               ;flip bits
+        LD E,A              ;save new data
+PLOT_BIT:
+        RLC E
+        PUSH HL
+        JR NC,REMOVE_PIXEL
+        CALL drawPixel
+        JR $+5
+REMOVE_PIXEL:
+        CALL clearPixel
+        POP HL
+        INC B               ;move X to the right by one
+        DEC D
+        JR NZ,PLOT_BIT
+        ;All bits are plotted check if D <= 0
+        INC HL              ;move to next pixel byte
+        POP DE              ;restore Column/Row bit count
+        LD A,D
+        OR A                ;check for zero or lessor
+        JR Z,$+5
+        JP P,PLOT_BYTE      ;its greater or zero, do next byte
+        ;Move down a row and set column to the start
+        DEC E               ;move column pixel count down by one
+        RET Z               ;if its zero no more to do, just exit
+        INC C               ;move down a row
+        LD A,(CURSOR_X)
+        LD B,A              ;reset column
+        LD A,(PIXEL_X)
+        LD D,A              ;reset pixel length per row
+        JR PLOT_BYTE
 
 ; Contstants
 ROWS:   .db      80H,90H,88H,98H ;Text Row start position
@@ -726,9 +1110,1874 @@ INIT_BASIC:
         .db      0CH             ;display on, cursor & blink off
         .db      06H             ;cursor move to right ,no shift
         .db      01H             ;clear RAM
-        
-; RAM Locations - Move this section to RAM if necessary
-;---------------
+
+;General Graphic Data
+;Byte n = Pixel data where set bits represent pixels.  Read from LSB
+
+; 256 Character Font 
+FONT_DATA:
+        ;001
+        .db 00011110b   ;  ####
+        .db 00100001b   ; #    #
+        .db 00100001b   ; #    #
+        .db 00100001b   ; #    #
+        .db 00100001b   ; #    #
+        .db 00011110b   ;  ####
+        ;002
+        .db 00011110b   ;  ####
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00011110b   ;  ####
+        ;003 Up Arrow
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00111111b   ; ######
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;004 Down Arrow
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00111111b   ; ######
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        ;005 Left Arrow
+        .db 00001000b   ;   #
+        .db 00011000b   ;  ##
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00011000b   ;  ##
+        .db 00001000b   ;   #
+        ;006 Right Arrow
+        .db 00000100b   ;    #
+        .db 00000110b   ;    ##
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00000110b   ;    ##
+        .db 00000100b   ;    #
+        ;007 Up Hat
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00111111b   ; ######
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;008 Down Hat
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00111111b   ; ######
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        ;009 Left Hat
+        .db 00001000b   ;   #
+        .db 00011000b   ;  ##
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00011000b   ;  ##
+        .db 00001000b   ;   #
+        ;010 Right Hat
+        .db 00000100b   ;    #
+        .db 00000110b   ;    ##
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000110b   ;    ##
+        .db 00000100b   ;    #
+        ;011 Note 1
+        .db 00000100b   ;    #
+        .db 00000100b   ;    # 
+        .db 00000100b   ;    # 
+        .db 00011100b   ;  ###
+        .db 00111100b   ; ####
+        .db 00011000b   ;  ##
+        ;012 Note 2
+        .db 00000100b   ;    #
+        .db 00000110b   ;    ## 
+        .db 00000101b   ;    # #
+        .db 00011100b   ;  ###
+        .db 00111100b   ; ####
+        .db 00011000b   ;  ##
+        ;013 Rocket
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00110011b   ; ##  ##
+        ;014 Bomb
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00011110b   ;  ####
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        ;015 Explosion
+        .db 00001100b   ;   ##
+        .db 00111111b   ; ######
+        .db 00000110b   ;    ##
+        .db 00001100b   ;   ##
+        .db 00011000b   ;  ##
+        .db 00001100b   ;   ##
+        ;016
+        .db 00110110b   ; ## ##
+        .db 00100100b   ; #  #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;017
+        .db 00110110b   ; ## ##
+        .db 00010010b   ;  #  #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;018
+        .db 00001110b   ;   ###
+        .db 00010010b   ;  #  #
+        .db 00111000b   ; ###
+        .db 00010010b   ;  #  #
+        .db 00111110b   ; #####
+        .db 00000000b   ;
+        ;019
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00101010b   ; # # #
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;020
+        .db 00111110b   ; #####
+        .db 00110100b   ; ## #
+        .db 00110100b   ; ## #
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00000000b   ;
+        ;021
+        .db 00011100b   ;  ###
+        .db 00011000b   ;  ##
+        .db 00100100b   ; #  #
+        .db 00011000b   ;  ##
+        .db 00111000b   ; ###
+        .db 00000000b   ;
+        ;022
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00000010b   ;     #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;023
+        .db 00010100b   ;  # #
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;024
+        .db 00010100b   ;  # #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   # 
+        .db 00000000b   ;
+        ;025
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00011000b   ;  ##
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;026
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;027
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00111110b   ; #####
+        .db 00000110b   ;    ##
+        .db 00000110b   ;    ##
+        .db 00000000b   ;
+        ;028
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00111110b   ; #####
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;029
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00111110b   ; #####
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;030
+        .db 00010100b   ;  # #
+        .db 00111110b   ; #####
+        .db 00111110b   ; #####
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;031
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00111110b   ; #####
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;032 Space
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;033 !
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;034 "
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;035 #
+        .db 00010100b   ;  # #
+        .db 00111110b   ; #####
+        .db 00010100b   ;  # #
+        .db 00111110b   ; #####
+        .db 00010100b   ;  # #
+        .db 00000000b   ;
+        ;036 $
+        .db 00011110b   ;  ####
+        .db 00101000b   ; # #
+        .db 00011100b   ;  ###
+        .db 00001010b   ;   # #
+        .db 00111100b   ; ####
+        .db 00000000b   ;
+        ;037 %
+        .db 00110010b   ; ##  #
+        .db 00110100b   ; ## #
+        .db 00001000b   ;   #
+        .db 00010110b   ;  # ##
+        .db 00100110b   ; #  ##
+        .db 00000000b   ;
+        ;038 &
+        .db 00011000b   ;  ##
+        .db 00100100b   ; #  #
+        .db 00011010b   ;  ## #
+        .db 00100100b   ; #  #
+        .db 00011010b   ;  ## #
+        .db 00000000b   ;
+        ;039 '
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;040 (
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00000000b   ;
+        ;041 )
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;042 *
+        .db 00101010b   ; # # #
+        .db 00011100b   ;  ###
+        .db 00111110b   ; #####
+        .db 00011100b   ;  ###
+        .db 00101010b   ; # # #
+        .db 00000000b   ;
+        ;043 +
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;044 ,
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;045 -
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;046 .
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;047 /
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;048 0
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;049 1
+        .db 00001000b   ;   #
+        .db 00011000b   ;  ##
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;050 2
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00011100b   ;  ###
+        .db 00010000b   ;  #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;051 3
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00001100b   ;   ##
+        .db 00000100b   ;    #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;052 4
+        .db 00010000b   ;  #
+        .db 00010000b   ;  #
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00000000b   ;
+        ;053 5
+        .db 00011100b   ;  ###
+        .db 00010000b   ;  #
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;054 6
+        .db 00011000b   ;  ##
+        .db 00010000b   ;  #
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;055 7
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;056 8
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;057 9
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000100b   ;    #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;058 :
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;059 ;
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;060 <
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00000000b   ;
+        ;061 =
+        .db 00000000b   ;
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;062 >
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00000000b   ;
+        ;063 ?
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   # 
+        .db 00001100b   ;   ##
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;064 @
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100110b   ; #  ##
+        .db 00101010b   ; # # # 
+        .db 00001100b   ;   ##
+        .db 00000000b   ;
+        ;065 A
+        .db 00011000b   ;  ##
+        .db 00100100b   ; #  #
+        .db 00100010b   ; #   #
+        .db 00111110b   ; #####
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;066 B
+        .db 00111000b   ; ###
+        .db 00100100b   ; #  #
+        .db 00111100b   ; ####
+        .db 00100010b   ; #   #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;067 C
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   # 
+        .db 00100000b   ; #
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;068 D
+        .db 00111100b   ; ####
+        .db 00100110b   ; #  ##
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00111100b   ; ####
+        .db 00000000b   ;
+        ;069 E
+        .db 00111110b   ; #####
+        .db 00100000b   ; #
+        .db 00111100b   ; ####
+        .db 00100000b   ; #
+        .db 00111110b   ; #####
+        .db 00000000b   ;
+        ;070 F
+        .db 00111110b   ; #####
+        .db 00100000b   ; #
+        .db 00111100b   ; ####
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00000000b   ;
+        ;071 G
+        .db 00011100b   ;  ###
+        .db 00100000b   ; #    
+        .db 00100110b   ; #  ##
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;072 H
+        .db 00100100b   ; #  #
+        .db 00100010b   ; #   #
+        .db 00111110b   ; #####
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00000000b   ;
+        ;073 I
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;074 J
+        .db 00001100b   ;   ##
+        .db 00000100b   ;    #
+        .db 00000100b   ;    #
+        .db 00010100b   ;  # #
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;075 K
+        .db 00100100b   ; #  #
+        .db 00101000b   ; # #
+        .db 00110000b   ; ##
+        .db 00101000b   ; # #
+        .db 00100100b   ; #  #
+        .db 00000000b   ;
+        ;076 L
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;077 M
+        .db 00100010b   ; #   #
+        .db 00110110b   ; ## ##
+        .db 00101010b   ; # # #
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;078 N
+        .db 00100010b   ; #   #
+        .db 00110010b   ; ##  #
+        .db 00101010b   ; # # #
+        .db 00100110b   ; #  ##
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;079 O
+        .db 00011100b   ;  ###
+        .db 00100110b   ; #  ## 
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;080 P
+        .db 00111000b   ; ###
+        .db 00100100b   ; #  #
+        .db 00111000b   ; ###
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00000000b   ; 
+        ;081 Q
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   #
+        .db 00100110b   ; #  ## 
+        .db 00011110b   ;  ####
+        .db 00000000b   ; 
+        ;082 R
+        .db 00111000b   ; ###
+        .db 00100100b   ; #  #
+        .db 00111000b   ; ###
+        .db 00101000b   ; # #
+        .db 00100100b   ; #  #
+        .db 00000000b   ; 
+        ;083 S
+        .db 00011110b   ;  ####
+        .db 00100000b   ; #
+        .db 00011100b   ;  ###
+        .db 00000010b   ;     #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;084 T
+        .db 00111110b   ; #####
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;085 U
+        .db 00100100b   ; #  #
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;086 V
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;087 W
+        .db 00100100b   ; #  #
+        .db 00100010b   ; #   #
+        .db 00101010b   ; # # #
+        .db 00101010b   ; # # #
+        .db 00010100b   ;  # #
+        .db 00000000b   ; 
+        ;088 X
+        .db 00100010b   ; #   #
+        .db 00010100b   ;  # #
+        .db 00001000b   ;   #
+        .db 00010100b   ;  # #
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;089 Y
+        .db 00100010b   ; #   #
+        .db 00010100b   ;  # #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;090 Z
+        .db 00111110b   ; #####
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00111110b   ; #####
+        .db 00000000b   ; 
+        ;091 [
+        .db 00001100b   ;   ##
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001100b   ;   ##
+        .db 00000000b   ; 
+        ;092 \
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00000000b   ; 
+        ;093 ]
+        .db 00011000b   ;  ##
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00011000b   ;  ##
+        .db 00000000b   ; 
+        ;094 ^
+        .db 00001000b   ;   #
+        .db 00010100b   ;  # #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;095 _
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111110b   ; #####
+        .db 00000000b   ; 
+        ;096 `
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        .db 00000000b   ;
+        ;097 a
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100110b   ; #  ##
+        .db 00011010b   ;  ## #
+        .db 00000000b   ; 
+        ;098 b
+        .db 00100000b   ; #
+        .db 00111100b   ; ####
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;099 c
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00100000b   ; #   
+        .db 00100000b   ; #   
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;100 d
+        .db 00000010b   ;     #
+        .db 00011110b   ;  ####
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00011110b   ;  ####
+        .db 00000000b   ; 
+        ;101 e
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00111100b   ; ####
+        .db 00100000b   ; #
+        .db 00011110b   ;  ####
+        .db 00000000b   ; 
+        ;102 f
+        .db 00001110b   ;   ###
+        .db 00010000b   ;  # 
+        .db 00111100b   ; ####
+        .db 00010000b   ;  # 
+        .db 00010000b   ;  # 
+        .db 00000000b   ; 
+        ;103 g
+        .db 00011110b   ;  ####
+        .db 00100010b   ; #   #
+        .db 00011110b   ;  ####
+        .db 00000010b   ;     #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;104 h
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00111100b   ; ####
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;105 i
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;106 j
+        .db 00000100b   ;    # 
+        .db 00000000b   ; 
+        .db 00000100b   ;    # 
+        .db 00000100b   ;    # 
+        .db 00011000b   ;  ##
+        .db 00000000b   ; 
+        ;107 k
+        .db 00100000b   ; #
+        .db 00100100b   ; #  #
+        .db 00101000b   ; # #
+        .db 00110100b   ; ## #
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;108 l
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00001100b   ;   ##
+        .db 00000000b   ; 
+        ;109 m
+        .db 00000000b   ; 
+        .db 00010100b   ;  # #
+        .db 00101010b   ; # # #
+        .db 00101010b   ; # # #
+        .db 00101010b   ; # # #
+        .db 00000000b   ; 
+        ;110 n
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;111 o
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;112 p
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00111100b   ; ####
+        .db 00100000b   ; #
+        .db 00000000b   ; 
+        ;113 q
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00011110b   ;  ####
+        .db 00000010b   ;     #
+        .db 00000000b   ; 
+        ;114 r
+        .db 00000000b   ; 
+        .db 00101100b   ; # ##
+        .db 00110000b   ; ##
+        .db 00100000b   ; #
+        .db 00100000b   ; #
+        .db 00000000b   ; 
+        ;115 s
+        .db 00011100b   ;  ###
+        .db 00100000b   ; #
+        .db 00011100b   ;  ###
+        .db 00000010b   ;     #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;116 t
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00000000b   ; 
+        ;117 u
+        .db 00000000b   ; 
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;118 v
+        .db 00000000b   ; 
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   # 
+        .db 00010100b   ;  # # 
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;119 w
+        .db 00000000b   ; 
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   # 
+        .db 00101010b   ; # # # 
+        .db 00110110b   ; ## ##
+        .db 00000000b   ; 
+        ;120 x
+        .db 00000000b   ; 
+        .db 00100010b   ; #   # 
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   # 
+        .db 00000000b   ; 
+        ;121 y
+        .db 00100010b   ; #   # 
+        .db 00100010b   ; #   # 
+        .db 00011110b   ;  ####
+        .db 00000010b   ;     #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;122 z
+        .db 00000000b   ; 
+        .db 00111100b   ; #### 
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00111100b   ; #### 
+        .db 00000000b   ; 
+        ;123 {
+        .db 00001100b   ;   ##
+        .db 00001000b   ;   #
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00001100b   ;   ##
+        .db 00000000b   ; 
+        ;124 |
+        .db 00001000b   ;   # 
+        .db 00001000b   ;   # 
+        .db 00001000b   ;   # 
+        .db 00001000b   ;   # 
+        .db 00001000b   ;   # 
+        .db 00000000b   ; 
+        ;125 }
+        .db 00011000b   ;  ##
+        .db 00001000b   ;   #
+        .db 00000100b   ;    #
+        .db 00001000b   ;   #
+        .db 00011000b   ;  ##
+        .db 00000000b   ; 
+        ;126 ~
+        .db 00010100b   ;  # #
+        .db 00101000b   ; # #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;127 
+        .db 00101010b   ; # # #
+        .db 00010101b   ;  # # #
+        .db 00101010b   ; # # #
+        .db 00010101b   ;  # # #
+        .db 00101010b   ; # # #
+        .db 00010101b   ;  # # #
+        ;128
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;129
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;130
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;131
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;132
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        ;133
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        ;134
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        ;135
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        ;136
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        ;137
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        ;138
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        ;139
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        ;140
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        ;141
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        ;142
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00000111b   ;    ###
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        ;143
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        ;144
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;145
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;146
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00001111b   ;   ####
+        .db 00001111b   ;   ####
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;147
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001111b   ;   ####
+        .db 00000111b   ;    ###
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;148
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;149
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;150
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000111b   ;    ###
+        .db 00001111b   ;   ####
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;151
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00001111b   ;   ####
+        .db 00001111b   ;   ####
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;152
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111100b   ; ####
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;153
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00111100b   ; ####
+        .db 00111000b   ; ###
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;154
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;155
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;156
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111000b   ; ###
+        .db 00111100b   ; ####
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;157
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00111100b   ; ####
+        .db 00111100b   ; ####
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;158
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;159
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00111111b   ; ######
+        .db 00111111b   ; ######
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        ;160
+        .db 00000000b   ; 
+        .db 00010010b   ;  #  #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00010010b   ;  #  #
+        .db 00000000b   ; 
+        ;161
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;162
+        .db 00000000b   ; 
+        .db 00001111b   ;   ####
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00001111b   ;   ####
+        .db 00000000b   ; 
+        ;163
+        .db 00010010b   ;  #  #
+        .db 00010011b   ;  #  ##
+        .db 00010000b   ;  #
+        .db 00010000b   ;  #
+        .db 00001111b   ;   ####
+        .db 00000000b   ; 
+        ;164
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        ;165
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        .db 00010010b   ;  #  #
+        ;166
+        .db 00000000b   ; 
+        .db 00001111b   ;   ####
+        .db 00010000b   ;  #
+        .db 00010000b   ;  #
+        .db 00010011b   ;  #  ##
+        .db 00010010b   ;  #  #
+        ;167
+        .db 00010010b   ;  #  #
+        .db 00010011b   ;  #  ##
+        .db 00010000b   ;  #
+        .db 00010000b   ;  #
+        .db 00010011b   ;  #  ##
+        .db 00010010b   ;  #  #
+        ;168
+        .db 00000000b   ; 
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;169
+        .db 00010010b   ;  #  #
+        .db 00110010b   ; ##  #
+        .db 00000010b   ;     #
+        .db 00000010b   ;     #
+        .db 00111100b   ; ####
+        .db 00000000b   ; 
+        ;170
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        ;171
+        .db 00010010b   ;  #  #
+        .db 00110011b   ; ##  ##
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        ;172
+        .db 00000000b   ; 
+        .db 00111100b   ; ####
+        .db 00000010b   ;     #
+        .db 00000010b   ;     #
+        .db 00110010b   ; ##  #
+        .db 00010010b   ;  #  #
+        ;173
+        .db 00010010b   ;  #  #
+        .db 00110010b   ; ##  #
+        .db 00000010b   ;     #
+        .db 00000010b   ;     #
+        .db 00110010b   ; ##  #
+        .db 00010010b   ;  #  #
+        ;174
+        .db 00000000b   ; 
+        .db 00111111b   ; ######
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00110011b   ; ##  ##
+        .db 00010010b   ;  #  #
+        ;175
+        .db 00010010b   ;  #  #
+        .db 00110011b   ; ##  ##
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00110011b   ; ##  ##
+        .db 00010010b   ;  #  #
+        ;176
+        .db 00001100b   ;   ##
+        .db 00011000b   ;  ##
+        .db 00110000b   ; ##
+        .db 00100000b   ; #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;177
+        .db 00001100b   ;   ##
+        .db 00000110b   ;    ##
+        .db 00000011b   ;     ##
+        .db 00000001b   ;      #
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;178
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000001b   ;      #
+        .db 00000011b   ;     ##
+        .db 00000110b   ;    ##
+        .db 00001100b   ;   ##
+        ;179
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00100000b   ; #
+        .db 00110000b   ; ##
+        .db 00011000b   ;  ##
+        .db 00001100b   ;   ##
+        ;180
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00110011b   ; ##  ##
+        .db 00100001b   ; #    # 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;181
+        .db 00001100b   ;   ##
+        .db 00000110b   ;    ##
+        .db 00000011b   ;     ##
+        .db 00000011b   ;     ##
+        .db 00000110b   ;    ##
+        .db 00001100b   ;   ##
+        ;182
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00100001b   ; #    # 
+        .db 00110011b   ; ##  ##
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        ;183
+        .db 00001100b   ;   ##
+        .db 00011000b   ;  ##
+        .db 00110000b   ; ##
+        .db 00110000b   ; ##
+        .db 00011000b   ;  ##
+        .db 00001100b   ;   ##
+        ;184
+        .db 00001100b   ;   ##
+        .db 00011000b   ;  ##
+        .db 00110001b   ; ##   #
+        .db 00100011b   ; #   ##
+        .db 00000110b   ;    ##
+        .db 00001100b   ;   ##
+        ;185
+        .db 00001100b   ;   ##
+        .db 00000110b   ;    ##
+        .db 00100011b   ; #   ##
+        .db 00110001b   ; ##   #
+        .db 00011000b   ;  ##
+        .db 00001100b   ;   ##
+        ;186
+        .db 00001100b   ;   ##
+        .db 00011110b   ;  ####
+        .db 00110011b   ; ##  ##
+        .db 00110011b   ; ##  ##
+        .db 00011110b   ;  ####
+        .db 00001100b   ;   ##
+        ;187
+        .db 00110011b   ; ##  ##
+        .db 00110011b   ; ##  ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00110011b   ; ##  ##
+        .db 00110011b   ; ##  ##
+        ;188
+        .db 00000011b   ;     ##
+        .db 00000011b   ;     ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00110000b   ; ##
+        .db 00110000b   ; ##
+        ;189
+        .db 00110000b   ; ##
+        .db 00110000b   ; ##
+        .db 00001100b   ;   ##
+        .db 00001100b   ;   ##
+        .db 00000011b   ;     ##
+        .db 00000011b   ;     ##
+        ;190
+        .db 00101010b   ; # # #
+        .db 00010100b   ;  # #
+        .db 00101010b   ; # # #
+        .db 00010100b   ;  # #
+        .db 00101010b   ; # # #
+        .db 00000000b   ; 
+        ;191
+        .db 00010100b   ;  # #
+        .db 00101010b   ; # # #
+        .db 00010100b   ;  # #
+        .db 00101010b   ; # # #
+        .db 00010100b   ;  # #
+        .db 00000000b   ; 
+        ;192
+        .db 00000000b   ; 
+        .db 00011010b   ;  ## #
+        .db 00100100b   ; #  #
+        .db 00100100b   ; #  #
+        .db 00011010b   ;  ## #
+        .db 00000000b   ; 
+        ;193
+        .db 00011000b   ;  ##
+        .db 00100100b   ; #  #
+        .db 00101100b   ; # ##
+        .db 00100010b   ; #   #
+        .db 00101100b   ; # ##
+        .db 00000000b   ; 
+        ;194
+        .db 00000000b   ; 
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;195
+        .db 00011100b   ;  ###
+        .db 00110000b   ; ##
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ### 
+        .db 00000000b   ; 
+        ;196
+        .db 00001110b   ;   ### 
+        .db 00110000b   ; ##
+        .db 00111100b   ; ####
+        .db 00110000b   ; ##
+        .db 00001110b   ;   ###
+        .db 00000000b   ; 
+        ;197
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00111110b   ; #####
+        .db 00100010b   ; #   #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;198
+        .db 00100000b   ; #
+        .db 00010000b   ;  #
+        .db 00001000b   ;   #
+        .db 00010100b   ;  # #
+        .db 00100010b   ; #   # 
+        .db 00000000b   ; 
+        ;199
+        .db 00100100b   ; #  #
+        .db 00100100b   ; #  #
+        .db 00111000b   ; ###
+        .db 00100000b   ; #
+        .db 00100000b   ; # 
+        .db 00000000b   ; 
+        ;200
+        .db 00000000b   ; 
+        .db 00111110b   ; #####
+        .db 00010100b   ;  # #
+        .db 00010100b   ;  # #
+        .db 00100100b   ; #  #
+        .db 00000000b   ; 
+        ;201
+        .db 00000000b   ; 
+        .db 00011110b   ;  ####
+        .db 00110100b   ; ## #
+        .db 00110100b   ; ## #
+        .db 00011000b   ;  ##
+        .db 00000000b   ; 
+        ;202
+        .db 00000110b   ;    ##
+        .db 00011100b   ;  ###
+        .db 00110110b   ; ## ##
+        .db 00011100b   ;  ###
+        .db 00110000b   ; ##
+        .db 00000000b   ; 
+        ;203
+        .db 00000110b   ;    ##
+        .db 00000100b   ;    #
+        .db 00110110b   ; ## ##
+        .db 00011100b   ;  ###
+        .db 00110000b   ; ##
+        .db 00000000b   ; 
+        ;204
+        .db 00110010b   ; ##  #
+        .db 00011100b   ;  ###
+        .db 00001100b   ;   ##
+        .db 00010110b   ;  # ##
+        .db 00100010b   ; #   #
+        .db 00000000b   ; 
+        ;205
+        .db 00000000b   ; 
+        .db 00010100b   ;  # #
+        .db 00100010b   ; #   #
+        .db 00101010b   ; # # #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;206
+        .db 00111110b   ; #####
+        .db 00010010b   ;  #  #
+        .db 00001000b   ;   #
+        .db 00010010b   ;  #  #
+        .db 00111110b   ; #####
+        .db 00000000b   ; 
+        ;207
+        .db 00011100b   ;  ###
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00010100b   ;  # #
+        .db 00110110b   ; ## ##
+        .db 00000000b   ; 
+        ;208
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00001010b   ;   # #
+        .db 00011100b   ;  ###
+        .db 00101000b   ; # #
+        .db 00001000b   ;   #
+        ;209
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00101000b   ; # #
+        .db 00011100b   ;  ###
+        .db 00001010b   ;   # #
+        .db 00001000b   ;   #
+        ;210
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00101010b   ; # # #
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   # 
+        .db 00001000b   ;   #
+        ;211
+        .db 00011100b   ;  ###
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   # 
+        .db 00011100b   ;  ###
+        .db 00101010b   ; # # #
+        .db 00001000b   ;   #
+        ;212
+        .db 00010100b   ;  # # 
+        .db 00000000b   ; 
+        .db 00010100b   ;  # # 
+        .db 00010100b   ;  # # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;213
+        .db 00010100b   ;  # # 
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;214
+        .db 00010100b   ;  # # 
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # # 
+        .db 00011110b   ;  ####
+        .db 00000000b   ; 
+        ;215
+        .db 00010100b   ;  # # 
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00010100b   ;  # # 
+        .db 00010100b   ;  # # 
+        .db 00000000b   ; 
+        ;216
+        .db 00101000b   ; # #
+        .db 00101100b   ; # ## 
+        .db 00111110b   ; ##### 
+        .db 00001100b   ;   ## 
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;217
+        .db 00001010b   ;   # #
+        .db 00011010b   ;  ## #
+        .db 00111110b   ; #####
+        .db 00011000b   ;  ## 
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        ;218
+        .db 00001000b   ;   #
+        .db 00011100b   ;  ###
+        .db 00001000b   ;   #
+        .db 00000000b   ;  
+        .db 00011100b   ;  ###
+        .db 00000000b   ;
+        ;219
+        .db 00001000b   ;   #
+        .db 00000000b   ; 
+        .db 00111110b   ; #####
+        .db 00000000b   ;
+        .db 00001000b   ;   #
+        .db 00000000b   ;
+        ;220
+        .db 00000100b   ;    #
+        .db 00001000b   ;   # 
+        .db 00010000b   ;  #
+        .db 00001000b   ;   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;221
+        .db 00010000b   ;  #
+        .db 00001000b   ;   # 
+        .db 00000100b   ;    #
+        .db 00001000b   ;   # 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;222
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        ;223
+        .db 00000110b   ;    ## 
+        .db 00000100b   ;    # 
+        .db 00110100b   ; ## #
+        .db 00010100b   ;  # # 
+        .db 00001000b   ;   # 
+        .db 00000000b   ; 
+        ;224
+        .db 00011110b   ;  #### 
+        .db 00001110b   ;   ### 
+        .db 00001110b   ;   ### 
+        .db 00010010b   ;  #  #
+        .db 00100000b   ; # 
+        .db 00000000b   ; 
+        ;225
+        .db 00100000b   ; #
+        .db 00010010b   ;  #  #
+        .db 00001110b   ;   ###
+        .db 00001110b   ;   ###
+        .db 00011110b   ;  ####
+        .db 00000000b   ; 
+        ;226
+        .db 00000010b   ;      #
+        .db 00100100b   ;  #  #
+        .db 00111000b   ;  ###
+        .db 00111000b   ;  ###
+        .db 00111100b   ;  #### 
+        .db 00000000b   ; 
+        ;227
+        .db 00111100b   ; ####
+        .db 00111000b   ; ###
+        .db 00111000b   ; ###
+        .db 00100100b   ; #  # 
+        .db 00000010b   ;     #
+        .db 00000000b   ; 
+        ;228
+        .db 00111110b   ; #####
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00100010b   ; #   #
+        .db 00111110b   ; #####
+        .db 00000000b   ; 
+        ;229
+        .db 00111110b   ; #####
+        .db 00100110b   ; #  ##
+        .db 00101010b   ; # # #
+        .db 00110010b   ; ##  #
+        .db 00111110b   ; #####
+        .db 00000000b   ; 
+        ;230
+        .db 00001000b   ;   # 
+        .db 00010010b   ;  #  #
+        .db 00100100b   ; #  #
+        .db 00010010b   ;  #  #
+        .db 00001000b   ;   # 
+        .db 00000000b   ; 
+        ;231
+        .db 00001000b   ;   # 
+        .db 00100100b   ; #  #
+        .db 00010010b   ;  #  #
+        .db 00100100b   ; #  #
+        .db 00001000b   ;   # 
+        .db 00000000b   ; 
+        ;232 TEC-1G
+        .db 00011101b   ;  ### #
+        .db 00001000b   ;   #
+        .db 00001001b   ;   #  #
+        .db 00001000b   ;   #
+        .db 00001001b   ;   #  #
+        .db 00000000b   ; 
+        ;233 TEC-1G
+        .db 00110111b   ; ## ###
+        .db 00000100b   ;    #
+        .db 00110100b   ; ## #
+        .db 00000100b   ;    #
+        .db 00110111b   ; ## ###
+        .db 00000000b   ; 
+        ;234 TEC-1G
+        .db 00000000b   ; 
+        .db 00000001b   ;      #
+        .db 00011100b   ;  ###
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;235 TEC-1G
+        .db 00101110b   ; # ###
+        .db 00101000b   ; # #
+        .db 00101010b   ; # # #
+        .db 00101010b   ; # # #
+        .db 00101110b   ; # ###
+        .db 00000000b   ; 
+        ;236 Z80
+        .db 00011101b   ;  ### #
+        .db 00000101b   ;    # #
+        .db 00001001b   ;   #  #
+        .db 00010001b   ;  #   #
+        .db 00011101b   ;  ### #
+        .db 00000000b   ; 
+        ;237 Z80
+        .db 00110111b   ; ## ###
+        .db 00010101b   ;  # # #
+        .db 00110101b   ; ## # #
+        .db 00010101b   ;  # # #
+        .db 00110111b   ; ## ###
+        .db 00000000b   ; 
+        ;238 CPU
+        .db 00011101b   ;  ### #
+        .db 00010001b   ;  #   #
+        .db 00010001b   ;  #   #
+        .db 00010001b   ;  #   #
+        .db 00011101b   ;  ### #
+        .db 00000000b   ; 
+        ;239 CPU
+        .db 00110101b   ; ## # #
+        .db 00010101b   ;  # # #
+        .db 00110101b   ; ## # #
+        .db 00000101b   ;    # #
+        .db 00000111b   ;    ###
+        .db 00000000b   ; 
+        ;240
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;241
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;242
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;243
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;244
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;245
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;246
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;247
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;248
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;249
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;250
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;251
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;252
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;253
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;254
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;255
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        ;256
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000000b   ; 
+        .db 00000001b   ;      #
+
+; TEC Welcome Banner (Credit to James Elphick)
+GLCD_BANNER:
+        .db 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FCh
+        .db 084h, 00h, 08h, 00h, 010h, 00h, 01h, 08h, 00h, 010h, 00h, 01h, 00h, 00h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 010h, 00h, 01h, 08h, 00h, 010h, 00h, 01h, 00h, 00h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 010h, 00h, 01h, 08h, 00h, 010h, 00h, 01h, 00h, 00h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 010h, 00h, 01h, 08h, 00h, 010h, 00h, 01h, 00h, 00h, 00h, 04h
+        .db 087h, 0E1h, 08h, 07Eh, 010h, 0FCh, 021h, 08h, 043h, 0F0h, 0FCh, 03Fh, 0Fh, 0FFh, 0FFh, 084h
+        .db 084h, 01h, 08h, 040h, 010h, 080h, 020h, 08h, 040h, 00h, 084h, 00h, 08h, 00h, 00h, 084h
+        .db 084h, 01h, 08h, 040h, 010h, 080h, 020h, 08h, 040h, 00h, 084h, 00h, 08h, 00h, 00h, 084h
+        .db 084h, 01h, 08h, 040h, 010h, 080h, 020h, 08h, 040h, 00h, 084h, 00h, 08h, 00h, 00h, 084h
+        .db 084h, 01h, 08h, 040h, 010h, 080h, 020h, 08h, 040h, 00h, 084h, 00h, 08h, 00h, 00h, 084h
+        .db 084h, 03Fh, 08h, 043h, 0F0h, 087h, 0FFh, 0F8h, 07Fh, 0FFh, 087h, 0E1h, 0F8h, 07Fh, 0F0h, 084h
+        .db 080h, 020h, 00h, 042h, 00h, 080h, 00h, 00h, 040h, 00h, 00h, 020h, 00h, 040h, 00h, 084h
+        .db 080h, 020h, 00h, 042h, 00h, 080h, 00h, 00h, 040h, 00h, 00h, 020h, 00h, 040h, 00h, 084h
+        .db 080h, 020h, 00h, 042h, 00h, 080h, 00h, 00h, 040h, 00h, 00h, 020h, 00h, 040h, 00h, 084h
+        .db 080h, 020h, 00h, 042h, 00h, 080h, 00h, 00h, 040h, 00h, 00h, 020h, 00h, 040h, 00h, 084h
+        .db 0FFh, 0E1h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FEh, 01Fh, 084h
+        .db 080h, 020h, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 010h, 04h
+        .db 080h, 020h, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 010h, 04h
+        .db 080h, 020h, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 010h, 04h
+        .db 080h, 020h, 08h, 01Fh, 0FEh, 07Fh, 0F0h, 07Fh, 0C0h, 0Fh, 0C1h, 0FFh, 00h, 00h, 010h, 04h
+        .db 084h, 03Fh, 08h, 01Fh, 0FEh, 07Fh, 0F0h, 0FFh, 0E0h, 0Fh, 0C3h, 0FFh, 080h, 07Eh, 010h, 084h
+        .db 084h, 00h, 08h, 01Fh, 0FEh, 07Fh, 0F1h, 0FFh, 0E0h, 0Fh, 0C7h, 0FFh, 080h, 040h, 010h, 084h
+        .db 084h, 00h, 08h, 01h, 0E0h, 00h, 01h, 0F1h, 0C0h, 03h, 0C7h, 0C7h, 00h, 040h, 010h, 084h
+        .db 084h, 00h, 08h, 01h, 0E0h, 00h, 03h, 0E0h, 00h, 03h, 0CFh, 080h, 00h, 040h, 010h, 084h
+        .db 084h, 00h, 08h, 01h, 0E0h, 00h, 03h, 0C0h, 00h, 03h, 0CFh, 00h, 00h, 040h, 010h, 084h
+        .db 087h, 0FFh, 0F8h, 01h, 0E0h, 07Fh, 0F3h, 0C0h, 00h, 03h, 0CFh, 00h, 00h, 043h, 0F0h, 0FCh
+        .db 080h, 020h, 08h, 01h, 0E0h, 07Fh, 0F3h, 0C0h, 07h, 0E3h, 0CFh, 03h, 080h, 040h, 010h, 04h
+        .db 080h, 020h, 08h, 01h, 0E0h, 07Fh, 0F3h, 0C0h, 07h, 0E3h, 0CFh, 03h, 0C0h, 040h, 010h, 04h
+        .db 080h, 020h, 08h, 01h, 0E0h, 00h, 03h, 0C0h, 07h, 0E3h, 0CFh, 03h, 0C0h, 040h, 010h, 04h
+        .db 080h, 020h, 08h, 01h, 0E0h, 00h, 03h, 0E0h, 00h, 03h, 0CFh, 083h, 0C0h, 040h, 010h, 04h
+        .db 0FCh, 021h, 08h, 01h, 0E0h, 00h, 01h, 0F1h, 0C0h, 03h, 0C7h, 0C7h, 0C0h, 07Eh, 01Fh, 084h
+        .db 084h, 01h, 08h, 01h, 0E0h, 07Fh, 0F1h, 0FFh, 0E0h, 03h, 0C7h, 0FFh, 080h, 042h, 00h, 084h
+        .db 084h, 01h, 08h, 01h, 0E0h, 07Fh, 0F0h, 0FFh, 0E0h, 03h, 0C3h, 0FFh, 080h, 042h, 00h, 084h
+        .db 084h, 01h, 08h, 01h, 0E0h, 07Fh, 0F0h, 07Fh, 0C0h, 03h, 0C1h, 0FFh, 00h, 042h, 00h, 084h
+        .db 084h, 01h, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 042h, 00h, 084h
+        .db 084h, 03Fh, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 043h, 0F0h, 084h
+        .db 080h, 020h, 08h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 042h, 00h, 084h
+        .db 080h, 020h, 08h, 03h, 086h, 05Ch, 077h, 071h, 0DCh, 0E7h, 057h, 077h, 00h, 042h, 00h, 084h
+        .db 080h, 020h, 08h, 02h, 085h, 048h, 015h, 051h, 015h, 055h, 052h, 045h, 00h, 042h, 00h, 084h
+        .db 080h, 020h, 08h, 03h, 0B7h, 048h, 027h, 051h, 015h, 057h, 052h, 074h, 00h, 042h, 00h, 084h
+        .db 0FCh, 021h, 0F8h, 02h, 085h, 048h, 045h, 051h, 015h, 014h, 052h, 044h, 00h, 042h, 01Fh, 084h
+        .db 080h, 020h, 00h, 03h, 086h, 048h, 077h, 071h, 0DDh, 014h, 072h, 074h, 00h, 040h, 010h, 04h
+        .db 080h, 020h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 040h, 010h, 04h
+        .db 080h, 020h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 040h, 010h, 04h
+        .db 080h, 020h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 040h, 010h, 04h
+        .db 087h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0F0h, 084h
+        .db 080h, 020h, 00h, 040h, 010h, 080h, 00h, 08h, 02h, 010h, 080h, 00h, 08h, 00h, 00h, 084h
+        .db 080h, 020h, 00h, 040h, 010h, 080h, 00h, 08h, 02h, 010h, 080h, 00h, 08h, 00h, 00h, 084h
+        .db 080h, 020h, 00h, 040h, 010h, 080h, 00h, 08h, 02h, 010h, 080h, 00h, 08h, 00h, 00h, 084h
+        .db 080h, 020h, 00h, 040h, 010h, 080h, 00h, 08h, 02h, 010h, 080h, 00h, 08h, 00h, 00h, 084h
+        .db 084h, 021h, 0F8h, 043h, 0F0h, 087h, 0FFh, 0F8h, 042h, 01Fh, 087h, 0FFh, 08h, 07Fh, 0FFh, 084h
+        .db 084h, 021h, 08h, 042h, 00h, 084h, 00h, 00h, 042h, 00h, 084h, 01h, 00h, 040h, 010h, 04h
+        .db 084h, 021h, 08h, 042h, 00h, 084h, 00h, 00h, 042h, 00h, 084h, 01h, 00h, 040h, 010h, 04h
+        .db 084h, 021h, 08h, 042h, 00h, 084h, 00h, 00h, 042h, 00h, 084h, 01h, 00h, 040h, 010h, 04h
+        .db 084h, 021h, 08h, 042h, 00h, 084h, 00h, 00h, 042h, 00h, 084h, 01h, 00h, 040h, 010h, 04h
+        .db 084h, 021h, 08h, 043h, 0FFh, 084h, 03Fh, 0FFh, 0C3h, 0F0h, 084h, 021h, 0FFh, 0C2h, 010h, 0FCh
+        .db 084h, 00h, 08h, 00h, 00h, 04h, 00h, 00h, 040h, 00h, 04h, 020h, 00h, 02h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 00h, 04h, 00h, 00h, 040h, 00h, 04h, 020h, 00h, 02h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 00h, 04h, 00h, 00h, 040h, 00h, 04h, 020h, 00h, 02h, 00h, 04h
+        .db 084h, 00h, 08h, 00h, 00h, 04h, 00h, 00h, 040h, 00h, 04h, 020h, 00h, 02h, 00h, 04h
+        .db 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FCh
+        .db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        .db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+        .db 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h, 00h
+
+; RAM Locations
+;--------------
 
 GBUF:       .equ    0A00H   ;Graphics Buffer 16 * 64 = 1024 byte
 ENDPT:      .equ    0E00H   ;End Point for Line
@@ -739,3 +2988,14 @@ DY:         .equ    0E06H   ;Change of Y
 ERR:        .equ    0E08H   ;Error Rate
 RAD:        .equ    0E0AH   ;Radius
 CLRBUF:     .equ    0E0CH   ;Clear Buffer Flag on LCD Displaying
+CURSOR_XY:  .equ    0E0DH   ;Cursor Address X,Y
+CURSOR_Y:   .equ    CURSOR_XY   ;Cursor Y
+CURSOR_X:   .equ    CURSOR_XY+1 ;Cursor X
+CURSOR_YS:  .equ    0E0FH   ;Start Y row for new line
+CURSOR_ON:  .equ    0E10H   ;Cursor on/off flag
+INVERSE:    .equ    0E11H   ;Inverse Flag
+PIXEL_X:    .equ    0E12H   ;Pixel X length
+VPORT:      .equ    0E13H   ;View port start address
+TBUF:       .equ    0E15H   ;Top of Buffer pointer
+SBUF:       .equ    16 * 60 ;Scroll Buffer size  16 * 60 = 960 byte (10 lines)
+TGBUF:      .equ    1000H + SBUF ;Terminal GBUF 

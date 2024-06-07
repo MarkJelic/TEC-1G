@@ -82,15 +82,19 @@ Note: if a register is marked as destroyed - that means the value of the registe
 | [_setShadow](#_setshadow)        | 42 | 2AH | BC23-10 |
 | [_setProtect](#_setprotect)       | 43 | 2BH | BC23-10 |
 | [_setExpand](#_setexpand)        | 44 | 2CH | BC23-10 |
-| [_toggleCaps](#_togglecaps)       | 45 | 2DH | BC23-10 |
-| [_toggleShadow](#_toggleshadow)     | 46 | 2EH | BC23-10 |
-| [_toggleProtect](#_toggleprotect)    | 47 | 2FH | BC23-10 |
-| [_toggleExpand](#_toggleexpand)     | 48 | 30H | BC23-10 |
+| [_stringToSerial](#_stringtoserial) | 45 | 2DH | BC24-14 |
+| [_RTCAPI](#_rtcapi)     | 46 | 2EH | BC24-14 |
+| [_menuPop](#_menuPop)    | 47 | 2FH | BC24-14 |
+| [_toggleCaps](#_togglecaps)       | 48 | 30H | BC24-14 |
 | [_random](#_random)     | 49 | 31H | BC23-11 |
 | [_setDisStart](#_setDisStart)     | 50 | 32H | BC23-12 |
 | [_getDisNext](#_getDisNext)      | 51 | 33H | BC23-12 |
 | [_getDisassembly](#_getDisassembly)    | 52 | 34H | BC23-12 |
 | [_matrixScanASCII](#_matrixScanASCII) | 53 | 35H | BC23-12 |
+| [_parseMatrixScan](#_parseMatrixScan) | 54 | 36H | BC24-15 |
+| [_LCDConfirm](#_LCDConfirm) | 55 | 37H | BC24-15 |
+| [_getGLCDTerm](#_getglcdterm) | 56 | 38H | BC24-15 |
+| [_setGLCDTerm](#_setglcdterm) | 57 | 39H | BC24-15 |
 
 
 Future MON-3 versions may introduce additional API calls - therefore code using calls not present in version MON-3 1.0 should first call _versionID to determine that the MON-3 version supports the calls being made.
@@ -461,24 +465,6 @@ Destroys: A
 ```
 ### _toggleCaps
 Toggle Caps Lock state
-```
-Input: none
-Destroys: A
-```
-### _toggleShadow
-Toggle Shadow state
-```
-Input: none
-Destroys: A
-```
-### _toggleProtect
-Toggle Protect state
-```
-Input: none
-Destroys: A
-```
-### _toggleExpand
-Toggle Expand state
 ```
 Input: none
 Destroys: A

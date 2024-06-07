@@ -93,7 +93,7 @@ KEY_AUTO:   .equ    STACK_TOP+11    ;Key Auto Increment Flag
 KEY_REPEAT: .equ    STACK_TOP+12    ;Key Auto Repeat timer
 KEY_BEEP:   .equ    STACK_TOP+13    ;Keypress Beep flag
 KEY_SECOND: .equ    STACK_TOP+14    ;Matrix Keyboard second key Buffer
-RNG_SEED:   .equ    STACK_TOP+15    ;Random Number Seed
+GLCD_TERM:  .equ    STACK_TOP+15    ;GLCD Terminal Enable Flag
 DIS_ADDR:   .equ    STACK_TOP+16    ;Base Disassembler/Editing address
 USER_INT:   .equ    STACK_TOP+18    ;User defined INT routine
 USER_NMI:   .equ    STACK_TOP+20    ;User defined NMI routine
@@ -123,13 +123,8 @@ CEL_QJMP:   .equ    MON_FRAM+2      ;Location 1,2, and 3 (08A2H,08A4H,08A6H)
 ; Menu depth pointers to remember nested menus
 MENU_CFG_D: .equ    MON_FRAM+8      ;Menu Config. depth (08A8H,08AAH,08ACH,08AEH) 
 
-; Breakpoint regsiter save area.
-BP_BASE_SP: .equ    MON_FRAM+96     ;Start of Register save area (0900H)   
-BP_HL:      .equ    BP_BASE_SP+2    ;HL position in BP stack
-BP_REGS:    .equ    BP_BASE_SP+20   ;Top of Stack (Goes down towards MON_RAM)
-BP_PC:      .equ    BP_BASE_SP+20   ;Calling Program Counter
-BP_ORIG_SP: .equ    BP_BASE_SP+22   ;Original hardware stack pointer
-BP_LCD:     .equ    BP_BASE_SP+24   ;LCD Screen Buffer (20x4 or 80 bytes)
+; RNG Seed
+RNG_SEED:   .equ    MON_FRAM+16     ;Random Number Seed (08B0H)
 
 ; RAM for Smart Copy
 COPY_START: .equ    PARAM_DATA      ;Start (08C0H)
@@ -138,10 +133,24 @@ COPY_DEST:  .equ    COPY_START+4    ;Destination
 COPY_PTR:   .equ    COPY_START+6    ;Pointer
 COPY_EBLK:  .equ    COPY_START+8    ;End Block
 COPY_CORR:  .equ    COPY_START+10   ;Correction
+REST_START: .equ    COPY_START+12   ;Restore Start
+REST_END:   .equ    COPY_START+14   ;Restore End
+REST_DEST:  .equ    COPY_START+16   ;Restore Destination
+TEMP_START: .equ    COPY_START+18   ;Temporaly Start
+TEMP_END:   .equ    COPY_START+20   ;Temporaly End
+TEMP_DEST:  .equ    COPY_START+22   ;Temporaly Destination
 
 ; RAM for To/From Addresses
 DATA_FROM:  .equ    PARAM_DATA      ;From (08C0H)
 DATA_TO:    .equ    DATA_FROM+2     ;To
+
+; Breakpoint regsiter save area.
+BP_BASE_SP: .equ    MON_FRAM+96     ;Start of Register save area (0900H)   
+BP_HL:      .equ    BP_BASE_SP+2    ;HL position in BP stack
+BP_REGS:    .equ    BP_BASE_SP+20   ;Top of Stack (Goes down towards MON_RAM)
+BP_PC:      .equ    BP_BASE_SP+20   ;Calling Program Counter
+BP_ORIG_SP: .equ    BP_BASE_SP+22   ;Original hardware stack pointer
+BP_LCD:     .equ    BP_BASE_SP+24   ;LCD Screen Buffer (20x4 or 80 bytes)
 
 ; -----------------------------------------------------------------------------
 ; CODE start here, with code running at 0000H
@@ -286,8 +295,8 @@ preInit:
         xor a               ;Blank the 8x8 display to prevent LED burnout
         out (LED8X8H),a        
         out (LED8X8V),a
-        ld a,05h            ;Set SD Card to Idle; turns off activity LED
-        out (0fdh),a
+        ld a,05H            ;Set SD Card to Idle; turns off activity LED
+        out (SDIO),a
         in a,(SYS_INPUT)    ;Check for CART presence
         ld b,a
         and CART            ;Check bit 4
@@ -301,7 +310,7 @@ preInit:
         ld a,(CAPS_LOCK)
         and CAPSLOCK
         add a,c
-        ld b,SHADOW
+        ld b,SHADOW         ;Force Shadow mode OFF
         add a,b
         out (SYS_CTRL),a
         ld (SYS_MODE),a     ;Update MONitors idea of the config
@@ -315,6 +324,7 @@ preInit:
 
 ;Place initialisation routines here.  MemCheck, RAM defaults
 hardBoot:
+        call LCDinitialise  ;reset LCD Screen always on reset
         ld hl,USER_ADDR     ;fixup edit location for startup
         ld (CEL),hl
         ld (DATA_BASE),hl   ;update base address
@@ -335,7 +345,7 @@ skipMatrix:
         ld de,ROMSIG
         ld b,10H
         call stringCompare
-        jr z,preSoftBoot     ;Yes, just softboot
+        jp z,preSoftBoot     ;Yes, just softboot
 hardInit:
         ;Honour Expand
         in a,(SYS_INPUT)    ;read simp buffer for real expand bit
@@ -362,30 +372,37 @@ hardInit:
         jr z,$+5            ;all good, skip resetting PRAM
         call resetRTCPRAM   ;reset RTC PRAM
         call RTCFillRAM     ;fill RTC PRAM to Mon3 RAM
-        jr LCDinit
+        jr LCDbanners
 skipRTC:
         ;Default CEL Jump Table
         ld hl,USER_ADDR     ;default to intial CEL
         ld (CEL_QJMP),hl
         ld (CEL_QJMP+2),hl
         ld (CEL_QJMP+4),hl
-LCDinit:
-        ;LCD initialise
-        ld bc,400H+LCD_INST ;4 instructions, LCD Instruction port
-        ld hl,LCDInitTable  ;LCD instructions table
-        ld de,1000H
-        dec de
-        ld a,e
-        or d
-        jr nz,$-3
-        outi                ;send it to LCD
-        jr nz,$-10          ;loop again
+LCDbanners:
         ;Display Welcome Message
         ld hl,hardResetMessage
         call stringToLCD    ;print line to LCD
         ;send a welcome message to the Serial Terminal if connected
         ld hl,serialStartup
         call stringToSerial
+        ;send a welcome banner to the GCLD (disabled for now)
+        ; call initLCD        ;Initialise the GLCD
+        ; ld c,0              ;first row
+        ; call printString    ;display text
+        ; .db 10H," Initialising ",11H,0
+        ; ld bc,0             ;set cursor to top left
+        ; call setCursor
+        ; ld hl,GLCD_BANNER   ;point to welcome banner
+        ; ld bc,8040H         ;full screen graphic
+        ; ld d,0
+        ; call drawGraphic    ;Draw to GLCD buffer
+        ; ld a,01H
+        ; out (GLCD_INST),a   ;clear text buffer
+        ; ld de,0140H         ;1.6 ms
+        ; call delayMS
+        ; call setGrMode      ;Set it for graphics mode
+        ; call plotToLCD      ;Display it
         ;play a tone...
         ld de,hardResetTune ;Set DE to tune data
         call playTune
@@ -398,6 +415,9 @@ LCDinit:
         ;TODO add more here...
 
 preSoftBoot:
+        ;get current GLCD Term status
+        call getGLCDTerm    ;get flag
+        call setGLCDTerm    ;set GLCD status
         ;set up initial menu if RESET is pressed
         ld hl,mainMenuCFG   ;set up 1G Menu
         call menuReset      ;clear menu flags
@@ -485,6 +505,9 @@ keyAddress:
 keyGo:
         cp K_GO             ;Go key press
         jr nz,keyHex        ;no, Must be Hex key
+        ld b,01H            ;clear LCD instruction
+        call commandToLCD   ;update LCD
+        jp lcdRunning       ;display Code running at on LCD
 runRoutine:
         call beep           ;indicate key press
         ld a,(SYS_MODE)     ;reset hardware to MONitor mode
@@ -648,22 +671,14 @@ menuGo:
         inc hl              ;for executing
         ld h,(hl)           ;and displaying
         ld l,a
+lcdRunning:
         push hl             ;save HL
         ld b,0D6H           ;set cursor to Row 4,Col 3
         call commandToLCD   ;update LCD
         ld hl,menuGoText    ;display "  Running at: 1234  "
         call stringToLCD    ;write text
         pop hl              ;restore HL
-        push hl             ;save HL
-        push de             ;save DE
-        ld de,DATA_ROW      ;tmp memory storage
-        call HLToString     ;convert HL to ASCII string in (DE)
-        xor a               ;set A = 0
-        ld (de),a           ;terminate string with zero
-        ld hl,DATA_ROW      ;set HL to text address
-        call stringToLCD    ;write text
-        pop de              ;restore DE
-        pop hl              ;restore HL to address
+        call HLtoLCD        ;display HL as a string on LCD
         jp runRoutine       ;execute it safely
 keyAddressLCD:
         cp K_ADDR           ;is key AD?
@@ -1018,6 +1033,38 @@ commandToLCD:
         ld a,b              ;move instruction into A
         out (LCD_INST),a    ;send byte to instruction port
         pop af              ;restore AF
+        ret
+
+; LCD initialise routine to set up LCD for correct use after a reset
+; Inputs: nothing
+; Destroys: all
+LCDinitialise:
+        ld bc,400H+LCD_INST ;4 instructions, LCD Instruction port
+        ld hl,LCDInitTable  ;LCD instructions table
+        ld de,1000H
+        dec de
+        ld a,e
+        or d
+        jr nz,$-3
+        outi                ;send it to LCD
+        jr nz,$-10          ;loop again
+        ret
+
+; HL to LCD.  Dipslay the contents of HL as a string on the LCD at the current
+; cursor location
+; Inputs: HL
+; Destroy: A
+HLtoLCD:
+        push hl             ;save HL
+        push de             ;save DE
+        ld de,DATA_ROW      ;tmp memory storage
+        call HLToString     ;convert HL to ASCII string in (DE)
+        xor a               ;set A = 0
+        ld (de),a           ;terminate string with zero
+        ld hl,DATA_ROW      ;set HL to text address
+        call stringToLCD    ;write text
+        pop de              ;restore DE
+        pop hl              ;restore HL to address
         ret
 
 ; LCD busy check.  Checks the LCD busy flag and loops until LCD isn't busy
@@ -1767,19 +1814,39 @@ mvup:
         ret                 ;move done
 blockMoveParams:        
         .db 3                           ;Three parameters
-        .db "Enter "                    ;7seg Text
-        .db "= Enter Parameters =",0    ;Parameter title
+        .db "BACKUP"                    ;7seg Text
+        .db "=   Block Backup   =",0    ;Parameter title
         .db "Start Address:",0          ;Text and Address
         .dw COPY_START
         .db "End Address:",0            ;Text and Address
         .dw COPY_END
         .db "Dest. Address:",0          ;Text and Address
         .dw COPY_DEST
+blockCopyParams:        
+        .db 3                           ;Three parameters
+        .db "S-COPY"                    ;7seg Text
+        .db "= Smart Block Copy =",0    ;Parameter title
+        .db "Start Address:",0          ;Text and Address
+        .dw COPY_START
+        .db "End Address:",0            ;Text and Address
+        .dw COPY_END
+        .db "Dest. Address:",0          ;Text and Address
+        .dw COPY_DEST
+blockRestoreParams:        
+        .db 3                           ;Three parameters
+        .db "RESTOR"                    ;7seg Text
+        .db "=  Restore Backup  =",0    ;Parameter title
+        .db "Start Address:",0          ;Text and Address
+        .dw REST_START
+        .db "End Address:",0            ;Text and Address
+        .dw REST_END
+        .db "Dest. Address:",0          ;Text and Address
+        .dw REST_DEST
 
 ; Move a block of code AND update all absolute jumps and calls.
 ; Destroys HL, DE, A, BC
 smartCopy:
-        ld hl,blockMoveParams
+        ld hl,blockCopyParams
         call paramDriver    ;collect parameters
 smartCopyDirect:
         call blockMove      ;move block
@@ -2015,6 +2082,83 @@ dumbCopy:
         ld hl,blockMoveParams
         call paramDriver    ;collect parameters
         jp blockMove        ;move block
+
+; Restore from backup.  This is the reverse of the Backup or Smart Copy
+; Start = COPY_DEST
+; End = COPY_DEST + (COPY_END - COPY_START + 1)
+; Dest = COPY_START
+restoreBackup:
+        ld hl,COPY_START
+        ld de,REST_DEST
+        call HLtoDE
+        ld hl,COPY_DEST
+        ld de,REST_START
+        call HLtoDE
+        ld hl,COPY_START
+        call checkStartEnd
+        dec bc
+        ld hl,(REST_START)
+        add hl,bc
+        ld (REST_END),hl
+        ld hl,blockRestoreParams
+        call paramDriver    ;collect parameters
+        ld hl,COPY_START
+        ld de,TEMP_START
+        ld bc,6
+        ldir
+        ld hl,REST_START
+        ld de,COPY_START
+        ld bc,6
+        ldir
+        call blockMove        ;move block
+        ld hl,TEMP_START
+        ld de,COPY_START
+        ld bc,6
+        ldir
+        ret
+
+HLtoDE:
+        ld a,(hl)
+        ld (de),a
+        inc hl
+        inc de
+        ld a,(hl)
+        ld (de),a
+        ret
+
+; Fill with NOP.  Fill data range with 00h or NOP instruction
+NOPFill:
+        ld hl,fillRangeParams
+        call paramDriver    ;collect parameters
+        call LCDConfirm     ;this is serious mum!
+        ret nz              ;no, just exit
+        ld hl,TEMP_START    ;check parameters
+        call checkStartEnd  ;
+        jr nc,doFill        ;All good, continue
+        pop hl              ;remove call return from stack
+        jp displayError     ;display error if end < start
+doFill:
+        ld d,h
+        ld e,l
+        inc de
+        xor a
+        ld (hl),a
+        dec bc
+        ldir
+        ret
+
+fillRangeParams:        
+        .db 2                           ;Three parameters
+        .db "FILL  "                    ;7seg Text
+        .db "=  Fill with NOPs  =",0    ;Parameter title
+        .db "From Address:",0           ;Text and Address
+        .dw TEMP_START
+        .db "To Address:",0             ;Text and Address
+        .dw TEMP_END
+        
+        
+        call getToFrom      ;collect parameters
+
 
 ; Display ERROR/PASS on the 7Segs and wait for key press
 displayError:
@@ -2403,18 +2547,24 @@ serialDisable:
         out (SEGS),a        ;Clear segment leds
         ret
 
-; Real Time Clock (RTC) Routines
-; ------------------------------
-RTCQuestion:
-        .db "Press <GO> to Reset!",0
-; Nicely reset RTC PRAM by asking the question first!
-RTCReset:
-        ld hl,RTCQuestion
+; Confirmation LCD Question.  Press 'C' to confirm or any other key to not confirm
+; Input: none
+; Return: Zero Flag Set === Confirmed
+LCDConfirm:
+        ld hl,confirmText
         ld b,01H            ;clear LCD instruction
         call commandToLCD   ;update LCD
         call stringToLCD    ;Display Message on LCD
         rst 08H             ;get key and wait
-        cp K_GO             ;is it GO?
+        cp 0CH              ;is it C? Set Zero Flag
+        ret
+
+; Real Time Clock (RTC) Routines
+; ------------------------------
+
+; Nicely reset RTC PRAM by asking the question first!
+RTCReset:
+        call LCDConfirm     ;check before proceding TISM
         ret nz              ;no, just exit
         ;fall through to next routine
 
@@ -2422,6 +2572,7 @@ RTCReset:
 ; Input: none
 ; Destroys: none
 resetRTCPRAM:
+        call resetDS1302    ;Reset RTC Time/Date to start it off
         ld bc,0800H         ;B=eight 2 byte addresses, C=slot 0
         ld hl,USER_ADDR     ;default to 4000H
 RTCResetLoop1:
@@ -2711,6 +2862,13 @@ getCaps:
         ld a,(CAPS_LOCK)    ; fetch current value
         ret
 
+; Get GLCD Terminal state
+; Input: none
+; Output: A = GLCD Terminal state; 0 = off, FF = on
+getGLCDTerm:
+        ld a,(GLCD_TERM)    ; fetch current value
+        ret
+
 ; Get SHADOW state
 ; Input: none
 ; Output: A = shadow state; 0 = off, SHADOW = on
@@ -2752,6 +2910,16 @@ updateMode:
         pop bc
         ret
 
+; Set GLCD Terminal state
+; Input: A = Desired GLCD Terminal state; 0 = off, FF = on
+; Destroy: A
+setGLCDTerm:
+        or a                ; check for zero
+        jr z,$+4            ; yes, skip force FF
+        ld a,0FFH           ; set to FF
+        ld (GLCD_TERM),a    ; save glcd termnial flag
+        jp initGLCDTerminal ; set GLCD based on flag
+
 ; Set SHADOW state
 ; Input: A = Desired SHADOW state; 0 = off, SHADOW = on
 ; Destroy: A
@@ -2788,6 +2956,20 @@ setExpand:
         and -EXPAND-1       ; clear bit
         jr updateMode       ; set mode and exit
 
+; Toggle Caps Lock
+; Input: none
+; Destroy: A
+toggleCaps:
+        ld a,(CAPS_LOCK)    ; get caps lock mode status
+        xor CAPSLOCK        ; toggle bit
+        ld (CAPS_LOCK),a    ; return it back
+        ld a,(SYS_MODE)     ; get current state
+        xor CAPSLOCK        ; toggle bit
+updateCTL:
+        out (SYS_CTRL),a    ; update latch
+        ld (SYS_MODE),a     ; save state
+        ret
+
 ; Toggle EXPAND
 ; Input: none
 ; Destroy: A
@@ -2797,8 +2979,29 @@ toggleExpand:
         ld (XPND_MODE),a    ; return it back
         ld a,(SYS_MODE)     ; get current state
         xor EXPAND          ; toggle bit
-        out (SYS_CTRL),a    ; update latch
-        ld (SYS_MODE),a     ; save state
+        jr updateCTL
+
+; Toggle GLCD Terminal Flag
+; Input: none
+; Destroy: A
+toggleGLCDTerminal:
+        ld a,(GLCD_TERM)    ; get glcd terminal status
+        cpl                 ; twos complement
+        ld (GLCD_TERM),a    ; save it back
+initGLCDTerminal:
+        push bc
+        push de
+        push hl
+        push af
+        or a
+        jr z, $+7
+        call initTerminal   ; set GLCD as terminal
+        jr $+5
+        call initLCD        ; set GLCD as normal
+        pop af
+        pop hl
+        pop de
+        pop bc
         ret
 
 ; Toggle Key Press Beep
@@ -2933,6 +3136,13 @@ kAlpha:
         ret c               ;no, no mod just exit cleanly
         add a,3DH           ;index key to get correct ASCII
         ld b,a              ;save key
+        ld a,d              ;check second key
+        dec a               ;is it CTRL?
+        jr nz,kCaps         ;no, check for caps lock
+        ld a,b              ;get correct key
+        sub 60H             ;adjust for CTRL-? keys
+        ret                 ;exit
+kCaps:
         call getCaps        ;get CAPS lock state
         or a                ;is it set or not?
         jr nz,kUpper        ;yes, make upper case
@@ -2947,10 +3157,59 @@ kAlpEnd:
         ld a,b              ;save correct key
         ret                 ;exit
 
+; Parse matrix keyboard input.  This routine checks the key(s) pressed on
+; the Matrix Keyboard and either returns the key pressed in ASCII or handle
+; special cases.  The special cases are Key Bounce/Repeat and Caps lock.  This routine
+; is designed to come directly after matrixScan and included in the Scan loop.
+; Input: DE = value return from matrixScan. E = key, D = secondary key
+;        Zero Flag = Set if key pressed. (From matrixScan output)
+; Output: A = key pressed in ASCII
+;         Carry Flag = Set if ASCII returned.
+;         Carry Flag = Not Set if special case and no ASCII returned
+; Destroy: BC, HL
+parseMatrixScan:
+        ld hl,KEY_REPEAT    ;get the key repeat timer
+        jr z,parseKey       ;Key has been pressed, check it
+        ld (hl),00H         ;reset delay counter
+        xor a               ;no key pressed, clear the key buffer
+        ld (KEY_BUFF),a
+parseSpecial:
+        ld b,00H            ;delay to slow this
+        djnz $              ;shit down.
+        djnz $              ;shit down.
+        or a                ;Clear carry flag
+        ret
+parseKey:
+        ;check for previous key
+        ld a,(KEY_BUFF)     ;Check previous key
+        cp e                ;is the key pressed
+        jr nz,parseNewKey   ;New key, parse it
+        dec (hl)            ;key held, decrease timer
+        jr nz,parseSpecial  ;loop back to exit as if no key pressed
+        ld (hl),KEY_SPEED   ;short timer set for subsequent presses
+parseNewKey:
+        ;different key, save it
+        ld a,e
+        ld (KEY_BUFF),a     ;save key to key buffer
+        cp 03H              ;ignore Shift/Ctrl/Fn if first key pressed
+        jr c,parseSpecial   ;exit cleanly
+        dec (hl)            ;set timer off
+        ;check for Caps lock pressed (need to fix auto repeat issue)
+        ld a,07H            ;caps lock key value
+        cp e
+        jr nz,parseMatrix ;no, then convert key pressed
+        call toggleCaps
+        jr parseSpecial     ;exit cleanly
+parseMatrix:
+        call matrixScanASCII
+        ;All good, A=ASCII key pressed,
+        scf                 ;set carry for good exit
+        ret
+
 ; -----------------------------------------------------------------------------
 ; Strings, Constants, JP tables etc.
 ; -----------------------------------------------------------------------------
-        .org BASE_ADDR+1000H
+        .org BASE_ADDR+1200H
 ;Initial defaults on Hard Boot (Copied to RAM)
 ;MCB = Bits 0,1 = Data Nibbles Entered
 ;      Bit 2 = Address=H/Data=L mode
@@ -2968,7 +3227,7 @@ defaults:
         .db 00H             ;Key repeat timer
         .db 00H             ;Key Beep On/Off
         .db 00H             ;Matrix Second Key Buffer
-        .db 00H             ;Byte Count
+        .db 00H             ;GLCD Terminal flag (zero = use FTDI)
         .dw USER_ADDR       ;Disassembler/Editor Starting Location
         .dw INTHandler      ;INT User jump routine (default RETI)
         .dw NMIHandler      ;NMI User jump routine (default RETI)
@@ -2977,6 +3236,7 @@ defaults:
         .db 00H             ;Menu count
         .dw mainMenuCFG     ;Menu configuration
         .db 0FFH            ;Menu configuration depth index
+        .db 00H             ;Capslock OFF
 defaultsSize:    .equ $-defaults
 
 ;LCD Initiliastion codes
@@ -3002,12 +3262,12 @@ functionJumpTable:
         .dw getCELQuickJump ;2 = Get CEL Quick Jump 2
         .dw getCELQuickJump ;3 = Get CEL Quick Jump 3
         .dw intelHexLoad    ;4 = Intel Hex File Loader
-        .dw displayNoFn     ;5 = Unused
+        .dw toggleGLCDTerminal ;5 = Toggle GLCD Terminal output
         .dw displayNoFn     ;6 = Unused
         .dw displayNoFn     ;7 = Unused
-        .dw displayNoFn     ;8 = Unused
+        .dw NOPFill         ;8 = NOP Fill
         .dw displayNoFn     ;9 = Unused
-        .dw displayNoFn     ;A = Unused
+        .dw restoreBackup   ;A = Restore Backup
         .dw dumbCopy        ;B = Block Backup
         .dw smartCopy       ;C = Smart Copy
         .dw switchView      ;D = Switch between Hex and Disassembly view
@@ -3061,6 +3321,10 @@ menuGoText:
 serialStartup:
         .db "TEC-1G Connected",CR,LF,0
 
+;Confirmation Text
+confirmText:
+        .db "Press 'C' to Confirm",0
+
 ;Hard Reset Tune
 hardResetTune:
         .db 01H,01H,00H,00H,12H,12H,17H,17H         ;Funky Town!
@@ -3074,7 +3338,7 @@ hardResetMessage:
 
 ;Main Menu Configuration
 mainMenuCFG:
-        .db 13   ;thirteen entries
+        .db 12   ;thirteen entries
         .db "TEC-1G"    ;7segment Text
            ;"                   " <- Max LCD entry width
         .db "= TEC-1G Main Menu =",0
@@ -3095,8 +3359,6 @@ intelLabel:
         .dw dataFromSerial
         .db "Tiny Basic",0
         .dw tinyBasic
-        .db "Terminal Monitor",0
-        .dw tmon
         .db "Music Routine",0
         .dw playTuneMenu
         .db "Settings",0
@@ -3108,7 +3370,7 @@ intelLabel:
 
 ;Settings Menu
 settingsCFG:
-        .db 5
+        .db 6
         .db "Config"    ;7segment Text
            ;"                   " <- Max LCD entry width
         .db "=  TEC-1G Settings =",0
@@ -3116,9 +3378,11 @@ settingsCFG:
         .dw toggleBeep
         .db "Toggle Address Inc",0
         .dw toggleAutoAddress
+        .db "Toggle GLCD Term",0
+        .dw toggleGLCDTerminal
         .db "Configure RTC",0
         .dw RTCSetup
-        .db "Reset RTC PRAM",0
+        .db "Reset RTC & PRAM",0
         .dw RTCReset
         .db "Toggle EXPAND",0
         .dw toggleExpand
@@ -3146,7 +3410,7 @@ creditsCFG:
         .db "   and Ken Stone   ",0
         .dw softBoot
 
-        .org BASE_ADDR+1400H
+        .org BASE_ADDR+1600H
 APITable:
         .dw softwareID
         .dw versionID
@@ -3196,17 +3460,21 @@ APITable:
         .dw stringToSerial
         .dw RTCAPI
         .dw menuPop
-        .dw beepAlways  ;spare
+        .dw toggleCaps
         .dw random
         .dw setDisStart
         .dw getDisNext
         .dw getDisassembly
         .dw matrixScanASCII
+        .dw parseMatrixScan
+        .dw LCDConfirm
+        .dw getGLCDTerm
+        .dw setGLCDTerm
 
 
 API_COUNT:  .equ    $-APITable  ;Total number of API functions
 
-        .org BASE_ADDR+1500H
+        .org BASE_ADDR+1700H
 APITable2:
         .dw initLCD            ;Initalise the LCD
         .dw clearGBUF          ;Clear the Graphics Buffer
@@ -3229,22 +3497,32 @@ APITable2:
         .dw setBufNoClear      ;Retain the Graphics buffer on after Plotting to the screen
         .dw clearPixel         ;Remove a Pixel at X,Y
         .dw flipPixel          ;Flip a Pixel On/Off at X,Y
+        .dw drawGraphic        ;Draw an ASCII charcter or Sprite to the LCD
+        .dw invGraphic         ;Inverse graphics printing
+        .dw initTerminal       ;Initialize the LCD for terminal emulation
+        .dw sendCharToLCD      ;Send an ASCII Character to the LCD
+        .dw sendStringToLCD    ;Send an ASCII String to the LCD
+        .dw sendRegToLCD       ;Send register A to the LCD
+        .dw sendHLToLCD        ;Send register HL to the LCD
+        .dw setCursor          ;Set the graphics cursor
+        .dw getCursor          ;Get the current cursor
+        .dw displayCursor      ;Turn Cursor on or off
 
 API_COUNT2:  .equ    $-APITable2  ;Total number of GLCD API functions
 
 ; END OF CORE MONITOR
 
 ; Monitor Packages
-        .org BASE_ADDR+1600H
+        .org BASE_ADDR+1800H
         .include "packages.z80"
 
         .org BASE_ADDR+3FECH    ; 16k
 
 RELMAJOR:   .dw 07E8h	; 2024 - for the API
-RELMINOR:   .dw 0014h
+RELMINOR:   .dw 0015h
 SOFTWARE:   .db "MON3.1G",0
 RELEASE:    .db REL_TXT,0
-REL_TXT:    .equ "2024.14"
+REL_TXT:    .equ "2024.15"
 
         .end
 
