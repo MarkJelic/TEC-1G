@@ -1,7 +1,7 @@
 ## File Links
 | File | Description | Version |
 |---|---|---|
-| [Monitor 3](./MON3/) | The new main Monitor for the TEC-1G written by Brian Chiha| 1.4 |
+| [Monitor 3](./MON3/) | The new main Monitor for the TEC-1G written by Brian Chiha| 1.5 |
 | [Diagnostics](./DIAGs/) | Test the functionality of your TEC-1G, by Craig Hart | 1.1 |
 | [BMON](./BMON/) | Run the first monitor that Brian Chiha adapted for the TEC-1 | 1.3 |
 | [MON-1B](./MON1/) | The original, hand-coded monitor for the TEC-1 by John Hardy | 16K |
