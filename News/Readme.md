@@ -1,5 +1,11 @@
 # TEC-1G News
 
+## MON3 version 1.5 (7/Jun/2024)
+Monitor3 has been upgraded to version 1.5 by Brian Chiha. Get all the details here:<br>
+https://github.com/MarkJelic/TEC-1G/tree/main/ROMs/MON3
+
+
+--------------------------------------------------------
 ## 7 Segment Bezel by "Fred Nichols" (3/May/2024)
 
 Now this is really cool! Fred Nichols has created a 3D printable Bezel that sits over the 7 segment displays. He has kindly released the STL files so you can download it and print it yourself or get a shop to do that for you. Either way, it makes the TEC-1G look really fancy! [Click on this link](https://github.com/turbo-gecko/TEC/tree/main/3D%20Printing/7%20Seg%20Bezel) to take you to his GitHub!
