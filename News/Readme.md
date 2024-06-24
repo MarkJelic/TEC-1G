@@ -1,9 +1,20 @@
 # TEC-1G News
 
+
+## TEC-1G Font Identified! (24/Jun/2024)
+The mystery of which font goes into making the iconic TEC-1G logo has been solved by James Elphick.  At first we thought it might have been Posterama 1984 but that is owned by one of the oldest font foundry, Monotype.  James soon found a very close competitor in Montserrat-Alt1 and it is an Open Font typeface.  So in aligning with our ethos, we must have used the Open Source version and we have copied it to this GitHub, in the \Assets folder off the root:<br>
+
+https://github.com/MarkJelic/TEC-1G/tree/main/Assets
+
+--------------------------------------------------------
+## Fullisik Mechanical Matrix Keyboard Released! (18/Jun/2024)
+Designed by James Elphick, following the design of the Tactile Matrix keyboard, the new Fullisik Mechanical Matrix Keyboard goes on sale today, and is sold out befor the weekend is done! Looks and feels fantastic.
+
+--------------------------------------------------------
+
 ## MON3 version 1.5 (7/Jun/2024)
 Monitor3 has been upgraded to version 1.5 by Brian Chiha. Get all the details here:<br>
 https://github.com/MarkJelic/TEC-1G/tree/main/ROMs/MON3
-
 
 --------------------------------------------------------
 ## 7 Segment Bezel by "Fred Nichols" (3/May/2024)
