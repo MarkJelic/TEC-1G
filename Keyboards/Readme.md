@@ -24,10 +24,10 @@ The [Matrix Interface](https://github.com/MarkJelic/TEC-1_Hardware/tree/master/Z
 ## The Tactile Keyboard
 I created the Tactile version of the Matrix Keyboard that accepted 6mm and 12mm little tactile keys which aren't terrible and relatively cheap. You can get more details of how it was developed, and how to assemble it, [here](./Tactile/)
 
-## The Mechanical Keyboard (in development)
-[A full mechanical keyboard](./Mechanical/) is in development and will use the Gateron Low Profile key switches with optional Fullisik LED lighting!
+## The Mechanical Keyboard
+The mechanical version of the matrix keyboard has been finished. Details, [here](./Mechanical/)
 
 ## Where to Buy
-The Tactile Matrix Keyboard Kit can be found on eBay:  https://www.ebay.com.au/itm/175756969668
+The Tactile Matrix Keyboard Kit can be found on the Tindie Store:  (https://www.tindie.com/products/tec1/tec-1g-matrix-tactile-keyboard/)
 
-Likewise the Mechanical Kit will also be available on eBay, soon.
+
