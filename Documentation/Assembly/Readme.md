@@ -11,14 +11,13 @@ This part is obvious and you probably have everything you need if you have an in
 ## 2. [Compononents & Identifiers](./Components.md)
 Some components can be hard to identify, and most are critical in the orientation required to install them. Here is a quick overview.
 
-## 3. [The Fullisik Keyboard](./Fullisik.md)
+## 3. [The Power Circuit](./Power.md)
+The most critcal part of any circuit is stable power, so this is the next part we focus on so that all the subsequesnt soldering you do can be tested for shorts and the like.
+
+## 4. [The Fullisik Keyboard](./Fullisik.md)
 If you have opted to have the most luxurious typing experince ever designed for a Z80 SBC, and want to have the maximum amount of envy from all the other hobbyist plebs, then you will have opted for the Fullisik Mechanical Keyboard, bro!  The very pretty but fiddly little LEDs need to be installed and tested first.
 
 If you have opted for the pedestrian-level keyboard using the 12mm Tactiles, then this step can be skipped, with the keys (both Tactile and Mechanical) soldered on last.
-
-## 4. [The Power Circuit](./Power.md)
-The most critcal part of any circuit is stable power, so this is the next part we fopcus on so that all the subsequesnt soldering you do can be tested for shorts and the like.
-
 
 ## 13. [Jumpers & Switches](./Jumpers+Switches.md)
 Skipping ahead a little... You've finished soldering it all up, and you want to power it on... But what do all the Jumpers and Switches do?
