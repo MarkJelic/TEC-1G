@@ -13,7 +13,7 @@ and pop them into the TEC-1G, without having to play around with the ROM size sw
 
 You can also download the "combined images" that include:
  - 32k has MON-3 and DIAGs
- - 64k has MON-3, DIAGs, BMON and MON-1B
+ - 64k has MON-3, DIAGs and MON-1B. (16K is left blank for upgrades.)
 
 
 ## Older ROMs
