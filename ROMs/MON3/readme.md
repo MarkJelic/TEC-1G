@@ -52,7 +52,7 @@ Only release the Fn Key after the function starts. (There is a bit of a delay as
 | Fn-C | SmartCopy™ a block of code from one location to another  | 1.0 |
 | Fn-D | Disassembly View | 1.0 |
 | Fn-E | Expand flag toggled (Bank 2, Pages 0 & 1)  | 1.1 |
-| Fn-F | File Manager (SD Card) | TBA |
+| Fn-F | File Manager (SD Card) | 1.6 |
 
 ## Memory Map
 One of the most clever things about the TEC-1G is the unique way it handles the limited 64K memory map
