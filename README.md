@@ -8,7 +8,7 @@
 | [BOM Sourcing](./files/TEC-1G_BOM_v1.5.xlsx) | (Out of date. Needs updating. Use with caution. Always follow schematic.) | 1.5 |
 | [Schematic](./TEC-1G_Schematic_v1-22.pdf) | See what makes the TEC-1G tick. | 1.22 |
 | [PCB Gerbers](./TEC-1G_Gerbers_v1-22_SigEd.zip) | Gerbers of the PCB so you can print your own! | 1.22 |
-| [Monitors / ROMs](./ROMs/) | Download and burn the ROMs for your TEC-1G from this link! | 1.5 |
+| [Monitors / ROMs](./ROMs/) | Download and burn the ROMs for your TEC-1G from this link! | 1.6 |
 | [MON3 User Guide](./MON3_User_Guide_v1-6.pdf) | The comprehensive User Guide to MON3 | 1.6 |
 | [TEC Deck](./TEC-Deck/) | The TEC Deck has multiple Cards that add major functionalityto the TEC-1G! | 1.2 |
 | [GPIO Modules](./GPIO/) | See what modules can be attached to the GPIO connector on the LHS of the TEC-1G | 1.0 |
