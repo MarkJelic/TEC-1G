@@ -48,6 +48,7 @@ Which tell you to:
 3. It will ask you for your password. Enter it to complete the install.
 4. Open the Mint Menu and type "VS" to find VS Code. Right Click and "Add to Panel" so it is easy to find and Start.
 5. Once VS Code is installed and running, Add in the Extension: Z80 Macro-Assembler. This gives you coloured code highlighting and makes reading your code a lot easier.
+
 ![image](https://github.com/user-attachments/assets/f3a520eb-31c3-4731-83c4-f0cecf832b20)
 
 Download CoolTerm from: https://www.freeware.the-meiers.org/
