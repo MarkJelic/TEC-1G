@@ -12,9 +12,15 @@ of metal and plastic that won't do anything.
 2. Assembler
 3. Serial Terminal Software
 
+Once you create your code in the Code Editorr, you Assemble your code into machine code which is formatted into the Intel .HEX file format. Inside is just text, but it has some aditional information like where in memory are the bytes it is transfering should be placed in the TEC-1. This HEX code then gets transfered to the TEC-1 using the Serial Terminal.
+
 ### Code Editor
 
 You can use just about anything as your code editor, as Z80 Assembly language is nothing more than a text file but with a .Z80 or .ASM file extension. So you could, if you like to suffer, use Notepad or TextEdit or even Word... But there are much better alternatives out there and dispite Microsoft trying really hard to ruin it, VS Code is a preferred option amongst many coders in many programming languages.
+
+One of the best parts of VS Code are the myriad of Extensions available for it, and the ones we want are:
+- Z80 Assembly by Imanolea. This colours your code to make it more readable, AKA Syntax Highlighting.
+- Z80 Macro-Assembler by mborik. A great helper for when you assemble your code.
 
 ### Assembler
 
