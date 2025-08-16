@@ -12,15 +12,18 @@ of metal and plastic that won't do anything.
 2. Assembler
 3. Serial Terminal Software
 
-Once you create your code in the Code Editorr, you Assemble your code into machine code which is formatted into the Intel .HEX file format. Inside is just text, but it has some aditional information like where in memory are the bytes it is transfering should be placed in the TEC-1. This HEX code then gets transfered to the TEC-1 using the Serial Terminal.
+Once you create your code in the Code Editor, you Assemble your code into machine code which is formatted into the Intel .HEX file format. Inside is just text, but it has some aditional information like where in memory are the bytes it is transfering should be placed in the TEC-1. This HEX code then gets transfered to the TEC-1 using the Serial Terminal.
 
 ### Code Editor
 
 You can use just about anything as your code editor, as Z80 Assembly language is nothing more than a text file but with a .Z80 or .ASM file extension. So you could, if you like to suffer, use Notepad or TextEdit or even Word... But there are much better alternatives out there and dispite Microsoft trying really hard to ruin it, VS Code is a preferred option amongst many coders in many programming languages.
 
 One of the best parts of VS Code are the myriad of Extensions available for it, and the ones we want are:
-- Z80 Assembly by Imanolea. This colours your code to make it more readable, AKA Syntax Highlighting.
-- Z80 Macro-Assembler by mborik. A great helper for when you assemble your code.
+- Z80 Assembly by Imanolea. This colours your code to make it more readable, AKA Syntax Highlighting.<br>
+<img width="478" height="146" alt="image" src="https://github.com/user-attachments/assets/8478958d-62ae-4986-ab19-6befacfffa06" /><br>
+- Z80 Macro-Assembler by mborik. A great helper for when you assemble your code.<br>
+<img width="478" height="146" alt="image" src="https://github.com/user-attachments/assets/f3a520eb-31c3-4731-83c4-f0cecf832b20" /><br>
+
 
 ### Assembler
 
@@ -42,10 +45,11 @@ The Serial Terminal Software allows you to send and receive files to and from th
 
 ## Pick Your Poison
 
-## Windows
+### Windows
+One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section.
 
-## Linux
-
+### Linux
+*Code Editor*<br>
 Download the VS Code binary from:  https://code.visualstudio.com/Download
 Follow these instructions: https://code.visualstudio.com/docs/setup/linux
 Which tell you to:
@@ -53,38 +57,39 @@ Which tell you to:
 2. Enter "sudo apt install ./<filename.deb>"  (Yes, you really do have to put in the dot and the slash)
 3. It will ask you for your password. Enter it to complete the install.
 4. Open the Mint Menu and type "VS" to find VS Code. Right Click and "Add to Panel" so it is easy to find and Start.
-5. Once VS Code is installed and running, Add in the Extension: Z80 Macro-Assembler. This gives you coloured code highlighting and makes reading your code a lot easier.
+5. Once VS Code is installed and running, add in the Extensions.
 
-![image](https://github.com/user-attachments/assets/f3a520eb-31c3-4731-83c4-f0cecf832b20)
+*Assembler*<br>
+Install Node.JS - https://nodejs.org/en/download/package-manager<br>
+- installs nvm (Node Version Manager)<br>
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash<br>
+- download and install Node.js (you may need to restart the terminal)<br>
+nvm install 20<br>
 
-Download CoolTerm from: https://www.freeware.the-meiers.org/
-Extract All to the Downloads folder. Go into that folder and then "Open in Terminal"
-Type in:  
-sudo mkdir /usr/bin/CoolTerm   (you will be asked for your password)
-sudo cp * /usr/bin/CoolTerm -r -f
-Close the Terminal window. Browse to the folder /usr/bin/CoolTerm
-Double click "coolterm" program
-Dialogue box asking to set preferences comes up. Do so (I did) or select Defaults.
-Once running, go to Mint Menu, type in "Cool". Right click on menu item and select "Add to Panel"
-
-Install Node.JS - https://nodejs.org/en/download/package-manager
-- installs nvm (Node Version Manager)
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-- download and install Node.js (you may need to restart the terminal)
-nvm install 20
-
-
+*Serial Terminal* <br>
+Download CoolTerm from: https://www.freeware.the-meiers.org/<br>
+Extract All to the Downloads folder. Go into that folder and then "Open in Terminal"<br>
+Type in:  <br>
+sudo mkdir /usr/bin/CoolTerm   (you will be asked for your password)<br>
+sudo cp * /usr/bin/CoolTerm -r -f<br>
+Close the Terminal window. Browse to the folder /usr/bin/CoolTerm<br>
+Double click "coolterm" program<br>
+Dialogue box asking to set preferences comes up. Do so (I did) or select Defaults.<br>
+Once running, go to Mint Menu, type in "Cool". Right click on menu item and select "Add to Panel"<br>
 
 ## MacOS
+*Code Editor* <br>
+Yep, it's VS Code again and you download it from: https://code.visualstudio.com/Download
 
-
-Install Node.js:  
-Visit: https://nodejs.org/en/download
+*Assembler* <br>
+Install Node.js: https://nodejs.org/en/download
 You can try the manual installation instructions but the Prebuilt version simplifies the process. Simply select your platform and type of processor and then select the "MacOS Installer (.pkg)". This will download the installer to your Downloads folder. Double click on it to start the install process.
 At the end it will pop up is message:
 Make sure that /usr/local/bin is in your $PATH.
 
-
+*Serial Terminal* <br>
+CoolTerm is is cross platform and easy to install on the Mac. Download it here: https://www.freeware.the-meiers.org/
+And drag and drop it into your Applications folder. Easy peasy.
 
 
 
