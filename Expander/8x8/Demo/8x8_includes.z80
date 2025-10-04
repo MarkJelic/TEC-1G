@@ -1,0 +1,58 @@
+; ----------------------------------------------------------------
+; .EQUATES
+; ----------------------------------------------------------------
+
+; IO ports
+KEYB:       .equ $00
+DIGITS:     .equ $01
+SEGS:       .equ $02
+SIMP3:      .equ $03
+LCDCMD:     .equ $04
+LCDDATA:    .equ $84
+Y8x8:       .equ $05        ; Standard 8x8 Row (Y) select
+Rx8x8:      .equ $06        ; RGB 8x8 (Red) column (X) select
+Gx8x8:      .equ $F8        ; RGB 8x8 (Green) column (X) select
+Bx8x8       .equ $F9        ; RGB 8x8 (Blue) column (X) select
+GLCD_INST:  .equ $07        ; Graphical LCD Instruction
+GLCD_DATA:  .equ $87        ; Graphical LCD Data
+RTC:        .equ $FC        ; New to the 1G - RTC GPIO Board
+SDIO:       .equ $FD        ; New to the 1G - 8bit I/O GPIO Board
+spiport:    .equ $FD        ; IO port SPI "controller" lives on [MJ: LOL!]
+MATRIX:     .equ $FE        ; New to the 1G - Matrix Keyboard
+SYSCTRL:    .equ $FF        ; New to the 1G - System Control Latch
+
+; SYSCTRL  port bits
+SHADOW:     .equ $01
+PROTECT:    .equ $02
+EXPAND:     .equ $04
+CAPSL:      .equ $20
+
+; LCD commands
+lcdCls:     .equ $01
+lcdRow1:    .equ $80
+lcdRow2:    .equ $C0
+lcdRow3:    .equ $94
+lcdRow4:    .equ $D4
+
+; Memory Locations
+RAMST:      .equ $1000      ; Start of RAM Memory (4k Mark like original TEC-1)
+RAMBL1:     .equ $4000      ; Second bank of RAM; Bank 1
+RAMEND:     .equ $7FFF      ; End of RAM Memory (32k)
+STAKLOC:    .equ $0800      ; Same location at original TEC-1  :)
+
+HIROM:      .equ $C000      ; Area where 16k ROM lives; Bank 3
+HIBASE:     .equ $0300      ; Area where 'High' ROM code really starts
+
+; Timing constants
+SDELAY:     .equ $F000      ; POST message delay time
+BDELAY:     .equ $4000      ; LED Bar delay time
+
+; SIO Baud
+BAUD:       .equ $1B        ;BAUD 4800 Delay
+
+; GLCD
+V_DELAY_US: .equ $000A      ;Delay for 76us on your system
+
+; SD Card
+spics1:     .equ $FB
+spiidle:    .equ $05        ; Idle state

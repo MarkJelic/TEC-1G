@@ -1,0 +1,205 @@
+.ORG $2000                      ; All the 8x8 data
+buff8x8:
+left8x8:        ds 8        ; The is an "off screen" buffer to the left, used from scrolling right
+blue8x8:        ds 8        ; the 8x8 display actually shows these 3 buggers
+green8x8        ds 8        ; the 8x8 display actually shows these 3 buggers
+red8x8:         ds 8        ; the 8x8 display actually shows these 3 buggers
+right8x8:       ds 8        ; The is an "off screen" buffer to the right, used from scrolling left
+colour8x8:      ds 1        ; used to contain Bit switches for which colour is to be turned off or shown
+
+; ----------------------------------------------------------------
+; strings, constants
+; ----------------------------------------------------------------
+.ORG    $5000
+;                    12345678901234567890
+fnMsg:          .db "Fn ",0
+plusMsg:        .db "Plus ",0
+negMsg:         .db "Minus",0
+goMsg:          .db "Go   ",0
+addrMsg:        .db "Addr ",0
+
+menutitle:      .db "** DEMO Cart Menu **",0
+
+t1GMsg:         .db 0c6h,0c7h,0c3h,04h,28h,0e3h ; 7-seg hexbytes
+
+ex8msg1         .db "8x8 V-Bar",0
+ex8msg2         .db "8x8 H-Bar",0
+ex8msg3         .db "8x8 Blinky",0
+ex8msg4         .db "8x8 Fanny",0
+ex8msg5         .db "8x8 Boxy",0
+ex8msg6         .db "8x8 Lines",0
+ex8msg7         .db "8x8 Chunky Scroll",0
+ex8msg8         .db "8x8 Smooth Scroll",0
+ex8msg9         .db "8x8 Icons",0
+selColour       .db "8x8 Colour: ",0
+demoVer         .db "Demo Version Info",0
+
+red:            .db "Red    ",0         ; R,G,B,blank strings must be in sequence
+green:          .db "Green  ",0
+blue:           .db "Blue   ",0
+blankString:    .db "                   ",0 ; must come after blue
+
+; 2 bytes ptr to string, 2 bytes ptr to routine to execute
+menuTable:
+                .dw ex8msg1, VBar                   ;
+                .dw ex8msg2, HBar                   ;
+                .dw ex8msg3, Blinky                 ;
+                .dw ex8msg4, Fanny                  ;
+                .dw ex8msg5, Boxy                   ;
+                .dw ex8msg6, Lines                  ;
+                .dw ex8msg7, scrollText             ;
+                .dw ex8msg8, smoothScroll           ;
+                .dw ex8msg9, showIcon               ;
+                .dw selColour, nextColour           ; cycles through the selected colours
+                .dw demoVer, demosVer               ;
+menuLen:        .equ (($-menuTable)/4)-1            ; menu entries-1
+
+.ORG    $5FFF
+txtCount:
+    .db 16
+txtTable:
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA  ; Test pattern
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db $FE,$FE,$38,$38,$38,$38,$38,$38         ; T
+    .db $FE,$FE,$E0,$F8,$F8,$E0,$FE,$FE         ; E
+    .db $3C,$FE,$EE,$E0,$E0,$EE,$FE,$7C         ; C
+    .db $00,$00,$00,$7E,$7E,$00,$00,$00         ; -
+    .db $38,$78,$F8,$38,$38,$38,$38,$38         ; 1
+    .db $3C,$FE,$E6,$E0,$EE,$E6,$FE,$7C         ; G
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db $AA, $AA, $AA, $AA, $AA, $AA, $AA, $AA  ; Test pattern
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+    .db 0,0,0,0,0,0,0,0                         ; {blank space}
+
+
+rgbMario1:
+    .db $00, $04, $28, $3C, $A5, $3C, $3C, $24
+    .db $00, $04, $3C, $34, $81, $00, $00, $00
+    .db $3C, $3E, $14, $08, $5A, $00, $00, $24
+rgbMario2:
+    .db $00, $04, $28, $35, $24, $BC, $3C, $48
+    .db $00, $04, $3C, $35, $00, $80, $00, $00
+    .db $3C, $3E, $14, $00, $5A, $00, $00, $48
+
+rgbSpacey1:
+    .db $00, $00, $00, $24, $00, $3C, $00, $00
+    .db $24, $7E, $FF, $DB, $7E, $7E, $BD, $81
+    .db $00, $00, $00, $00, $00, $3C, $00, $00
+
+rgbSpacey2:
+    .db $00, $00, $00, $24, $00, $18, $00, $00
+    .db $42, $7E, $FF, $DB, $7E, $7E, $BD, $42
+    .db $00, $00, $00, $00, $00, $18, $00, $00
+
+rgbSmile:
+    .db $1C, $7E, $48, $DB, $FF, $7E, $7E, $18
+    .db $1C, $7E, $48, $DB, $FF, $5A, $66, $18
+    .db $00, $00, $00, $12, $00, $00, $00, $00
+
+rgbGhost1:
+    .db $00, $00, $36, $12, $00, $00, $00, $00
+    .db $38, $7C, $FE, $DA, $FC, $FC, $FC, $B4
+    .db $3C, $7E, $FF, $DB, $FF, $FF, $FF, $B6
+
+rgbGhost2:
+    .db $00, $00, $36, $24, $00, $00, $00, $00
+    .db $38, $7C, $FE, $EC, $FC, $FC, $FC, $D8
+    .db $3C, $7E, $FF, $ED, $FF, $FF, $FF, $DB
+
+rgbCherry:
+    .db $00, $00, $00, $06, $6F, $F7, $F6, $60
+    .db $0E, $14, $24, $20, $02, $20, $00, $00
+    .db $00, $00, $00, $00, $02, $20, $00, $00
+
+rgbGay:
+    .db $FF, $FF, $FF, $00, $00, $00, $FF, $00
+    .db $FF, $00, $FF, $FF, $FF, $00, $00, $00
+    .db $FF, $00, $00, $00, $FF, $FF, $FF, $00
+
+rgbEggplant:
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+    .db $09, $0F, $02, $11, $60, $00, $00, $00
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+
+    .dw $C3, $BD, $7E, $66, $18, $66, $BD, $C3
+    .dw $C3, $81, $20, $00, $18, $66, $BD, $C3
+    .dw $00, $00, $20, $00, $18, $66, $3C, $00
+
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+    .db $09, $0F, $02, $11, $60, $00, $00, $00
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+    .db $09, $0F, $02, $11, $60, $00, $00, $00
+    .db $00, $00, $1C, $7E, $FE, $FE, $FC, $78
+
+
+lcdText:        .db 0,4,4,4,4,4,4,6,6,7,7,6,6,4,4,4,4,4,4,1
+                .db 5," TEC-1G Computer  ",5
+                .db 5,"   Open Source!   ",5
+                .db 2,4,4,4,4,4,4,6,6,7,7,6,6,4,4,4,4,4,4,3
+
+
+; Initialisation string for GLCD
+INIT_BASIC:
+                .db 30H                    ;8 Bit interface, basic instruction
+                .db 0CH                    ;display on, cursor & blink off
+                .db 06H                    ;cursor move to right ,no shift
+                .db 01H                    ;clear RAM
+ROWS:           .db 80H,90H,88H,98H        ;Text Row start position
+
+SCRSEG:         .db 00,00,00,00,00,00
+SEGMNT:
+                .db 0EBH,28H,0CDH,0ADH      ;0,1,2,3
+                .db 2EH,0A7H,0E7H,29H       ;4,5,6,7
+                .db 0EFH,2FH,6FH,$E6        ;8,9,A,B
+                .db 0C3H,0ECH,0C7H,47H      ;C,D,E,F
+                .db 00,00,00,00,00,00
+
+; ----------------------------------------------------------------
+; RAM variables
+; ----------------------------------------------------------------
+.ORG RAMST
+pcBuff:         ds 6
+cfgst2:         ds 4
+segbuf:         ds 6
+segptr:         ds 1
+burnLoops:      ds 2
+menuPos:        ds 1
+menuSel:        ds 1
+oldMenuPos:     ds 1
+oldMenuSel:     ds 1
+menuMenu:       ds 2
+parentMenu      ds 2
+menuNest:       ds 1
+menuLength:     ds 1
+oldMenuLen:     ds 1
+menuTitl:       ds 2
+RAMCRC:         ds 2
+ROMCRC:         ds 2
+decimalBuff:    ds 6
+cfgMode:        ds 1
+pageRam:        ds 1
+hexPadBuff:     ds 21       ; holds usr typing
+kFlag:          ds 1        ; FF = no key pressed
+oldcaps:        ds 1
+oldkey:         ds 1
+capsval:        ds 1        ; 1 = capslock on
+kdelayval:      ds 1        ; counter for delay betwen key repeats
+kState:         ds 1
+joyX:           ds 1
+joyY:           ds 1
+joyChar:        ds 1
+scBit:          ds 1
+scByte:         ds 1
+tBuff:          ds 40
+tBuffSize:      .equ $-tBuff
+tBuffPtr:       ds 1
+rVal:           ds 1
+gVal:           ds 1
+bVal:           ds 1
+

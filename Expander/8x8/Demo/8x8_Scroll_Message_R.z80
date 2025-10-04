@@ -1,0 +1,296 @@
+; Standalone INTROM routine for scrolling a message on an RGB 8x8 display
+; Uses Z80 assembly language
+; Buffers start at $2000
+; Code starts at $4000
+
+; Memory Layout
+REDSTL:     EQU     $2000   ; Red Left Stage (8 bytes)
+REDSCR:     EQU     $2008   ; Red Screen (8 bytes)
+REDSTR:     EQU     $2010   ; Red Right Stage (8 bytes)
+
+GRNSTL:     EQU     $2018   ; Green Left Stage (8 bytes)
+GRNSCR:     EQU     $2020   ; Green Screen (8 bytes)
+GRNSTR:     EQU     $2028   ; Green Right Stage (8 bytes)
+
+BLUSTL:     EQU     $2030   ; Blue Left Stage (8 bytes)
+BLUSCR:     EQU     $2038   ; Blue Screen (8 bytes)
+BLUSTR:     EQU     $2040   ; Blue Right Stage (8 bytes)
+
+SPEEDV:     EQU     $2050   ; Container for Scrolling Speed of Chunk
+
+; Port Definitions
+Y8x8:       EQU     $05     ; Row (Y) select port
+R8x8:       EQU     $06     ; Red data port
+G8x8:       EQU     $F8     ; Green data port
+B8x8:       EQU     $F9     ; Blue data port
+
+.ORG        4000H   ; Start of code at $4000
+
+; INTROM: Scroll a message across the RGB 8x8 display
+; Inputs: INTMSG points to the message data
+; Destroys: A, BC, DE, HL, IX
+INTROM:
+    ; Clear all buffers (screen and stage for red, green, blue)
+    LD      HL,REDSCR       ; Start at red screen buffer
+    LD      DE,REDSCR+1     ; Destination for block fill
+    XOR     A               ; Set A to 0
+    LD      (HL),A          ; Clear first byte
+    LD      BC,47           ; 48 bytes total (24 screen + 24 stage) - 1
+    LDIR                    ; Fill all 48 bytes with 0
+
+    ; Point HL to the start of the message data
+    LD      HL,INTMSG
+    ; Load the first chunk into the Right staging buffers
+    CALL    LOAD_CHUNK_R    ; Load into REDSTR, GRNSTR, BLUSTR
+    ; Set scroll speed from control byte
+
+    ; Main scrolling loop
+SCROLL_MESSAGE:
+    ; Scroll the message by rotating bits from stage to screen
+    LD      B,8             ; 8 shifts per chunk
+SCROLL_LOOP:
+    ; Display the screen multiple times for persistence
+    LD      A,(SPEEDV)      ; Load dynamic speed
+DISPLAY_LOOP:
+    PUSH    AF              ; Save loop counter
+    LD      IX,REDSCR       ; Point to red screen buffer
+    CALL    RGB8x8          ; Display the frame
+    POP     AF
+    DEC     A
+    JR      NZ,DISPLAY_LOOP ; Repeat display
+
+    ; Shift the buffers
+    LD      IX,REDSCR       ; Red screen buffer
+    CALL    ROTATE_BUFFERS
+    LD      IX,GRNSCR       ; Green screen buffer
+    CALL    ROTATE_BUFFERS
+    LD      IX,BLUSCR       ; Blue screen buffer
+    CALL    ROTATE_BUFFERS
+
+    DJNZ    SCROLL_LOOP     ; Next shift
+
+    ; Load the next chunk into the Right staging buffers
+    CALL    LOAD_CHUNK_R
+    JR      NZ,SCROLL_MESSAGE ; Continue if not end of message
+
+INTROM_END:
+    RET
+
+; ROTATE_BUFFERS: Rotate bits from stage to screen for one color
+; Inputs: IX points to the screen buffer (e.g., REDSCR)
+; Destroys: A, D, IX
+ROTATE_BUFFERS:
+    LD      D,8             ; 8 rows to rotate
+ROTATE_ROW:
+    ; Rotate staging byte left through carry
+    LD      A,(IX+8)        ; Load staging byte (offset +8 from screen)
+    RLA                     ; Rotate left, carry gets bit 7
+    LD      (IX+8),A        ; Store back to staging byte
+    ; Rotate screen byte left, bringing in carry
+    LD      A,(IX+0)        ; Load screen byte
+    RLA                     ; Rotate left, bring in carry from staging
+    LD      (IX+0),A        ; Store back to screen byte
+    INC     IX              ; Next row
+    DEC     D               ; Count down rows
+    JR      NZ,ROTATE_ROW   ; Repeat until all rows rotated
+    RET
+
+; LOAD_CHUNK_R: Load a chunk into the Right staging buffers
+; Inputs: HL points to the message data
+; Outputs: HL updated, Z flag set if end of message
+; Destroys: A, BC, DE, HL, IX
+
+LOAD_CHUNK_R:
+    ; Read the control byte for this chunk
+    LD      A,(HL)              ; Load control byte into A
+    OR      A                   ; Check if it’s 00H (end of message)
+    RET     Z                   ; If zero, return with Z flag set (done)
+    LD      C,A                 ; Save control byte in C
+    CALL    GETSPD              ; Set the speed for the Chunk
+    INC     HL                  ; Move HL to first data byte
+
+    ; Process red staging buffer
+    LD      DE,REDSTR           ; Point to red staging buffer
+    LD      A,C                 ; Get control byte
+    AND     01H                 ; Check red enable bit
+    JR      Z,CLEAR_RED         ; If disabled, clear red buffer
+    ; Red is enabled, load 8 bytes from (HL) to REDSTR
+    LD      B,8                 ; 8 bytes to copy
+RED_LOOP:
+    LD      A,(HL)              ; Load byte from data
+    LD      (DE),A              ; Store in staging buffer
+    INC     HL                  ; Next data byte
+    INC     DE                  ; Next buffer position
+    DJNZ    RED_LOOP            ; Repeat for 8 bytes
+    JR      CHECK_GREEN         ; Proceed to green
+CLEAR_RED:
+    LD      B,8                 ; 8 bytes to clear
+    LD      A,0                 ; Value to write (0)
+CLEAR_RED_LOOP:
+    LD      (DE),A              ; Clear byte in staging buffer
+    INC     DE                  ; Next position
+    DJNZ    CLEAR_RED_LOOP      ; Repeat for 8 bytes
+
+CHECK_GREEN:
+    LD      DE,GRNSTR           ; Point to green staging buffer
+    LD      A,C                 ; Get control byte
+    AND     02H                 ; Check green enable bit
+    JR      Z,CLEAR_GREEN       ; If disabled, clear green buffer
+    ; Green is enabled, load 8 bytes from (HL) to GRNSTR
+    LD      B,8                 ; 8 bytes to copy
+GREEN_LOOP:
+    LD      A,(HL)              ; Load byte from data
+    LD      (DE),A              ; Store in staging buffer
+    INC     HL                  ; Next data byte
+    INC     DE                  ; Next buffer position
+    DJNZ    GREEN_LOOP          ; Repeat for 8 bytes
+    JR      CHECK_BLUE          ; Proceed to blue
+CLEAR_GREEN:
+    LD      B,8                 ; 8 bytes to clear
+    LD      A,0                 ; Value to write (0)
+CLEAR_GREEN_LOOP:
+    LD      (DE),A              ; Clear byte in staging buffer
+    INC     DE                  ; Next position
+    DJNZ    CLEAR_GREEN_LOOP    ; Repeat for 8 bytes
+
+CHECK_BLUE:
+    LD      DE,BLUSTR           ; Point to blue staging buffer
+    LD      A,C                 ; Get control byte
+    AND     04H                 ; Check blue enable bit
+    JR      Z,CLEAR_BLUE        ; If disabled, clear blue buffer
+    ; Blue is enabled, load 8 bytes from (HL) to BLUSTR
+    LD      B,8                 ; 8 bytes to copy
+BLUE_LOOP:
+    LD      A,(HL)              ; Load byte from data
+    LD      (DE),A              ; Store in staging buffer
+    INC     HL                  ; Next data byte
+    INC     DE                  ; Next buffer position
+    DJNZ    BLUE_LOOP           ; Repeat for 8 bytes
+    JR      FINISH              ; Done with chunk
+CLEAR_BLUE:
+    LD      B,8                 ; 8 bytes to clear
+    LD      A,0                 ; Value to write (0)
+CLEAR_BLUE_LOOP:
+    LD      (DE),A              ; Clear byte in staging buffer
+    INC     DE                  ; Next position
+    DJNZ    CLEAR_BLUE_LOOP     ; Repeat for 8 bytes
+
+FINISH:
+    ; HL now points to the next control byte
+    OR      1                   ; Clear Z flag (not done)
+    RET                         ; Return to process next chunk
+
+GETSPD:
+    PUSH    HL                  ; Save HL as we need it again back in LOAD_CHUNK_R
+    AND     18H                 ; Mask bits 4-5 (00011000B) from A,
+    SRL     A                   ; which still contains the Control Byte
+    SRL     A                   ; Shift right 3 times to get 0-3
+    SRL     A   
+    LD      E,A                 ; Index in E
+    LD      D,0                 ; DE = index
+    LD      HL,SCRSPD           ; Point to speed table
+    ADD     HL,DE               ; Offset to selected speed
+    LD      A,(HL)              ; Load speed value
+    LD      (SPEEDV),A          ; Store in SPEEDV
+    POP     HL                  ; Restore HL
+    RET
+
+; RGB8x8: Display routine for RGB 8x8.
+; IX Must be loaded with start of left Red screen stage buffer
+; Buffers must be 24 bytes per colour.
+; 8 bytes to left and right of actual Colour Screen buffer
+RGB8x8:
+    PUSH    BC                  ; Save registers
+    PUSH    IX
+    LD      C,01H               ; Row counter (bitmask starts at row 1)
+
+RGBSCAN:
+    LD      A,(IX+8)            ; Red data from REDSCR
+    OUT     (R8x8),A            ; Output to red port
+    LD      A,(IX+32)           ; Green data from GRNSCR
+    OUT     (G8x8),A            ; Output to green port
+    LD      A,(IX+56)           ; Blue data from BLUSCR
+    OUT     (B8x8),A            ; Output to blue port
+    LD      A,C                 ; Current row select bitmask
+    OUT     (Y8x8),A            ; Select the row
+
+    LD      B,40H               ; ON time counter
+LOOPON:
+    DJNZ    LOOPON              ; Delay to keep row lit
+    XOR     A                   ; Clear A (0)
+    OUT     (Y8x8),A            ; Turn off row to prevent ghosting
+
+    INC     IX                  ; Next byte in red buffer
+    RL      C                   ; Shift row bitmask left
+    JR      NC,RGBSCAN          ; Continue until all 8 rows are done
+
+    POP     IX                  ; Restore registers
+    POP     BC
+    RET
+
+.ORG $5000
+; Animation Speed Table (cycles per frame)
+ANIM_SPEEDS:
+    .DB $08                     ; 00 = Slow animation
+    .DB $06                     ; 01 = Medium-slow
+    .DB $04                     ; 10 = Medium-fast
+    .DB $02                     ; 11 = Fast animation
+; Scroll Speed Table    
+SCRSPD:  
+    .DB $20                     ; 00 = Very Fast
+    .DB $40                     ; 01 = Normal
+    .DB $80                     ; 10 = Slow
+    .DB $F0                     ; 11 = Very Slow
+
+.ORG $5100
+; Sample INTMSG data for testing
+; *** Control Byte Format ****
+; Bits 0,1,2: Indicate if data contains Red, Green or Blue
+; Bits 3 & 4: Controls Speed of scrolling
+; Bits 
+INTMSG:
+    ; Chunk 1: Full-color Invader
+    .DB 00011111B ; Full Colour, Speed 11 (very slow)
+    .DB $00, $00, $24, $00, $18, $00, $00, $00    ; RED Data
+    .DB $24, $3C, $5A, $FF, $FF, $BD, $42, $24    ; GREEN Data
+    .DB $00, $00, $00, $00, $18, $00, $00, $00    ; BLUE Data
+
+    .DB 00010111B ; Full Colour, Speed 10 (slow)
+    .DB $00, $00, $24, $00, $18, $00, $00, $00    ; RED Data
+    .DB $24, $BD, $DB, $FF, $7E, $3C, $42, $81    ; GREEN Data
+    .DB $00, $00, $00, $00, $18, $00, $00, $00    ; BLUE Data
+
+    ; Chunk 2: Red "T"
+    .DB 00001001B ; Red only, Speed 01 (normal)
+    .DB $7E, $7E, $18, $18, $18, $18, $18, $18    ; RED Data
+
+    ; Chunk 3: Green "E"
+    .DB 00001010B ; Green only, Speed 01 (normal)
+    .DB $3E, $7E, $60, $78, $78, $60, $7E, $3E    ; GREEN Data
+
+    ; Chunk 4: Blue "C"
+    .DB 00001100B ; Blue only, Speed 01 (normal)
+    .DB $3E, $7E, $60, $60, $60, $60, $7E, $3E    ; BLUE Data
+
+    ; Chunk 5: Red "In"
+    .DB 00000001B ; Red only, Speed 00 (fast)
+    .DB $00, $80, $80, $A5, $B5, $BD, $AC, $A4    ; RED Data
+
+    ; Chunk 6: Red "va"
+    .DB 00000001B; Red only, Speed 00 (fast)
+    .DB $00, $00, $00, $12, $15, $A5, $A7, $45    ; RED Data
+
+    ; Chunk 7: Red "de"
+    .DB 00000001B; Red only, Speed 00 (fast)
+    .DB $00, $00, $00, $67, $54, $56, $54, $67    ; RED Data
+
+    ; Chunk 8: Red "rs"
+    .DB 00000001B; Red only, Speed 00 (fast)
+    .DB $00, $00, $00, $63, $54, $62, $51, $56    ; RED Data
+
+    ; End of message with blank spaces
+    DB  01H                 ; Red only (blank)
+    DB  00H,00H,00H,00H,00H,00H,00H,00H  ; Red blank (8 bytes)
+    DB  00H                 ; End of message
+
+            END

@@ -1,0 +1,1294 @@
+; ----------------------------------------------------------------------------
+;   TEC-1G Diagnostics
+;
+;   Copyright (C) 2023, Craig Hart. Distributed under the GPLv3 license
+;
+;   This portion of the code runs from C300h. Shadow is disabled partway
+; ----------------------------------------------------------------------------
+;
+    .include "8x8_includes.z80"
+    .include "api_includes.z80"
+    .include "8x8_Strings.z80"
+
+
+
+.ORG $4000              ; setup menu & system state
+    call delay
+    call delay
+    ld HL, colour8x8        ; Reset Color selection to Just RED
+    ld A, $01               ; Set colour bits to 001 = RED
+    ld (HL), a
+    
+
+
+menuInit:
+    xor a
+    ld (menuPos),A          ; menu draw from 1st slot
+    ld (menuSel),A          ; menu selected 1st item
+    ld (menuNest),A         ; top level
+    ld (capsval),A          ; capslock off
+
+    ld HL,menuTable
+    ld (menuMenu),HL        ; default menu
+    ld A,menuLen
+    ld (menuLength),A
+
+    ld HL,menutitle
+    ld (menuTitl),HL
+
+    ld A,$40
+    ld (kState),A           ; no HexPad key pressed
+
+    ld A,$FF
+    ld (kFlag),A            ; hexpad key not pressed
+    ld (kdelayval),A        ; matrix delay on keypress
+
+; --------------------------------------------------
+;
+;  MAIN MENU
+;
+; --------------------------------------------------
+menu:
+    ld C,lcdCls
+    call lcdCommand
+
+    ld HL,(menuTitl)
+    call lcdStr
+
+    call drawMenu
+    call getKey
+
+    and $1F                 ; Mask off Shift
+;    bit 4,A                 ; ignore keys <10h
+;    jr z,menu
+; work out which routine to go to
+
+;    sub $10                 ; make it 0, 1, 2 or 3
+    rla                     ; *2 - 2 bytes per entry
+
+    ld HL,menu              ; save RET address on stack
+    push HL
+
+    ld HL,menuJP
+    ld B,0
+    ld C,A
+    add HL,Bc
+
+    ld A,(HL)               ; look  up HL string location in the table
+    inc HL
+    ld h,(HL)
+    ld L,A
+
+    jp (HL)
+
+
+menuJP:
+    .dw is0, is1, is2, is3              ; JP table
+    .dw is4, is5, is6, is7              ; JP table
+    .dw is8, is9, isA, isB              ; JP table
+    .dw isC, isD, isE, isF              ; JP table
+    .dw isPlus, isMinus, isGo, isAddr   ; JP table
+;------------
+
+is0:
+    call makeWhite
+    ret
+is1:
+    call toggleRed
+    ret
+is2:
+    call toggleGreen
+    ret
+is3:
+    call toggleBlue
+    ret
+is4:
+    ret
+is5:
+    ret
+is6:
+    ret
+is7:
+    ret
+is8:
+    ret
+is9:
+    ret
+isA:
+    ret
+isB:
+    ret
+isC:
+    ret
+isD:
+    ret
+isE:
+    ret
+isF:
+    call nextColour
+    ret
+
+isPlus:
+    ld A,(menuLength)
+    ld B,A
+    ld A,(menuSel)
+    cp b                    ; at max already ?
+    ret z                   ; if max, bail
+    inc a                   ; otherwise update
+    ld (menuSel),A          ; save new selection
+    ld C,A                  ; copy A to C
+    ld A,(menuPos)          ; get menu display position
+    add A,03                ; for coming up CP
+    ld B,A                  ; b = menu pos
+    ld A,C                  ; a = menu sel
+    cp b                    ; if (b+3)>a then no change
+    ret c                   ; return if >
+    ld A,(menuPos)          ; update menuPos
+    inc a
+    ld (menuPos),A
+    ret
+
+isMinus:
+    ld A,(menuSel)          ; get current
+    dec a                   ; decrease by 1
+    ret m                   ; if result <0, exit as we aready at top
+    ld (menuSel),A          ; save new position
+    ld C,A                  ; store new pos in c
+    ld A,(menuPos)          ; do we need to scroll the list?
+    ld B,A                  ; b = menu pos
+    ld A,C                  ; a = sel pos
+    cp b                    ; compare
+    ret nc                  ; no action if in range
+    ld (menuPos),A          ; otherwise update menu pos
+    ret
+
+isGo:
+    ld C,lcdCls             ; setup LCD
+    call lcdCommand
+    ld C,lcdRow2
+    call lcdCommand
+
+    ld A,(menuSel)          ; display selected test name
+    ld HL,(menuMenu)
+    call setMenuPtr
+    call lcdStr
+
+    ld E,C                  ; C => E for use in a moment
+    ld C,lcdRow3            ; select outpout row
+    call lcdCommand
+
+    ld HL,menuRet           ; save RET address on stack
+    push HL
+    ld h,B                  ; BE => HL. That's not a typo
+    ld L,e
+    jp (HL)                 ; 'call' the routine
+
+    halt                    ; should never run (returns to menu)
+
+menuRet:
+    call getKeyNoScan       ; no beep if no key
+    jp nz,menu
+
+keyUp:
+    call getKeyNoScan       ; wait for release
+    jp z,keyUp
+    call tone               ; and beep
+    jp menu
+
+
+isAddr:
+    ld A,(menuNest)
+    cp 0
+    ret z                   ; exit if already at top level
+
+    ld HL,menutitle         ; reset title
+    ld (menuTitl),HL
+
+    ld HL,(parentMenu)      ; return to top level
+    ld (menuMenu),HL
+
+    ld A,(oldMenuLen)       ; reset menu length
+    ld (menuLength),A
+
+    ld A,(oldMenuPos)
+    ld (menuPos),A
+
+    ld A,(oldMenuSel)
+    ld (menuSel),A
+
+    xor a
+    ld (menuNest),A
+    ret
+
+
+; -----------------------------------
+;  Draw the menu
+; -----------------------------------
+drawMenu:
+    ld HL,menuLength        ; setup B
+    ld A,(HL)
+    ld E,A
+    inc e
+
+    ld C,lcdRow2+1
+    call lcdCommand
+    ld A,(menuPos)
+    cp e
+    jr nc,putPtr
+
+    ld HL,(menuMenu)
+    call setMenuPtr
+    call lcdStr
+
+    ld C,lcdRow3+1
+    call lcdCommand
+    inc a
+    cp e
+    jr nc,putPtr
+    ld HL,(menuMenu)
+    call setMenuPtr
+    call lcdStr
+
+    ld C,lcdRow4+1
+    call lcdCommand
+    inc a
+    cp e
+    jr nc,putPtr
+    ld HL,(menuMenu)
+    call setMenuPtr
+    call lcdStr
+
+; position pointer
+putPtr:
+    ld A,(menuPos)
+    ld B,A
+    ld A,(menuSel)
+    sub b
+
+; a = 0 , 1 or 2. Which row to put pointer ?
+    jr nz,try3
+
+    ld C,lcdRow2
+    jr drawPointer
+
+try3:
+    cp 1
+    jr nz,try4
+
+    ld C,lcdRow3
+    jr drawPointer
+
+try4:
+    ld C,lcdRow4
+
+drawPointer:
+    call lcdCommand
+
+    call lcdReady
+    ld A,$A5                ; pointer ASCII code (square block)
+    out (LCDDATA),A
+
+    ret
+
+; -----------------------------------------------------
+; setMenuPtr
+;  call:
+; A: location in menu required
+; HL: menu table (4 bytes per)
+;  returns :
+; BC: points to jp offset
+; HL: points to start of menuTable Entry currently selected
+; -----------------------------------------------------
+setMenuPtr:
+    push af
+    push de
+
+    add A,A             ; a = a *4 because 4 bytes per entry
+    add A,A
+    add A,2             ; + 2 to get the JP 1st
+
+    ld D,0
+    ld E,A
+    add HL,DE           ; add offset to find the table position we need
+
+    ld A,(HL)           ; lookup bc jp location
+    inc HL
+    ld B,(HL)
+    ld C,A
+
+    dec HL              ; go back 3 bytes
+    dec HL
+    dec HL
+
+    ld A,(HL)           ; look  up HL string location in the table
+    inc HL
+    ld h,(HL)
+    ld L,A
+    pop de
+    pop af
+    ret
+
+
+; ----------------------------------------------------------------
+;                   8x8 checks / demo
+; ----------------------------------------------------------------
+VBar:               ; Vertical bar going left & right
+    ld B,$FF        ; Vertical Bar bit pattern. $FF = Solid line
+    ld C,$01        ; Horizontal location of Bar (RED). $01 = Rightmost column
+loopV1:
+    ld D,C          ; Copy bar location to (GREEN)
+    ld E,C          ; Copy bar location to (BLUE)
+    call outC8x8
+    sla C
+    jr nc,loopV1
+    ld C,$80        ; Set column to leftmost column
+loopV2:
+    ld D,C
+    ld E,C
+    call outC8x8
+    srl C
+    jr nc,loopV2
+    ld C,$01        ; Set column to rightmost column
+loopV3:
+    ld D,C
+    ld E,C
+    call outC8x8
+    sla C
+    jr nc,loopV3
+
+    call clr8x8
+    ret
+
+HBar:               ; Horizontal bar going up and down
+    ld B,$01        ; Vertical location of Bar. $01 = Top row
+    ld C,$FF        ; Horizontal Bar bit pattern. $FF = Solid line
+    ld D,C          ; Copy bar to GREEN Register D
+    ld E,C          ; Copy bar to BLUE Register E
+loopH1:
+    call outC8x8
+    sla B
+    jr nc,loopH1
+    ld B,$80
+loopH2:
+    call outC8x8
+    srl B
+    jr nc,loopH2
+    ld B,$01
+loopH3:
+    call outC8x8
+    sla B
+    jr nc,loopH3
+
+    call clr8x8
+    ret
+
+Blinky:                 ; strobe on and off
+    ld B,$03            ; Number of ON flashes
+    ld C,$FF            ; Bit patter to flash on RED
+    ld D,$FF            ; Bit patter to flash on GREEN
+    ld E,$FF            ; Bit patter to flash on BLUE
+loopB:
+    push bc
+    ld B,$00
+    call outC8x8
+    call barDly
+    call barDly
+    dec b
+    call outC8x8
+    call barDly
+    call barDly
+    pop bc
+    djnz loopB
+
+    call clr8x8
+    ret
+
+Fanny:                      ; Fan out then In
+    ld HL, colour8x8        ; Colour control byte
+    ld C,(HL)               ; Load C with current Colour Control value
+    push BC                 ; Save it to be restored at end
+
+    ld B,$03                ; Count of how many Fans to do
+    ld C, $01               ; RED Colour to start
+    ld (HL),C               ; Save it to the colour control byte
+loopF:                      ; set up Fanout
+    push bc
+    ld B,$80
+    ld C,B
+    ld D,B
+    ld E,B
+loopO:                      ; Fanout Loop
+    call outC8x8
+    sra b
+    ld C,B
+    ld D,B
+    ld E,B
+    jr nc, loopO
+    sla b
+loopI:                      ; Fanin loop
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    sla b
+    cp 0
+    jr nz, loopI
+
+    pop bc                  ; Restore the counter (b) and the colour (c)
+    rlc c                   ; Rotate to next colour
+    ld (HL),C               ; Save it to the colour control byte
+    djnz loopF
+
+    pop BC                  ; Restore prior Colour Control byte
+    ld (HL),C
+    call clr8x8
+    ret
+
+
+Boxy:                       ; Coloured boxes
+    ld B,$03                ; Number of box cycles
+loopX:
+    push BC
+    ld B,$18
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$3C
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$7E
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$FF
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$7E
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$3C
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$18
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+    ld B,$00
+    ld C,B
+    ld D,B
+    ld E,B
+    call outC8x8
+
+    pop BC
+    djnz loopX
+
+    call clr8x8
+    ret
+
+
+Lines:                     ; Colourfull lines from centre out
+    ld B,$03
+    ld C,$00
+    ld D,$00
+    ld E,$00
+loopL:
+    push bc
+    ld B,$FF
+    ld C,$18
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$24
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$42
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$81
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$00
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$00
+    call outC8x8
+    call barDly
+    ld E,d
+    ld D,C
+    ld C,$00
+    call outC8x8
+    call barDly
+
+    pop bc
+    djnz loopL
+
+    call clr8x8
+    ret
+
+;*****************************************************************
+;*****************************************************************
+;*****************************************************************
+;*****************************************************************
+;*****************************************************************
+;*****************************************************************
+;*****************************************************************
+.ORG $4400
+; Text scrolling across 3 modules.
+; Leftmost module is configured as Blue (to Red)
+; Middle module configured as Green (to Red)
+; Right module, actually connected to TEC-1G, is Red
+
+scrollText:
+    ld HL, txtTable         ; Start of Text string data (has 3 spaces before to clear screen)
+    ld DE, blue8x8          ; Start of Left display (BLUE) buffer
+    ld BC, 24               ; Number of bytes to copy from TextTable to Buffer
+    ldir                    ; Copy data from TextTable to Buffer
+    ld HL, txtTable         ; HL must be set back to start of text, as it gets screwed by the LDIR
+
+showText:
+    ld IX, blue8x8          ; Reload IX with start of the 8x8 Display Buffer
+    call BGR8x8
+    ld C, scanKeys_
+    RST $10                  ; Kills IX
+    jr nc, showText
+    cp $13                  ; ESC (AD) Key pressed
+    jr z, scrollExit
+    cp $11                  ; MINUS key pressed
+    jr z, scrollMinus
+    cp $10                  ; PLUS key pressed
+    jr z, scrollPlus
+    cp $00                  ; ZERO key press - Reset back to start
+    jr z, scrollText
+    jr showText
+
+scrollPlus:
+    ld DE, 8
+    add HL, DE
+    push HL
+    ld DE, blue8x8          ; Start of Blue (left) buffer
+    ld BC, 24               ; only need to copy 3 characters
+    ldir
+    pop HL
+    jr showText
+
+scrollMinus:
+    ld DE, 8
+    sbc HL, DE
+    push HL
+    ld DE, blue8x8          ; Start of Blue (left) buffer
+    ld BC, 24               ; only need to copy 3 characters
+    ldir
+    pop HL
+    jr showText
+
+scrollExit:
+    ret
+
+.ORG $4500
+smoothScroll:			; #### NOTE #### This scrolling code still has bugs!! ####
+    ld HL, txtTable         ;
+    ld DE, left8x8          ; Start of off-screen (left) buffer
+    ld BC, 40
+    ldir
+    ld HL, txtTable         ; HL must be set back to start of text, as it gets screwed by the LDIR
+    ld DE, 0                ; D & E will each be used to keep track of how many scrolls
+smoothText:
+    ld IX, buff8x8
+    call BGR8x8             ; Why this vs RGB8x8 ?
+    ld C, scanKeys_
+    RST $10
+    jr nc, smoothText
+    cp $13                  ; ESC (AD) Key pressed
+    jr z, scrollExit2
+    cp $11                  ; MINUS key pressed
+    jr z, smoothMinus
+    cp $10                  ; PLUS key pressed
+    jr z, smoothPlus
+    cp $00                  ; ZERO key press - Reset back to start
+    jr z, smoothText
+    jr smoothText
+
+smoothPlus:
+    xor A
+    cp E
+    jr nz, plusScroll
+plusScroll:
+    ld IX, buff8x8
+    ld IY, txtTable
+    call scroll8x8L          ; Scroll the 3 screen buffer 1 pixel left
+    ld A, 8
+    dec D
+    inc E
+    cp E
+    jr nz, smoothText
+        ld E, 0
+    jr smoothText
+
+smoothMinus:
+    xor A
+    cp D
+    jr nz, minusScroll
+minusScroll:
+    ld IX, buff8x8
+    ld IY, txtTable
+    call scroll8x8R           ; Scroll the 3 screen buffer 1 pixel left
+    ld A, 8
+    dec E
+    inc D
+    cp D
+    jr nz, smoothText
+        ld D, 0
+    jr smoothText
+
+scrollExit2:
+    ret
+
+; #### NOTE #### This scrolling code still has bugs!! ####
+; Scroll the display buffer one pixel left
+; Needs:    IX  to point to the screen buffer
+;           B   Count of Pixel number
+;Destroys:
+
+scroll8x8L:
+    push BC
+    push IX
+    ld B, 8                    ; Count of rows
+shiftBGRl:
+        ld A, (IX+24)           ; Grab the byte from the Right off-Screen buffer
+        rla                     ; Rotate it through the carry flag (CF = Bit 7 of Right)
+        ld (IX+24), A           ; Save it back to the Right buffer
+        ld A, (IX+16)           ; Grab the byte from the Red buffer
+        rla                     ; Rotate it through the carry flag (CF = Bit 7 of Red)
+        ld (IX+16), A           ; Save it back to the Red buffer
+        ld A, (IX+8)            ; Grab the byte from the Green buffer
+        rla                     ; Rotate it through the carry flag (CF = Bit 7 of Green)
+        ld (IX+8), A            ; Save it back to the Green buffer
+        ld A, (IX+0)            ; load the byte from the Blue buffer
+        rla                     ; Rotate it through the carry flag (CF = Bit 7 of Blue)
+        ld (IX+0), A            ; Save it back to the Blue buffer
+        ld A, (IX-8)            ; load the byte from the Left buffer
+        rla                     ; Rotate it through the carry flag (CF = Bit 7 of Left)
+        ld (IX-8), A            ; Save it back to the Left buffer
+        inc IX
+    djnz shiftBGRl                ; Repeat 8 times
+    pop IX
+    pop BC
+    ret
+
+scroll8x8R:
+    push BC
+    push IX
+    ld B, 8                    ; Count of rows
+shiftBGRr:
+        ld A, (IX-8)            ; Grab the byte from the Left off-Screen buffer
+        rra                     ; Rotate it through the carry flag (CF = Bit 7 of Green)
+        ld (IX-8), A            ; Save it back to the Blue buffer
+        ld A, (IX+0)            ; Grab the byte from the Green buffer
+        rra                     ; Rotate it through the carry flag (CF = Bit 7 of Green)
+        ld (IX+0), A            ; Save it back to the Blue buffer
+        ld A, (IX+8)            ; Grab the byte from the Green buffer
+        rra                     ; Rotate it through the carry flag (CF = Bit 7 of Green)
+        ld (IX+8), A            ; Save it back to the Blue buffer
+        ld A, (IX+16)            ; load the byte from the Blue buffer
+        rra                     ; Rotate carry into it (Bit 0 of Screen 1 = CF)
+        ld (IX+16), A            ; Save it back to the Blue buffer
+        ld A, (IX+24)           ; Grab the byte from the Right off-Screen buffer
+        rra                     ; Rotate it through the carry flag (CF = Bit 7 of Right)
+        ld (IX+24), A           ; Save it back to the Right buffer
+        inc IX
+    djnz shiftBGRr                ; Repeat 8 times
+    pop IX
+    pop BC
+    ret
+
+
+
+; Show 8x8 Icons in full colour
+
+showIcon:
+    ld HL, rgbMario1
+    ld DE, 24                ; Number of bytes to add to HL to get next Icon
+showIt:
+    push HL
+    pop IX                  ; Load IX with the address in HL
+    call RGB8x8
+    ld C, scanKeys_
+    RST $10
+    jr nc, showIt
+    cp $13                  ; ESC (AD) Key pressed
+    jr z, showExit
+    cp $11                  ; MINUS key pressed
+    jr z, showMinus
+    cp $10                  ; PLUS key pressed
+    jr z, showPlus
+    cp $00                  ; ZERO key press
+    jr z, showIcon
+    jr showIt
+
+showPlus:
+    add HL, DE
+    jr showIt
+showMinus:
+    ld A,l
+    cp $00
+    jr z, showIt
+    sub $18
+    ld L,A
+    jr showIt
+showExit:
+    ret
+
+makeWhite:
+    ld HL, colour8x8
+    ld A, $07               ; Set all 3 bits to 1
+    ld (HL), a
+    ret
+
+toggleRed:
+    ld HL, colour8x8
+    ld A, $01               ; flip the Red bit
+    XOR (HL)
+    ld (HL), a
+    ret
+
+toggleGreen:
+    ld HL, colour8x8
+    ld A, $02               ; flip the Green bit
+    XOR (HL)
+    ld (HL), a
+    ret
+
+toggleBlue:
+    ld HL, colour8x8
+    ld A, $04               ; flip the Blue bit
+    XOR (HL)
+    ld (HL), a
+    ret
+
+nextColour:
+    ld HL, colour8x8
+    inc (HL)
+    bit 3,(HL)              ; test if we have incremented to 8
+    jr z, colOK
+    ld (HL),$01             ; if it is 8, then reset back to 1 (red)
+colOK:
+    ret
+
+; Output B and C to the 8x8
+; B is Y axis, C is X axis.
+; Destroys A
+oute8anim:
+    ld A,B
+    out (Y8x8),A
+    ld A,C
+    out (Rx8x8),A
+    call barDly
+    ret
+
+; Single Colour 8x8 Animation Subroutine
+; A to contain X data
+; B to contain Y datA, usually a single bit out of a byte
+; C to contain Port number
+outS8x8:
+    out (c),A
+    ld A,B
+    out (Y8x8),A
+    call barDly
+    ret
+
+; RGB 8x8 Animation Subroutine
+; HL is destroyeD, is used to point to colour8x8
+; A is destroyed
+; B to contain Y data (can be used as counter for scanlining)
+; C has the Red data
+; D to contain Green data
+; E to contain Blue data
+outC8x8:
+    ld HL, colour8x8
+    bit 0,(HL)              ; test if Red should be output
+    jr z, gOut3
+    ld A,C
+    out (Rx8x8),A
+gOut3:
+    bit 1,(HL)              ; test if Green should be output
+    jr z, bOut3
+    ld A,D
+    out (Gx8x8),A
+bOut3:
+    bit 2,(HL)              ; test if Blue should be output
+    jr z, yOut3
+    ld A,E
+    out (Bx8x8),A
+yOut3:
+    ld A,B
+    out (Y8x8),A            ; output the Y data in B
+    call barDly
+    ret
+
+;.Delay instigated to reduce ghosting
+barDly:
+    push AF
+    push DE
+    ld DE,BDELAY
+bDly:
+    dec DE
+    ld A,d
+    or E
+    jr nz,bDly
+    pop DE
+    pop AF
+    ret
+
+
+; ----------------------------------------------------------------
+; RGB8x8
+; INPUT:        IX = Start of screen buffer or graphics data, 24 bytes, 8 bits per byte.
+; DESTROYS:     A
+;
+;   TopL
+;    7 6 5 4 3 2 1 0    Byte 0
+;    7 6 5 4 3 2 1 0    Byte 1
+;    7 6 5 4 3 2 1 0    Byte 2
+;    7 6 5 4 3 2 1 0    Byte 3
+;    7 6 5 4 3 2 1 0    Byte 4
+;    7 6 5 4 3 2 1 0    Byte 5
+;    7 6 5 4 3 2 1 0    Byte 6
+;    7 6 5 4 3 2 1 0    Byte 7
+;                         BotR
+;
+; Outputs 24 bytes to an RGB 8x8.
+; IX to contain start address of graphic datA, with
+; 8 bytes of RED, 8 bytes of GREEN and 8 bytes of BLUE
+; The RGB 8x8 is configured in Byte order; no need for any data rotation
+; 1st row is at top
+;
+; Defines are:
+; Y8x8:       .equ $05        ; Standard 8x8 Row (Y) select
+; Rx8x8:      .equ $06        ; RGB 8x8 (Red) column (X) select
+; Gx8x8:      .equ $F8        ; RGB 8x8 (Green) column (X) select
+; Bx8x8       .equ $F9        ; RGB 8x8 (Blue) column (X) select
+; ----------------------------------------------------------------
+
+RGB8x8:
+    push BC
+    push IX
+    ld C,$01            ; Row counter
+
+rgbScan:
+    ld A,(IX+0)         ; Load A with Red Data
+    out (Rx8x8),A
+    ld A,(IX+8)         ; Load A with Green Data
+    out (Gx8x8),A
+    ld A,(IX+16)        ; Load A with Blue Data
+    out (Bx8x8),A
+    ld A,C              ; load the current row into A
+    out (Y8x8),A
+
+    ld B,$40            ; ON time counter
+loopON:
+        djnz loopON
+    xor A               ; turn off to prevent shadow
+    out (Y8x8),A
+
+    inc IX              ; Point to the next byte of Red data
+    rl C                ; next row down, since LSB is top row
+    jr nc, rgbScan
+
+    pop IX
+    pop BC
+    ret
+
+; It may seem odd that there is an almost identical Scan routine
+; except that it this one does it in the reverse order, that is
+; first Blue, then Green, then Red.  This reoutine is for the setup
+; where we have 3 displays connected together, with the jumpers
+; set so the the left screen is Blue, trhe middle is Green and the
+; right screen (actually connected to the TEC) is on Red port.
+; Hence when scrolling, you want the left screen, then middle then
+; right screen drawn, yet the data is saved in the RGB byte order.
+BGR8x8:
+    push BC
+    push IX             ; IX to contain Start of 8x8 screen data
+    ld C,$01            ; Row counter
+
+brgScan:
+    ld A,(IX+16)         ; Load A with Blue Data
+    out (Bx8x8),A
+    ld A,(IX+8)         ; Load A with Green Data
+    out (Gx8x8),A
+    ld A,(IX+0)        ; Load A with Red Data
+    out (Rx8x8),A
+    ld A,C              ; load the current row into A
+    out (Y8x8),A
+
+    ld B,$40            ; ON time counter
+loopON2:
+        djnz loopON2
+    xor A               ; turn off to prevent shadow
+    out (Y8x8),A
+
+    inc IX              ; Point to the next byte of ROW data
+    rl C                ; next row down, since LSB is top row
+    jr nc, brgScan
+
+    pop IX
+    pop BC
+    ret
+
+
+
+clr8x8:
+    xor A
+    out (Rx8x8),A
+    out (Gx8x8),A
+    out (Bx8x8),A
+    out (Y8x8),A
+    ret
+
+; Clear the 24 byte screen buffer, pointed to by HL
+; Needs:  HL pointing to start of screen buffer
+; Destroys: A
+clrBuff:
+    push HL
+    xor A
+    ld B, 24        ; Buffer size of 3x 8x8 screens
+clrIt:
+    ld (HL),A
+    inc HL
+    djnz clrIt
+    pop HL
+    ret
+
+
+; ----------------------------------------------------------------
+;  Long delay loop
+;  no registers modified
+; ----------------------------------------------------------------
+delay:
+    push af
+    push bc
+    push de
+    ld bC, $0010
+
+outer:
+    ld dE, $0200
+
+inner:
+    dec de
+    ld A,d
+    or e
+    jr nz, inner
+
+    dec bc
+    ld A,B
+    or c
+    jr nz, outer
+
+    pop de
+    pop bc
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; Byte to ASCII
+;
+; input HL = memory buffer, 2 bytes
+; A = byte to convert
+; increments HL on exit; trashes A
+; ----------------------------------------------------------------
+; ----------------------------------------------------------------
+;  ASCIIZ string to LCD
+;
+;  Input HL = ASCIIz String
+;  no registeres modified
+; ----------------------------------------------------------------
+lcdStr:
+    push af
+    push HL
+
+lcdStrLoop:
+    ld A,(HL)
+    cp 0
+    jr z, lcdStrDone
+
+    call lcdReady
+    out (LCDDATA),A
+    inc HL
+    jr lcdStrLoop
+
+lcdStrDone:
+    pop HL
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; check that LCD is ready for IO
+;
+; no inputs; no registers modified
+; ----------------------------------------------------------------
+lcdReady:
+    push af
+lcdrlp:
+    in A,(LCDCMD)       ; is LCD ready?
+    rlca
+    jr C,lcdrlp
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; LCD send a command
+;
+; Input C = command byte
+; no registers modified
+; ----------------------------------------------------------------
+lcdCommand:
+    push af
+    call lcdReady
+    ld A,C
+    out (LCDCMD),A
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; bitDump: bitwise dump a register to LCD
+;
+; e = value to dump
+; ----------------------------------------------------------------
+bitDump:
+    push af
+    push bc
+    push de
+
+    ld C,lcdRow3
+    call lcdCommand
+
+    ld B,8
+
+bitLoop:
+    sla e
+
+    ld A,'1'
+    jr C, notOneBit
+    ld A,'0'
+
+notOneBit:
+    call lcdReady
+    out (LCDDATA),A
+
+    djnz bitLoop
+
+    pop de
+    pop bc
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; Scan 7-segs for a while with data from buffer at segbuf
+; preserves registers
+; scans from 'segbuf'
+; no registers modified
+; ----------------------------------------------------------------
+scan7Seg:
+    push af
+    push bc
+    push HL
+
+    ld B,20h        ; scan L to R
+    ld HL,segbuf
+
+dig:
+    ld A,(HL)
+    out (SEGS),A
+    ld A,B          ; grab digit to lgiht
+    out (DIGITS),A
+
+    ld B,40h        ; LED on time
+onDly:
+    djnz onDly
+
+    inc HL
+    ld B,A          ; restore b after loop counter
+    xor a
+    out (DIGITS),A      ; blank digit- fixes ghosting
+
+    srl b
+    jr nc, dig
+
+    pop HL
+    pop bc
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+;   Get a keypress with wait & 7-seg scanning
+;
+; returns with a = 72c923 keycode
+; trashes everything .. except BC
+; ----------------------------------------------------------------
+getKey: push bc
+
+    ld HL,t1GMsg
+    ld dE,segbuf
+    ld bC,6
+    ldir
+
+getKeyPress:
+    call scan7Seg
+
+    ld A,(kFlag)
+    inc a
+    jr nz,getKeyRelease
+
+    in A,(SIMP3)
+    bit 6,A
+    jr nz,getKeyPress
+
+    in A,(KEYB)
+    and 3fh
+    ld B,A
+    ld (kFlag),A
+    call tone
+
+getKeyRelease:
+    in A,(SIMP3)
+    bit 6,A
+    jr z,getKeyPress
+
+    ld A,0ffh
+    ld (kFlag),A
+
+    ld A,B
+    pop bc
+    ret
+
+; ----------------------------------------------------------------
+;  Beep sounds
+; no registers needed or altered
+; ----------------------------------------------------------------
+pip:
+    push af
+    push bc
+    push HL
+
+    ld C,0c0h       ; pitch
+    ld L,021h       ; length
+    xor a
+    jr tlp2
+
+tone:
+    push af
+    push bc
+    push HL
+
+    ld C,0c0h       ; pitch
+    ld L,081h       ; length
+    xor a
+tlp2:
+    out (DIGITS),A
+    ld B,C
+tone2:
+    djnz tone2
+    xor 80h
+    dec l
+    jr nz,tlp2
+
+    ld B,0ffh
+dly2:
+    djnz dly2
+
+    pop HL
+    pop bc
+    pop af
+    ret
+
+; ----------------------------------------------------------------
+; Get a keypress without wait
+;
+; Z=0 no key (A trashed)
+; Z=1, A = scancode
+;
+; C=1 1st press
+; C=0 key repeats
+; ----------------------------------------------------------------
+getKeyNoScan:
+    in A,(SIMP3)
+    and 40h
+    jr z,keyP
+    ld (kState),A       ; set 40h = nopress
+    ret
+
+keyP:
+    ld A,(kState)
+    or a            ; clear carry
+    bit 6,A         ; set z
+    ret z           ; return if key held
+
+;   xor a           ; set 0 for next time
+;   ld (kState),A
+
+    in A,(KEYB)
+    and 3fh         ; dump junk bits
+    xor 20h         ; flip bit 5
+    ld (kState),A       ; save keypress
+    cp a            ; fake to set Z flag
+    scf         ; 1st press set C flag
+    ret
+
+; ----------------------------------------------------------------
+; keyPause - wait for a keypress, release & beep
+; ----------------------------------------------------------------
+keyPause:
+    call getKeyNoScan
+    jr nz,keyPause
+keyRelease:
+    call getKeyNoScan
+    jr z,keyRelease
+    call tone
+    ret
+
+
+
+; -----------------------------------------------------------------------------
+; DEMOVER - display the version numers etc
+; -----------------------------------------------------------------------------
+demosVer:
+    ld C,lcdRow3+6
+    call lcdCommand
+    ld HL,SOFTWARE
+    call lcdStr
+    ld C,lcdRow4+6
+    call lcdCommand
+    ld HL,RELEASE
+    call lcdStr
+    call keyPause
+    ret
+
+
+; ----------------------------------------------------------------
+; ROM Signatures
+; ----------------------------------------------------------------
+;.ORG $FFF0 
+SOFTWARE:       .db "DEMO.1G",0
+RELEASE:        .db "MJ25.12",0
+
+    .end
