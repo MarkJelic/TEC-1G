@@ -2,8 +2,7 @@
 
 If you get a garbled screen similar to this, there is a simple fix. 
 
-<img src="./GLCD_garbled_screen.jpg" style="float: left;" width="300">
-<img src="./GLCD_garbled_screen.jpg" width="300">
+<img src="./GLCD_garbled_screen.jpg" width="400">
 
 The older versions of the display did not have a capacitor installed at C6 but for some reason
 they are in the latest versions, and this can cause timing ussues for the Z80.
