@@ -14,7 +14,7 @@ mounted at the bottom left.
 
 <img src="./GLCD_v3_with_C6.jpg" width="400">
 
-Just get a pair of snips and cut the capacitor off. (You can try to be tidier and use a soldering
-or desoldering iron... But snipping it off is fast and effective.)
+Just get a pair of snips and cut the capacitor off. You can try to be tidier and use a soldering
+or desoldering iron... But snipping it off is fast and effective.
 
 <img src="./GLCD_v3_no_C6.jpg" width="400">
