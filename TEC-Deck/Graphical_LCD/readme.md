@@ -2,9 +2,12 @@
 
 As seen in the video made by Brian Chiha, the TEC-Deck Card for the Graphical LCD will be released in conjunction with the TEC-1G.
 
+## Errata - Garbled Screen?
+If you get a garbled screen on firing the GLCD up, have a read of [this easy fix](./errata.md).
+
 ## Assembly Instructions
 
-If you have purchased the GLCD Kit and want to know how best to put it together, follow these Instructions.
+If you have purchased the GLCD Kit and want to know how best to put it together, [follow these Instructions](./Assembly/readme.md).
 
 ## LCD Screens
 There are a few variants of these LCD screens, but all typically use the [ST7920](./ST7920.pdf) LCD Controller.  The LCD Screen that is used is the [QC12864B](./QC12864B.pdf).  This screen has two ST7921 Panels (128 x 32) stacked one above the other.
