@@ -5,7 +5,7 @@ was able to power the 1G, with all lights and sounds blazing, for up to 6 hours!
 cable to charge it and passes power through as well, so you have no need for a 9v power pack. The UPS
 supplies a very smooth 5V direct to the power rails, so you don't even need a regulator or heatsink.
 
-![Portable TEC-1G](./TEC-1GinCase-Back.jpg)
+![Portable TEC-1G](./pictures/TEC-1GinCase-Back.jpg)
 
 Oh, and did I mention that it makes your TEC-1G totally portable!  Couple it with the Official TEC-1G
 3D Printed Case, and you have one very slick Z80 machine.
@@ -19,7 +19,7 @@ even if the USB-C cable is pulled out! The kit also comes with a couple of JST c
 so you can disconnect the Battery Pack safely if needed, and lastly comes with a bunch of 
 standoffs to mount the UPS to the main PCB and have a balancing leg of standoffs on the other corner.
 
-![UPS Kit](UPS_Kit.jpg)
+![UPS Kit](./pictures/UPS_Kit.jpg)
 
 Please note that if you are installing this into the official TEC-1G Case, you don't need the
 standoffs as the UPS is mounted inside the case, not to the PCB directly. The JST connectors
@@ -37,3 +37,5 @@ From version 1.2 Signature Edition of the PCB, there is a dedicated set of solde
 you use for the UPS, but previous boards can also make use of it, but you have to solder it to
 a different location. The important thing to remember is that you have to be able to switch
 the power off, and that means the power connections of the UPS have to be before the power switch.
+
+![Special Edition](./pictures/UPS_Connection_SpecialEdition.jpg)
