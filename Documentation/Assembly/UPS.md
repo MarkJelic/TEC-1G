@@ -38,4 +38,9 @@ you use for the UPS, but previous boards can also make use of it, but you have t
 a different location. The important thing to remember is that you have to be able to switch
 the power off, and that means the power connections of the UPS have to be before the power switch.
 
+For PCBs that had the (failed) USB-A connection, you can use the pads as shown in the picture. 
+Pin 1 for Positive and Pin 4 for Ground.
+
 ![Special Edition](./pictures/UPS_Connection_SpecialEdition.jpg)
+
+** More to come. But this should get most people going **
