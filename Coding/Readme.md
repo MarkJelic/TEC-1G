@@ -8,13 +8,13 @@ program the TEC-1 is even more important, as it is with any computer system. Wit
 of metal and plastic that won't do anything.
 
 ## Common Terminology and Tools
-1. Code Editor
-2. Assembler
-3. Serial Terminal Software
+1. $\color{green}{\textsf{Code Editor}}$ 
+2. $\color{green}{\textsf{Assembler}}$ 
+3. $\color{green}{\textsf{Serial Terminal}}$ 
 
-Once you create your code in the Code Editor, you Assemble your code into machine code which is formatted into the Intel .HEX file format. Inside is just text, but it has some aditional information like where in memory are the bytes it is transfering should be placed in the TEC-1. This HEX code then gets transfered to the TEC-1 using the Serial Terminal.
+You create your code in the $\color{green}{\textsf{Code Editor}}$ like you do any text file, but of course it needs to be formatted in the correct way, and you must use the language the Z80 will understand. Once you have your program all typed in, you convert the (relatively) human-readable Assembler Code into the bytes of Machine Code that the Z80 actually understands. This conversion is done by the $\color{green}{\textsf{Assembler}}$ which it saves these bytes into the Intel .HEX file format on your hard drive. Inside the .HEX file is just text, but it has some aditional information like where in memory are the bytes it holds to be placed in the TEC-1G. The last task is to transfer that HEX file using a $\color{green}{\textsf{Serial Terminal}}$ via a USB cable to the TEC-1G.
 
-### Code Editor
+## Code Editor
 
 You can use just about anything as your code editor, as Z80 Assembly language is nothing more than a text file but with a .Z80 or .ASM file extension. So you could, if you like to suffer, use Notepad or TextEdit or even Word... But there are much better alternatives out there and dispite Microsoft trying really hard to ruin it, VS Code is a preferred option amongst many coders in many programming languages.
 
@@ -25,20 +25,21 @@ One of the best parts of VS Code are the myriad of Extensions available for it, 
 <img width="478" height="146" alt="image" src="https://github.com/user-attachments/assets/f3a520eb-31c3-4731-83c4-f0cecf832b20" /><br>
 
 
-### Assembler
+## Assembler
 
-This is where the options really broaden out and everyone will have a favourite and it will be the hill they die on! It also very much depends on which OS platfrom you are on, as most are not cross-platform and many only have Windows binaries, which is disapoiting.
+This is where the options really broaden out and everyone will have a favourite and it will be the hill they die on! It also very much depends on which OS platfrom you are on, as most are not cross-platform and many only have Windows binaries, which is disapointing.
 
-In an effort to simplify and unify this piece of the puzzle, so that code that is released on this site can be compiled on any platform, we have chosen to standardise on using ASM80. This compiler can be used in any Internet Browser on any platform be visiting www.asm80.com
+In an effort to simplify and unify this piece of the puzzle, so that code that is released on this site can be compiled on any platform, we have chosen to standardise on using ASM80. This compiler can be used in any Internet Browser on any platform by visiting www.asm80.com
+
 It has an integrated Code Editor as well, but it won't take you long to realise this is a slow and cumbersome way to develop code and upload it to the TEC-1G.
 
-Thankfully the developer has released the assembler engine as a Node.js applicaiton which means that ANY platform shoud be able to install it and then use it from the command line. And this means it can be integrated into VS Code as a command line assembler that you can initiate with a single keystroke.
+Thankfully the developer has released the assembler engine as a Node.js applicaiton which means that ANY platform should be able to install it and then use it from the command line. This means it can be integrated into VS Code as a command line assembler that you can initiate with a single keystroke. Detailed instructions for each of the three main platforms are below.
 
-Please consider donating to the project so development can continue.
+Please consider donating to the ASM80 project so development can continue.
 
-### Serial Terminal Software
+## Serial Terminal
 
-This is yet another polarising piece of the puzzle with everyone having their favorites but in an effort to make it possible for the community to help each other, we have chosen to support CoolTerm because once again, it is available on all the major plaforms.
+This is yet another polarising piece of the puzzle with everyone having their favorites but in an effort to make it possible for the community to help each other, we have chosen to support [CoolTerm](https://www.freeware.the-meiers.org) because once again, it is available on all the major plaforms.
 
 The Serial Terminal Software allows you to send and receive files to and from the TEC-1G via the USB cable connected to the FTDI module.
 
@@ -46,13 +47,13 @@ The Serial Terminal Software allows you to send and receive files to and from th
 ## Pick Your Poison
 
 ### Windows
-One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section.
+One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section. The VS Code part should be easy, as should CoolTerm. The tricky one might be installing ASM80 as a command line application, but I'm sure Google/ChatGPT/YouTube can point you in the right direction.
 
 ### Linux
 *Code Editor*<br>
-Download the VS Code binary from:  https://code.visualstudio.com/Download
-Follow these instructions: https://code.visualstudio.com/docs/setup/linux
-Which tell you to:
+Download the VS Code binary from:  https://code.visualstudio.com/Download <br>
+Follow these instructions: https://code.visualstudio.com/docs/setup/linux <br>
+Which tells you to:
 1. Go to Downloads folder and Right Click blank area and select "Open in Terminal"
 2. Enter "sudo apt install ./<filename.deb>"  (Yes, you really do have to put in the dot and the slash)
 3. It will ask you for your password. Enter it to complete the install.
