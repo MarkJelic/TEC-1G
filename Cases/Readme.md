@@ -14,8 +14,12 @@ Question no more and pick your favourite design below, download the STL file and
 | [Retex](./Retex/Readme.md) | The original case for the TEC-1 works on the TEC-1G and is still available! | ![Retex](./Retex/Retex_Icon.jpg) |
 | [JamesE](./JamesE/Readme.md) | A pair of Stands to elevate your TEC-1G to new heights | ![JamesE](./JamesE/JamesE_Icon_v1.jpg) |
 
-
-If you have the superior brain-power required to create 3D models (I most certainly do NOT)
-and have designed something for the TEC-1G, why not share it with the greater community?
-You will get your own dedicated page on this GitHub, with full credit to you,
+If you have the superior brain-power required to create 3D models and have designed something for the TEC-1G,
+why not share it with the greater community? You will get your own dedicated page on this GitHub, with full credit to you,
 and a permenant place in the history of the TEC-1G. Get in touch with us via our [Facebook Forum](https://www.facebook.com/groups/tec1z80).
+
+### NEWS FLASH:
+There is now an OFFICIAL TEC-1G 3D printable case that looks the bees knees and can hold the UPS Battery Pack, as well!
+Purchasable as both the physical, printed item delivered to your door, or as a Digital Download for personaly printing.
+https://www.tindie.com/products/tec1/tec-1g-official-case/
+
