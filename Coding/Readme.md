@@ -35,6 +35,8 @@ It has an integrated Code Editor as well, but it won't take you long to realise 
 
 Thankfully the developer has released the assembler engine as a Node.js applicaiton which means that ANY platform should be able to install it and then use it from the command line. This means it can be integrated into VS Code as a command line assembler that you can initiate with a single keystroke. Detailed instructions for each of the three main platforms are below.
 
+<img align="right" width="126" src="https://github.com/user-attachments/assets/7a4f979c-89ec-4a8c-9c72-246555c1e931" alt="CoolTerm Download">
+
 Please consider donating to the ASM80 project so development can continue.
 
 ## Serial Terminal
@@ -47,7 +49,7 @@ The Serial Terminal Software allows you to send and receive files to and from th
 ## Pick Your Poison
 
 ### Windows
-One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section. The VS Code part should be easy, as should CoolTerm. The tricky one might be installing ASM80 as a command line application, but I'm sure Google/ChatGPT/YouTube can point you in the right direction.
+One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section. The VS Code part should be easy, as should CoolTerm. The tricky one might be installing ASM80 as a command line application, but I'm sure Google/Grok/YouTube can point you in the right direction. Take a look at the instructions below for Mac or Linux and they will be similar.
 
 ### Linux
 *Code Editor*<br>
@@ -80,19 +82,30 @@ Once running, go to Mint Menu, type in "Cool". Right click on menu item and sele
 
 ## MacOS
 *Code Editor* <br>
-Yep, it's VS Code again and you download it from: https://code.visualstudio.com/Download
+Yep, it's VS Code again and you download it from: https://code.visualstudio.com/Download<br>
+Install it as per normal by finding it in your **Downloads** folder, double click and then simply drag the VS Code app into your **Applications** folder. (You gotta love how easy MacOS makes it!)
 
 *Assembler* <br>
-Install Node.js: https://nodejs.org/en/download
+Install Node.js: https://nodejs.org/en/download<br>
 You can try the manual installation instructions but the Prebuilt version simplifies the process. Simply select your platform and type of processor and then select the "MacOS Installer (.pkg)". This will download the installer to your Downloads folder. Double click on it to start the install process.
+
 At the end it will pop up is message:
-Make sure that /usr/local/bin is in your $PATH.
+"Make sure that /usr/local/bin is in your $PATH."  You do that in the **Terminal** with a simple command:
+
+```concole
+echo $PATH
+```
+Search for '/usr/local/bin' and if it is there, you are golden. If not, ask Grok how to add it in.
 
 *Serial Terminal* <br>
-CoolTerm is is cross platform and easy to install on the Mac. Download it here: https://www.freeware.the-meiers.org/
-And drag and drop it into your Applications folder. Easy peasy.
+CoolTerm is is cross platform and easy to install on the Mac. Download it here: https://www.freeware.the-meiers.org/<br>
+Open the DMG in your **Downloads** folder, drag and drop it into your **Applications** folder. Easy peasy.
 
+## Configuration
 
+Each one of the above programs will need a little bit of tweaking and configuration to make it just the little bit easier to use. Let's go in the order of least to most tinkering, starting with ASM80.
+
+For this, there really is only the task of checking that is is installed correctly
 
 
 
