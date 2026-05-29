@@ -6,7 +6,7 @@
 - Using LM3900 Op Amp
 - 4 Layer board 
 
-This is the Schematic: ![TEC-Deck SoundTalker Schematic](TEC-Deck_SoundTalker_Schematic.pdf)
+This is the Schematic: ![TEC-Deck SoundTalker Schematic](TEC-Deck_Sound-Card_Schematic_b2-LM3900.pdf)
 
 This is Beta 2, using a LM3900 for pre-amp/mixer and amplifier:
 ![TEC-Deck SoundTalker LM3900](TEC-Deck_SoundTalker_PCB-Render_b2-LM3900.jpg)
