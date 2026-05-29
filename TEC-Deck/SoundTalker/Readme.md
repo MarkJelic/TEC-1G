@@ -8,6 +8,8 @@
 
 This is the Schematic: ![TEC-Deck SoundTalker Schematic](TEC-Deck_Sound-Card_Schematic_b2-LM3900.pdf)
 
+The "GroundWalker" connector is for bit-banged sound connection from the motherboard. Input is from the left pin, and the final amplified output goes to the right pin which is connected to the mini speaker on the motherboard. Without this Sound Card installed, you would just have a jumper over these two pins so that the bit-banged sound goes direct to the speaker.
+
 This is Beta 2, using a LM3900 for pre-amp/mixer and amplifier:
 ![TEC-Deck SoundTalker LM3900](TEC-Deck_SoundTalker_PCB-Render_b2-LM3900.jpg)
 
