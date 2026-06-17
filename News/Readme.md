@@ -13,6 +13,43 @@ https://github.com/MarkJelic/TEC-1G/tree/main/TEC-Deck/TMS9918_Video
 Kits for this add-on have not been planned for, at this stage.
 
 --------------------------------------------------------
+## 4Layer Version of Main PCB in Testing (21/May/2026)
+The first ever 4 layer version of the TEC-1G PCB has arrived and going through testing.
+
+Features include:
+ - ability to use either through-hole or SMD versions of components like resistors, capacitors, diodes, transistors and IC sockets.
+ - Four layers of copper, two of which are inside the PCB and a ground planes to provide shielding.
+ - Thinner tracks and optomised routing since the GND traces are all but gone to the inner GND copper pour.
+
+Once testing is complete, users will have the choice of the original 2 layer PCB which has proven to be pretty noisy for any audio amplfication, or the new 4 layer PCB, which does cost more, but has improved noise suppression.
+
+Longer term plans include providing kits that have all the SMD components pre-installed, in the hopes of cutting the build time down from 3-4 hours, down to 20-30 minutes.
+
+--------------------------------------------------------
+## Official TEC-1G 3D Printable Case (10/March/2026)
+The official TEC-1G case is made available. Purchase it in digital form for printing on your own #D printing machine or buy it on the Tindie Store which includes the brass heat insets.
+
+https://www.tindie.com/products/tec1/tec-1g-official-case/
+
+--------------------------------------------------------
+## Update to Signature Edition PCB Released! (10/Feb/2026)
+The Signature Edition PCB has been updated to v1.5 with a few minor quality of life (read: less soldering) changes.
+
+https://www.facebook.com/groups/tec1z80/permalink/2288069601702076
+
+--------------------------------------------------------
+## Multi-Tasking on the TEC-1G! (27/Oct/2025)
+Brian Chiha releases a video showing the TEC-1G doing effective multi-tasking!
+
+https://youtu.be/tMYGlYO3v9U
+
+--------------------------------------------------------
+## A new version of the Tactile Matrix Keyboard! (19/Aug/2025)
+A new version of the Tactile Matrix Keyboard has been release to give the user a better typing experience and move the connector to the side so that cable tangles are a thing of the past.  Stickers have also been developed and are available to buy on Tindie.
+
+https://www.tindie.com/products/tec1/tec-1g-matrix-tactile-keyboard/
+
+--------------------------------------------------------
 ## Signature Edition Gerbers Released! (15/Mar/2025)
 The Signature Edition of the TEC-1G PCB is the final version of the TEC-1G PCB to be released.
 The Gerbers can now be downloaded from the root directory of the Repo.
