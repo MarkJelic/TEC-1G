@@ -1,5 +1,18 @@
 # TEC-1G News
 --------------------------------------------------------
+## TMS9918 Video Card in Beta Testing (15/Jun/2026)
+A video card based on the TMS9918 that sits on the TEC-Deck connectors has entered Beta. "Damian Damian" built it up quick smart and after some cutting and bodging, was able to show a couple of demos.
+Check it out on this Facebook post:
+
+https://www.facebook.com/share/v/1BiCaWHnK5/
+
+More details can be had here where you can download the Gerbers and print your own PCB:
+
+https://github.com/MarkJelic/TEC-1G/tree/main/TEC-Deck/TMS9918_Video
+
+Kits for this add-on have not been planned for, at this stage.
+
+--------------------------------------------------------
 ## Signature Edition Gerbers Released! (15/Mar/2025)
 The Signature Edition of the TEC-1G PCB is the final version of the TEC-1G PCB to be released.
 The Gerbers can now be downloaded from the root directory of the Repo.
