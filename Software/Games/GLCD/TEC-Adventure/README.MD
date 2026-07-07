@@ -1,11 +1,5 @@
 # TEC Adventure
 
- _____ _____ ____      _    ______     _______ _   _ _____ _   _ ____  _____
-|_   _| ____/ ___|    / \  |  _ \ \   / / ____| \ | |_   _| | | |  _ \| ____|
-  | | |  _|| |       / _ \ | | | \ \ / /|  _| |  \| | | | | | | | |_) |  _|
-  | | | |__| |___   / ___ \| |_| |\ V / | |___| |\  | | | | |_| |  _ <| |___
-  |_| |_____\____| /_/   \_\____/  \_/  |_____|_| \_| |_|  \___/|_| \_\_____|
-
 Z-Machine is a virtual machine that was developed by Infocom in 1979.
 It plays games written in ZIL (Zork Implementation Language), which are
 compiled into Story Files.  This is a Z-Machine port to be used on the
@@ -77,9 +71,9 @@ files to play the games.
 
 BASIC COMMANDS
 --------------
-N, S, E, W, IN, OUT, UP, DOWN
-GET, DROP, USE, INVENTORY or I, WAIT or Z, AGAIN or G, LOOK or L
-TIME, SCORE, QUIT, RESTART
+N, S, E, W, IN, OUT, UP, DOWN<br>
+GET, DROP, USE, INVENTORY or I, WAIT or Z, AGAIN or G, LOOK or L<br>
+TIME, SCORE, QUIT, RESTART<br>
 
 SPECIAL COMMANDS
 ----------------
@@ -117,11 +111,11 @@ abbreviate LOOK to L.
 OOPS - If you mistype a word, such that the game doesn''t understand it, 
 you can correct yourself at the next prompt by typing OOPS and the correct 
 word. For example, if you typed HAND THE CHAIN SAW TO GARNDMA and were 
-told ""[I don''t know the word ''garndma'']"" you could type OOPS GRANDMA rather than 
+told "[I don't know the word 'garndma']" you could type OOPS GRANDMA rather than 
 retyping the entire sentence. 
 
 QUIT - This lets you stop. If you want to save your position before quitting, 
-follow the instructions in the ""Starting and Stopping"" section on page 8. You 
+follow the instructions in the "Starting and Stopping" section on page 8. You 
 can abbreviate QUIT to Q. 
 
 RESTART - This stops the story and starts it over from the beginning. 
