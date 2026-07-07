@@ -38,15 +38,15 @@ Terminal.  If using a Serial Terminal, connect your computer/laptop to the
 FTDI to USB adaptor and run a Serial Terminal.
 
 5. Select the Game to play.  The games that can be played are:
-    Zork 1, Zork 2 and Zork 3
-    Enchanter, Sorcerer and Spellbreaker
-    Planetfall and Stationfall
-    Deadline
-    Hitchhikers Guide to the Galaxy
-    Hollywood Hijinx
-    Infidel
-    Leather Goddesses of Phobos
-    Suspended
+    Zork 1, Zork 2 and Zork 3<br>
+    Enchanter, Sorcerer and Spellbreaker<br>
+    Planetfall and Stationfall<br>
+    Deadline<br>
+    Hitchhikers Guide to the Galaxy<br>
+    Hollywood Hijinx<br>
+    Infidel<br>
+    Leather Goddesses of Phobos<br>
+    Suspended<br>
 
 ## NOTES
 
