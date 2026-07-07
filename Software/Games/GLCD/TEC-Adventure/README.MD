@@ -38,6 +38,7 @@ Terminal.  If using a Serial Terminal, connect your computer/laptop to the
 FTDI to USB adaptor and run a Serial Terminal.
 
 5. Select the Game to play.  The games that can be played are:
+
     Zork 1, Zork 2 and Zork 3<br>
     Enchanter, Sorcerer and Spellbreaker<br>
     Planetfall and Stationfall<br>
