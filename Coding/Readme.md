@@ -45,11 +45,42 @@ This is yet another polarising piece of the puzzle with everyone having their fa
 
 The Serial Terminal Software allows you to send and receive files to and from the TEC-1G via the USB cable connected to the FTDI module.
 
-
 ## Pick Your Poison
+So all three key ingredients (Editor, Assembler and Terminal) are available on all three platforms, but of course each takes a slightly different way to install it. Below are the detailed Installation instructions for each major Desktop Platform.  If any of the links are broken, please let us know, and in the meantime use AI to find the corrected/moved links.
 
-### Windows
-One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section. The VS Code part should be easy, as should CoolTerm. The tricky one might be installing ASM80 as a command line application, but I'm sure Google/Grok/YouTube can point you in the right direction. Take a look at the instructions below for Mac or Linux and they will be similar.
+## MacOS
+*Code Editor* <br>
+VS Code is downloaded from: https://code.visualstudio.com/Download<br>
+Install it as per normal by finding it in your **Downloads** folder, double click and then simply drag the VS Code app into your **Applications** folder. (You gotta love how easy MacOS makes it!)
+
+*Assembler - Part 1* <br>
+Install Node.js: https://nodejs.org/en/download<br>
+You can try the manual installation instructions but the Prebuilt version simplifies the process. Simply select your platform and type of processor and then select the "MacOS Installer (.pkg)". This will download the installer to your Downloads folder. Double click on it to start the install process.
+
+At the end it will pop up is message:
+"Make sure that /usr/local/bin is in your $PATH."  You do that in the **Terminal** with a simple command:
+
+```console
+echo $PATH
+```
+Search for '/usr/local/bin' and if it is there, you are golden. If not, ask Grok how to add it in.
+
+*Assembler - Part 2* <br>
+Now that Node.JS is installed, it is very easy to install the actual ASM80 Assembler. Keep **Terminal** open and enter in this command:
+
+```console
+sudo npm install -g asm80
+```
+It will ask you for your Mac password. Enter it to continue.  Once it is finished, test that it is working by entering:
+```console
+asm80 --help
+```
+
+
+
+*Serial Terminal* <br>
+CoolTerm is is cross platform and easy to install on the Mac. Download it here: https://www.freeware.the-meiers.org/<br>
+Open the DMG in your **Downloads** folder, drag and drop it into your **Applications** folder. Easy peasy.
 
 ### Linux
 *Code Editor*<br>
@@ -80,26 +111,12 @@ Double click "coolterm" program<br>
 Dialogue box asking to set preferences comes up. Do so (I did) or select Defaults.<br>
 Once running, go to Mint Menu, type in "Cool". Right click on menu item and select "Add to Panel"<br>
 
-## MacOS
-*Code Editor* <br>
-Yep, it's VS Code again and you download it from: https://code.visualstudio.com/Download<br>
-Install it as per normal by finding it in your **Downloads** folder, double click and then simply drag the VS Code app into your **Applications** folder. (You gotta love how easy MacOS makes it!)
 
-*Assembler* <br>
-Install Node.js: https://nodejs.org/en/download<br>
-You can try the manual installation instructions but the Prebuilt version simplifies the process. Simply select your platform and type of processor and then select the "MacOS Installer (.pkg)". This will download the installer to your Downloads folder. Double click on it to start the install process.
 
-At the end it will pop up is message:
-"Make sure that /usr/local/bin is in your $PATH."  You do that in the **Terminal** with a simple command:
+### Windows
+One day I'll get around to writing this bit, but I don't use Windows any more, so hopefully you can work it out or someone will do a PR and update this section. The VS Code part should be easy, as should CoolTerm. The tricky one might be installing ASM80 as a command line application, but I'm sure Google/Grok/YouTube can point you in the right direction. Take a look at the instructions below for Mac or Linux and they will be similar.
 
-```concole
-echo $PATH
-```
-Search for '/usr/local/bin' and if it is there, you are golden. If not, ask Grok how to add it in.
 
-*Serial Terminal* <br>
-CoolTerm is is cross platform and easy to install on the Mac. Download it here: https://www.freeware.the-meiers.org/<br>
-Open the DMG in your **Downloads** folder, drag and drop it into your **Applications** folder. Easy peasy.
 
 ## Configuration
 
