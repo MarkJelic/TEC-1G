@@ -13,21 +13,26 @@ and to allow hexpad / matrix keyboard input, or joystick input.
 - To turn Keyboard input back on, hit Fn-K.
 
 ## Upcoming Titles
+- Maze by Cameron Sheppard
+- TEC Invaders by Cameron Sheppard
+- TEC Invaders 2 by Brian Chiha
+- Maze Treasure Hunt by Brian Chiha
+- Pacmo by John Hardy
+- Tecmo by John Hardy
+- RGB Invaders 3
 - Killer Tomatoes
 - Maze Runner
 - Minesweeper
 - Scrambler
-- King Tut's Snake
-- RGB Invaders 3
 
-## Pacmo  (John Hardy)
+## King Tut's Snake
+You are small snake fleeing from your enemies and fall into King Tut's tomb!
+Fearing for your life, you knows you can't face those that chased you until you are much larger!
 
-## Tecmo  (John Hardy)
+Eat the sacred scarabs to grow long enough to open the exit and seek revenge on those that wished you harm!
 
-## TEC Invaders 2  (Brian Chiha)
+But beware, the walls in King Tutenkhaman's Tomb are painted with poisonous paint.
 
-## Maze Treasure Hunt  (Brian Chiha)
+There are strange purple motifs on the ground and you can feel the Eye of Ra watching you!
 
-## Maze  (Cameron Sheppard)
-
-## TEC Invaders  (Cameron Sheppard)
+Good luck!
