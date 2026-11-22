@@ -34,3 +34,4 @@ There are strange purple motifs on the ground and you can feel the Eye of Ra wat
 Good luck!
 
 Download [King Tuts Snake](./tutsnake.hex) and use CoolTerm to transfer it to your TEC-1G with RGB 8x8.
+The game starts at $4000 and is less than 16k long.
