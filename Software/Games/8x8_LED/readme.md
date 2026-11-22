@@ -1,5 +1,7 @@
 # 8x8 LED Games & Demos
 
+![Spacey](./pics/Demo_Spacey.png) 
+
 The original 8x8 was made with some clever soldering of 64 single colour LEDs.
 Not many games were made for it but those that were, were greatly appreciated.
 40 years later and the 8x8 has had a colour upgrade to full RGB which makes for
