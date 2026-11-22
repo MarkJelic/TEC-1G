@@ -32,3 +32,5 @@ But beware, the walls in King Tutenkhaman's Tomb are painted with poisonous pain
 There are strange purple motifs on the ground and you can feel the Eye of Ra watching you!
 
 Good luck!
+
+Download [./tutsnake.hex] and use CoolTerm to transfer it to your TEC-1G with RGB 8x8.
